@@ -93,10 +93,10 @@ typedef enum
  */
 typedef enum
 {
-    LR1110_RADIO_RX_TX_FALLBACK_MODE_STDBYRC   = 0x01,  //!< Standby RC (Default)
-    LR1110_RADIO_RX_TX_FALLBACK_MODE_STDBYXOSC = 0x02,  //!< Standby XOSC
-    LR1110_RADIO_RX_TX_FALLBACK_FS             = 0x03   //!< FS
-} lr1110_radio_rx_tx_fallback_mode_t;
+    LR1110_RADIO_FALLBACK_STDBY_RC   = 0x01,  //!< Standby RC (Default)
+    LR1110_RADIO_FALLBACK_STDBY_XOSC = 0x02,  //!< Standby XOSC
+    LR1110_RADIO_FALLBACK_FS         = 0x03   //!< FS
+} lr1110_radio_fallback_modes_t;
 
 /*!
  * \brief Ramping time for PA
@@ -106,14 +106,14 @@ typedef enum
  */
 typedef enum
 {
-    LR1110_RADIO_RAMP_TIME_10U   = 0x00,  //!< 10 us Ramp Time
-    LR1110_RADIO_RAMP_TIME_20U   = 0x01,  //!< 20 us Ramp Time
-    LR1110_RADIO_RAMP_TIME_40U   = 0x02,  //!< 40 us Ramp Time (Default)
-    LR1110_RADIO_RAMP_TIME_80U   = 0x03,  //!< 80 us Ramp Time
-    LR1110_RADIO_RAMP_TIME_200U  = 0x04,  //!< 200 us Ramp Time
-    LR1110_RADIO_RAMP_TIME_800U  = 0x05,  //!< 800 us Ramp Time
-    LR1110_RADIO_RAMP_TIME_1700U = 0x06,  //!< 1700 us Ramp Time
-    LR1110_RADIO_RAMP_TIME_3400U = 0x07,  //!< 3400 us Ramp Time
+    LR1110_RADIO_RAMP_10_US   = 0x00,  //!< 10 us Ramp Time
+    LR1110_RADIO_RAMP_20_US   = 0x01,  //!< 20 us Ramp Time
+    LR1110_RADIO_RAMP_40_US   = 0x02,  //!< 40 us Ramp Time (Default)
+    LR1110_RADIO_RAMP_80_US   = 0x03,  //!< 80 us Ramp Time
+    LR1110_RADIO_RAMP_200_US  = 0x04,  //!< 200 us Ramp Time
+    LR1110_RADIO_RAMP_800_US  = 0x05,  //!< 800 us Ramp Time
+    LR1110_RADIO_RAMP_1700_US = 0x06,  //!< 1700 us Ramp Time
+    LR1110_RADIO_RAMP_3400_US = 0x07,  //!< 3400 us Ramp Time
 } lr1110_radio_ramp_time_t;
 
 /*!
@@ -145,15 +145,15 @@ typedef enum
  */
 typedef enum
 {
-    LR1110_RADIO_LORA_BW10  = 0x08,  //!< Bandwidth 10.42 kHz
-    LR1110_RADIO_LORA_BW15  = 0x01,  //!< Bandwidth 15.63 kHz
-    LR1110_RADIO_LORA_BW20  = 0x09,  //!< Bandwidth 20.83 kHz
-    LR1110_RADIO_LORA_BW31  = 0x02,  //!< Bandwidth 31.25 kHz
-    LR1110_RADIO_LORA_BW41  = 0x0A,  //!< Bandwidth 41.67 kHz
-    LR1110_RADIO_LORA_BW62  = 0x03,  //!< Bandwidth 62.50 kHz
-    LR1110_RADIO_LORA_BW125 = 0x04,  //!< Bandwidth 125.00 kHz
-    LR1110_RADIO_LORA_BW250 = 0x05,  //!< Bandwidth 250.00 kHz
-    LR1110_RADIO_LORA_BW500 = 0x06,  //!< Bandwidth 500.00 kHz
+    LR1110_RADIO_LORA_BW_10  = 0x08,  //!< Bandwidth 10.42 kHz
+    LR1110_RADIO_LORA_BW_15  = 0x01,  //!< Bandwidth 15.63 kHz
+    LR1110_RADIO_LORA_BW_20  = 0x09,  //!< Bandwidth 20.83 kHz
+    LR1110_RADIO_LORA_BW_31  = 0x02,  //!< Bandwidth 31.25 kHz
+    LR1110_RADIO_LORA_BW_41  = 0x0A,  //!< Bandwidth 41.67 kHz
+    LR1110_RADIO_LORA_BW_62  = 0x03,  //!< Bandwidth 62.50 kHz
+    LR1110_RADIO_LORA_BW_125 = 0x04,  //!< Bandwidth 125.00 kHz
+    LR1110_RADIO_LORA_BW_250 = 0x05,  //!< Bandwidth 250.00 kHz
+    LR1110_RADIO_LORA_BW_500 = 0x06,  //!< Bandwidth 500.00 kHz
 } lr1110_radio_lora_bw_t;
 
 /*!
@@ -161,14 +161,14 @@ typedef enum
  */
 typedef enum
 {
-    LR1110_RADIO_LORA_NO_CR   = 0x00,  //!< No Coding Rate
-    LR1110_RADIO_LORA_CR45    = 0x01,  //!< Coding Rate 4/5 Short Interleaver
-    LR1110_RADIO_LORA_CR46    = 0x02,  //!< Coding Rate 4/6 Short Interleaver
-    LR1110_RADIO_LORA_CR47    = 0x03,  //!< Coding Rate 4/7 Short Interleaver
-    LR1110_RADIO_LORA_CR48    = 0x04,  //!< Coding Rate 4/8 Short Interleaver
-    LR1110_RADIO_LORA_CR45_LI = 0x05,  //!< Coding Rate 4/5 Long Interleaver
-    LR1110_RADIO_LORA_CR46_LI = 0x06,  //!< Coding Rate 4/6 Long Interleaver
-    LR1110_RADIO_LORA_CR48_LI = 0x07,  //!< Coding Rate 4/8 Long Interleaver
+    LR1110_RADIO_LORA_NO_CR     = 0x00,  //!< No Coding Rate
+    LR1110_RADIO_LORA_CR_4_5    = 0x01,  //!< Coding Rate 4/5 Short Interleaver
+    LR1110_RADIO_LORA_CR_4_6    = 0x02,  //!< Coding Rate 4/6 Short Interleaver
+    LR1110_RADIO_LORA_CR_4_7    = 0x03,  //!< Coding Rate 4/7 Short Interleaver
+    LR1110_RADIO_LORA_CR_4_8    = 0x04,  //!< Coding Rate 4/8 Short Interleaver
+    LR1110_RADIO_LORA_CR_LI_4_5 = 0x05,  //!< Coding Rate 4/5 Long Interleaver
+    LR1110_RADIO_LORA_CR_LI_4_6 = 0x06,  //!< Coding Rate 4/6 Long Interleaver
+    LR1110_RADIO_LORA_CR_LI_4_8 = 0x07,  //!< Coding Rate 4/8 Long Interleaver
 } lr1110_radio_lora_cr_t;
 
 /*!
@@ -176,10 +176,10 @@ typedef enum
  */
 typedef enum
 {
-    LR1110_RADIO_MODE_SLEEP       = 0x00,  //!< Sleep
-    LR1110_RADIO_MODE_STANDBYRC   = 0x01,  //!< Standby RC
-    LR1110_RADIO_MODE_STANDBYXOSC = 0x02,  //!< Standby XOSC
-    LR1110_RADIO_MODE_FS          = 0x03   //!< Frequency Synthesis
+    LR1110_RADIO_MODE_SLEEP        = 0x00,  //!< Sleep
+    LR1110_RADIO_MODE_STANDBY_RC   = 0x01,  //!< Standby RC
+    LR1110_RADIO_MODE_STANDBY_XOSC = 0x02,  //!< Standby XOSC
+    LR1110_RADIO_MODE_FS           = 0x03   //!< Frequency Synthesis
 } lr1110_radio_intermediary_mode_t;
 
 /*!
@@ -191,11 +191,11 @@ typedef enum
  */
 typedef enum
 {
-    LR1110_RADIO_GFSK_CRC_OFF        = 0x01,  //!< CRC check deactivated
-    LR1110_RADIO_GFSK_CRC_1BYTE      = 0x00,
-    LR1110_RADIO_GFSK_CRC_2BYTES     = 0x02,
-    LR1110_RADIO_GFSK_CRC_1BYTE_INV  = 0x04,
-    LR1110_RADIO_GFSK_CRC_2BYTES_INV = 0x06,
+    LR1110_RADIO_GFSK_CRC_OFF         = 0x01,  //!< CRC check deactivated
+    LR1110_RADIO_GFSK_CRC_1_BYTE      = 0x00,
+    LR1110_RADIO_GFSK_CRC_2_BYTES     = 0x02,
+    LR1110_RADIO_GFSK_CRC_1_BYTE_INV  = 0x04,
+    LR1110_RADIO_GFSK_CRC_2_BYTES_INV = 0x06,
 } lr1110_radio_gfsk_crc_type_t;
 
 /*!
@@ -203,8 +203,8 @@ typedef enum
  */
 typedef enum
 {
-    LR1110_RADIO_GFSK_DCFREE_OFF       = 0x00,  //!< Whitening deactivated
-    LR1110_RADIO_GFSK_DCFREE_WHITENING = 0x01,  //!< Whitening enabled
+    LR1110_RADIO_GFSK_DC_FREE_OFF       = 0x00,  //!< Whitening deactivated
+    LR1110_RADIO_GFSK_DC_FREE_WHITENING = 0x01,  //!< Whitening enabled
 } lr1110_radio_gfsk_dc_free_t;
 
 /*!
@@ -215,7 +215,7 @@ typedef enum
  *
  * If the payload length is known beforehand by both transmitter and receiver,
  * therefore there is no need to send it over the air. Otherwise, setting this
- * parameter to LR1110_RADIO_GFSK_HEADER_TYPE_EXPLICIT will make the modem to
+ * parameter to LR1110_RADIO_GFSK_PKT_VAR_LEN will make the modem to
  * automatically prepand a byte containing the payload length to the the payload
  * on transmitter side. On receiver side, this first byte is read to set the
  * payload length to read.
@@ -224,9 +224,9 @@ typedef enum
  */
 typedef enum
 {
-    LR1110_RADIO_GFSK_HEADER_TYPE_IMPLICIT = 0x00,  //!< Payload length is not sent/read over the air
-    LR1110_RADIO_GFSK_HEADER_TYPE_EXPLICIT = 0x01,  //!< Payload length is sent/read over the air
-} lr1110_radio_gfsk_header_type_t;
+    LR1110_RADIO_GFSK_PKT_FIX_LEN = 0x00,  //!< Payload length is not sent/read over the air
+    LR1110_RADIO_GFSK_PKT_VAR_LEN = 0x01,  //!< Payload length is sent/read over the air
+} lr1110_radio_gfsk_pkt_len_modes_t;
 
 /*!
  * \brief GFSK Preamble Detector Length configurations
@@ -240,12 +240,12 @@ typedef enum
  */
 typedef enum
 {
-    LR1110_RADIO_GFSK_PREAMBLE_DETECTOR_LENGTH_OFF    = 0x00,
-    LR1110_RADIO_GFSK_PREAMBLE_DETECTOR_LENGTH_8BITS  = 0x04,
-    LR1110_RADIO_GFSK_PREAMBLE_DETECTOR_LENGTH_16BITS = 0x05,
-    LR1110_RADIO_GFSK_PREAMBLE_DETECTOR_LENGTH_24BITS = 0x06,
-    LR1110_RADIO_GFSK_PREAMBLE_DETECTOR_LENGTH_32BITS = 0x07
-} lr1110_radio_gfsk_preamble_detect_length_t;
+    LR1110_RADIO_GFSK_PREAMBLE_DETECTOR_OFF        = 0x00,
+    LR1110_RADIO_GFSK_PREAMBLE_DETECTOR_MIN_8BITS  = 0x04,
+    LR1110_RADIO_GFSK_PREAMBLE_DETECTOR_MIN_16BITS = 0x05,
+    LR1110_RADIO_GFSK_PREAMBLE_DETECTOR_MIN_24BITS = 0x06,
+    LR1110_RADIO_GFSK_PREAMBLE_DETECTOR_MIN_32BITS = 0x07
+} lr1110_radio_gfsk_preamble_detector_t;
 
 /*!
  * \brief LoRa Cyclic Redundancy Check configurations
@@ -261,9 +261,9 @@ typedef enum
  */
 typedef enum
 {
-    LR1110_RADIO_LORA_HEADER_EXPLICIT = 0x00,  //!< Explicit header: transmitted over the air
-    LR1110_RADIO_LORA_HEADER_IMPLICIT = 0x01,  //!< Implicit header: not transmitted over the air
-} lr1110_radio_lora_header_type_t;
+    LR1110_RADIO_LORA_PKT_EXPLICIT = 0x00,  //!< Explicit header: transmitted over the air
+    LR1110_RADIO_LORA_PKT_IMPLICIT = 0x01,  //!< Implicit header: not transmitted over the air
+} lr1110_radio_lora_pkt_len_modes_t;
 
 /*!
  * \brief LoRa IQ mode configurations
@@ -282,12 +282,11 @@ typedef enum
  */
 typedef enum
 {
-    LR1110_RADIO_PACKET_NONE = 0x00,     //!< State after cold start, Wi-Fi or GNSS capture, as the device
-                                         //!< has to be reconfigured
-    LR1110_RADIO_PACKET_GFSK    = 0x01,  //!< GFSK modulation
-    LR1110_RADIO_PACKET_LORA    = 0x02,  //!< LoRa modulation
-    LR1110_RADIO_PACKET_RANGING = 0x05,  //!< LoRa Ranging mode
-} lr1110_radio_packet_types_t;
+    LR1110_RADIO_PACKET_NONE = 0x00,    //!< State after cold start, Wi-Fi or GNSS capture, as the device
+                                        //!< has to be reconfigured
+    LR1110_RADIO_PKT_TYPE_GFSK = 0x01,  //!< GFSK modulation
+    LR1110_RADIO_PKT_TYPE_LORA = 0x02,  //!< LoRa modulation
+} lr1110_radio_pkt_type_t;
 
 /*!
  * \brief Select power amplifier supply source
@@ -312,28 +311,28 @@ typedef enum
  */
 typedef enum
 {
-    LR1110_RADIO_GFSK_RX_BW_4800   = 0x1F,  //!< Bandwidth 4.8 kHz DSB
-    LR1110_RADIO_GFSK_RX_BW_5800   = 0x17,  //!< Bandwidth 5.8 kHz DSB
-    LR1110_RADIO_GFSK_RX_BW_7300   = 0x0F,  //!< Bandwidth 7.3 kHz DSB
-    LR1110_RADIO_GFSK_RX_BW_9700   = 0x1E,  //!< Bandwidth 9.7 kHz DSB
-    LR1110_RADIO_GFSK_RX_BW_11700  = 0x16,  //!< Bandwidth 11.7 kHz DSB
-    LR1110_RADIO_GFSK_RX_BW_14600  = 0x0E,  //!< Bandwidth 14.6 kHz DSB
-    LR1110_RADIO_GFSK_RX_BW_19500  = 0x1D,  //!< Bandwidth 19.5 kHz DSB
-    LR1110_RADIO_GFSK_RX_BW_23400  = 0x15,  //!< Bandwidth 23.4 kHz DSB
-    LR1110_RADIO_GFSK_RX_BW_29300  = 0x0D,  //!< Bandwidth 29.3 kHz DSB
-    LR1110_RADIO_GFSK_RX_BW_39000  = 0x1C,  //!< Bandwidth 39.0 kHz DSB
-    LR1110_RADIO_GFSK_RX_BW_46900  = 0x14,  //!< Bandwidth 46.9 kHz DSB
-    LR1110_RADIO_GFSK_RX_BW_58600  = 0x0C,  //!< Bandwidth 58.6 kHz DSB
-    LR1110_RADIO_GFSK_RX_BW_78200  = 0x1B,  //!< Bandwidth 78.2 kHz DSB
-    LR1110_RADIO_GFSK_RX_BW_93800  = 0x13,  //!< Bandwidth 93.8 kHz DSB
-    LR1110_RADIO_GFSK_RX_BW_117300 = 0x0B,  //!< Bandwidth 117.3 kHz DSB
-    LR1110_RADIO_GFSK_RX_BW_156200 = 0x1A,  //!< Bandwidth 156.2 kHz DSB
-    LR1110_RADIO_GFSK_RX_BW_187200 = 0x12,  //!< Bandwidth 187.2 kHz DSB
-    LR1110_RADIO_GFSK_RX_BW_234300 = 0x0A,  //!< Bandwidth 232.3 kHz DSB
-    LR1110_RADIO_GFSK_RX_BW_312000 = 0x19,  //!< Bandwidth 312.0 kHz DSB
-    LR1110_RADIO_GFSK_RX_BW_373600 = 0x11,  //!< Bandwidth 373.6 kHz DSB
-    LR1110_RADIO_GFSK_RX_BW_467000 = 0x09   //!< Bandwidth 467.0 kHz DSB
-} lr1110_radio_gfsk_rx_bw_t;
+    LR1110_RADIO_GFSK_BW_4800   = 0x1F,  //!< Bandwidth 4.8 kHz DSB
+    LR1110_RADIO_GFSK_BW_5800   = 0x17,  //!< Bandwidth 5.8 kHz DSB
+    LR1110_RADIO_GFSK_BW_7300   = 0x0F,  //!< Bandwidth 7.3 kHz DSB
+    LR1110_RADIO_GFSK_BW_9700   = 0x1E,  //!< Bandwidth 9.7 kHz DSB
+    LR1110_RADIO_GFSK_BW_11700  = 0x16,  //!< Bandwidth 11.7 kHz DSB
+    LR1110_RADIO_GFSK_BW_14600  = 0x0E,  //!< Bandwidth 14.6 kHz DSB
+    LR1110_RADIO_GFSK_BW_19500  = 0x1D,  //!< Bandwidth 19.5 kHz DSB
+    LR1110_RADIO_GFSK_BW_23400  = 0x15,  //!< Bandwidth 23.4 kHz DSB
+    LR1110_RADIO_GFSK_BW_29300  = 0x0D,  //!< Bandwidth 29.3 kHz DSB
+    LR1110_RADIO_GFSK_BW_39000  = 0x1C,  //!< Bandwidth 39.0 kHz DSB
+    LR1110_RADIO_GFSK_BW_46900  = 0x14,  //!< Bandwidth 46.9 kHz DSB
+    LR1110_RADIO_GFSK_BW_58600  = 0x0C,  //!< Bandwidth 58.6 kHz DSB
+    LR1110_RADIO_GFSK_BW_78200  = 0x1B,  //!< Bandwidth 78.2 kHz DSB
+    LR1110_RADIO_GFSK_BW_93800  = 0x13,  //!< Bandwidth 93.8 kHz DSB
+    LR1110_RADIO_GFSK_BW_117300 = 0x0B,  //!< Bandwidth 117.3 kHz DSB
+    LR1110_RADIO_GFSK_BW_156200 = 0x1A,  //!< Bandwidth 156.2 kHz DSB
+    LR1110_RADIO_GFSK_BW_187200 = 0x12,  //!< Bandwidth 187.2 kHz DSB
+    LR1110_RADIO_GFSK_BW_234300 = 0x0A,  //!< Bandwidth 232.3 kHz DSB
+    LR1110_RADIO_GFSK_BW_312000 = 0x19,  //!< Bandwidth 312.0 kHz DSB
+    LR1110_RADIO_GFSK_BW_373600 = 0x11,  //!< Bandwidth 373.6 kHz DSB
+    LR1110_RADIO_GFSK_BW_467000 = 0x09   //!< Bandwidth 467.0 kHz DSB
+} lr1110_radio_gfsk_bw_t;
 
 /*!
  * \brief Possible automatic actions when Channel Activity Detection operations
@@ -362,12 +361,12 @@ typedef enum
  */
 typedef enum
 {
-    LR1110_RADIO_PULSESHAPE_NOFILTER     = 0x00,  //!< No filter applied
-    LR1110_RADIO_PULSESHAPE_GAUSSIANBT03 = 0x08,  //!< Gaussian BT 0.3
-    LR1110_RADIO_PULSESHAPE_GAUSSIANBT05 = 0x09,  //!< Gaussian BT 0.5
-    LR1110_RADIO_PULSESHAPE_GAUSSIANBT07 = 0x0A,  //!< Gaussian BT 0.7
-    LR1110_RADIO_PULSESHAPE_GAUSSIANBT1  = 0x0B   //!< Gaussian BT 1.0
-} lr1110_radio_pulse_shape_t;
+    LR1110_RADIO_GFSK_PULSE_SHAPE_OFF   = 0x00,  //!< No filter applied
+    LR1110_RADIO_GFSK_PULSE_SHAPE_BT_03 = 0x08,  //!< Gaussian BT 0.3
+    LR1110_RADIO_GFSK_PULSE_SHAPE_BT_05 = 0x09,  //!< Gaussian BT 0.5
+    LR1110_RADIO_GFSK_PULSE_SHAPE_BT_07 = 0x0A,  //!< Gaussian BT 0.7
+    LR1110_RADIO_GFSK_PULSE_SHAPE_BT_1  = 0x0B   //!< Gaussian BT 1.0
+} lr1110_radio_gfsk_pulse_shape_t;
 
 /*!
  * \brief Channel Activity Detection parameters
@@ -385,136 +384,136 @@ typedef enum
  * detection. It helps to avoid detection on noise. Authorized values a from 0
  * to 181.
  */
-typedef struct
+typedef struct lr1110_radio_cad_params_s
 {
-    uint8_t symbol_num;                      //!< Number of symbols used for CAD detection
-    uint8_t det_peak;                        //!< Ratio for CAD between correlator peak and average
-                                             //!< (Default 0x32)
-    uint8_t det_min;                         //!< Minimum power of the correlation peak to be
-                                             //!< considered as a positive CAD (Default 0x0A)
-    lr1110_radio_cad_exit_mode_t exit_mode;  //!< Automated action on CAD completion
-    uint32_t                     timeout;    //!< Value used to compute timeout
+    uint8_t cad_symb_nb;                         //!< Number of symbols used for CAD detection
+    uint8_t cad_detect_peak;                     //!< Ratio for CAD between correlator peak and average
+                                                 //!< (Default 0x32)
+    uint8_t cad_detect_min;                      //!< Minimum power of the correlation peak to be
+                                                 //!< considered as a positive CAD (Default 0x0A)
+    lr1110_radio_cad_exit_mode_t cad_exit_mode;  //!< Automated action on CAD completion
+    uint32_t                     cad_timeout;    //!< Value used to compute timeout
 } lr1110_radio_cad_params_t;
 
 /*!
  * \brief Status of GFSK received packet
  */
-typedef struct
+typedef struct lr1110_radio_pkt_status_gfsk_s
 {
-    int8_t rssi_sync_in_dbm;     //!< RSSI value latched on detection of the last
-                                 //!< received packet Sync Address
-    int8_t rssi_avg_in_dbm;      //!< RSSI averaged over the payload of the last
-                                 //!< received packet
-    uint8_t rx_length_in_bytes;  //!< Length of the last received packet [Bytes]
-    bool    is_addr_err;         //!< Address filtering status. Asserted if
-                                 //!< received packet address does not match node
-                                 //!< address nor broadcast address
-    bool is_crc_err;             //!< CRC status of the current packet (applicable
-                                 //!< only in RX, with CRC enabled)
-    bool is_len_err;             //!< Asserted when the length of last received packet
-                                 //!< is greater than the maximal length (applicable
-                                 //!< only in RX with variable length packet)
-    bool is_abort_err;           //!< Asserted when the current packet has been
-                                 //!< aborted (applicable in RX and TX)
-    bool is_received;            //!< Asserted when packet reception is done
-                                 //!< (applicable in RX)
-    bool is_sent;                //!< Asserted when packet transmission is done
-                                 //!< (applicable in TX)
-} lr1110_radio_packet_status_gfsk_t;
+    int8_t rssi_sync_in_dbm;  //!< RSSI value latched on detection of the last
+                              //!< received packet Sync Address
+    int8_t rssi_avg_in_dbm;   //!< RSSI averaged over the payload of the last
+                              //!< received packet
+    uint8_t rx_len_in_bytes;  //!< Length of the last received packet [Bytes]
+    bool    is_addr_err;      //!< Address filtering status. Asserted if
+                              //!< received packet address does not match node
+                              //!< address nor broadcast address
+    bool is_crc_err;          //!< CRC status of the current packet (applicable
+                              //!< only in RX, with CRC enabled)
+    bool is_len_err;          //!< Asserted when the length of last received packet
+                              //!< is greater than the maximal length (applicable
+                              //!< only in RX with variable length packet)
+    bool is_abort_err;        //!< Asserted when the current packet has been
+                              //!< aborted (applicable in RX and TX)
+    bool is_received;         //!< Asserted when packet reception is done
+                              //!< (applicable in RX)
+    bool is_sent;             //!< Asserted when packet transmission is done
+                              //!< (applicable in TX)
+} lr1110_radio_pkt_status_gfsk_t;
 
 /*!
  * \brief Status of received packet
  */
-typedef struct
+typedef struct lr1110_radio_pkt_status_lora_s
 {
     int8_t rssi_packet_in_dbm;         //!< Average RSSI over last received packet.
     int8_t snr_packet_in_db;           //!< SNR estimated on last received packet.
     int8_t signal_rssi_packet_in_dbm;  //!< RSSI of last packet latched after
-} lr1110_radio_packet_status_lora_t;
+} lr1110_radio_pkt_status_lora_t;
 
 /*!
  * \brief Length and offset of received packet
  */
-typedef struct
+typedef struct lr1110_radio_rx_buffer_status_s
 {
-    uint8_t rx_payload_length;        //!< Length of received packet [Bytes]
-    uint8_t rx_start_buffer_pointer;  //!< Offset in the reception buffer of
-                                      //!< first byte received [Bytes]
-} lr1110_radio_rxbuffer_status_t;
+    uint8_t pld_len_in_bytes;      //!< Length of received packet [Bytes]
+    uint8_t buffer_start_pointer;  //!< Offset in the reception buffer of
+                                   //!< first byte received [Bytes]
+} lr1110_radio_rx_buffer_status_t;
 
 /*!
  * \brief GFSK packet statistic structure
  */
-typedef struct
+typedef struct lr1110_radio_stats_gfsk_s
 {
-    uint16_t nb_packet_received;      //!< Total number of received packets
-    uint16_t nb_packet_error_crc;     //!< Total number of received packets
-                                      //!< with CRC error
-    uint16_t nb_packet_error_length;  //!< Total number of received packets
-                                      //!< with a length error
+    uint16_t nb_pkt_received;   //!< Total number of received packets
+    uint16_t nb_pkt_crc_error;  //!< Total number of received packets
+                                //!< with CRC error
+    uint16_t nb_pkt_len_error;  //!< Total number of received packets
+                                //!< with a length error
 } lr1110_radio_stats_gfsk_t;
 
 /*!
  * \brief LoRa packet statistic structure
  */
-typedef struct
+typedef struct lr1110_radio_stats_lora_s
 {
-    uint16_t nb_packet_received;      //!< Total number of received packets
-    uint16_t nb_packet_error_crc;     //!< Total number of received packets with
-                                      //!< CRC error
-    uint16_t nb_packet_error_header;  //!< Total number of packets with
-                                      //!< header error
-    uint16_t nb_packet_falsesync;     //!< Total number of false sync
+    uint16_t nb_pkt_received;      //!< Total number of received packets
+    uint16_t nb_pkt_crc_error;     //!< Total number of received packets with
+                                   //!< CRC error
+    uint16_t nb_pkt_header_error;  //!< Total number of packets with
+                                   //!< header error
+    uint16_t nb_packet_falsesync;  //!< Total number of false sync
 } lr1110_radio_stats_lora_t;
 
 /*!
  * \brief Modulation configuration for GFSK packet
  */
-typedef struct
+typedef struct lr1110_radio_mod_params_gfsk_s
 {
-    uint32_t                   bitrate;      //!< GFSK bitrate [bit/s]
-    lr1110_radio_pulse_shape_t pulse_shape;  //!< GFSK pulse shape
-    lr1110_radio_gfsk_rx_bw_t  bandwidth;    //!< GFSK bandwidth
-    uint32_t                   fdev;         //!< GFSK frequency deviation [Hz]
-} lr1110_radio_modulation_param_gfsk_t;
+    uint32_t                        br_in_bps;     //!< GFSK bitrate [bit/s]
+    lr1110_radio_gfsk_pulse_shape_t pulse_shape;   //!< GFSK pulse shape
+    lr1110_radio_gfsk_bw_t          bw_dsb_param;  //!< GFSK bandwidth
+    uint32_t                        fdev_in_hz;    //!< GFSK frequency deviation [Hz]
+} lr1110_radio_mod_params_gfsk_t;
 
 /*!
  * \brief Modulation configuration for LoRa packet
  */
-typedef struct
+typedef struct lr1110_radio_mod_params_lora_s
 {
-    lr1110_radio_lora_sf_t spreading_factor;  //!< LoRa spreading factor
-    lr1110_radio_lora_bw_t bandwidth;         //!< LoRa bandwidth
-    lr1110_radio_lora_cr_t coding_rate;       //!< LoRa coding rate
-    uint8_t                ppm_offset;        //!< LoRa ppm_offset
-} lr1110_radio_modulation_param_lora_t;
+    lr1110_radio_lora_sf_t sf;    //!< LoRa spreading factor
+    lr1110_radio_lora_bw_t bw;    //!< LoRa bandwidth
+    lr1110_radio_lora_cr_t cr;    //!< LoRa coding rate
+    uint8_t                ldro;  //!< LoRa ldro
+} lr1110_radio_mod_params_lora_t;
 
 /*!
  * \brief Packet parameter configuration for GFSK packets
  */
-typedef struct
+typedef struct lr1110_radio_pkt_params_gfsk_s
 {
-    uint16_t                                   preamble_length_tx_in_bit;  //!< GFSK Preamble length [bits]
-    lr1110_radio_gfsk_preamble_detect_length_t preamble_detect;            //!< GFSK Preamble detection configuration
-    uint8_t                                    sync_word_length_in_bit;    //!< GFSK Syncword length [bits]
-    lr1110_radio_gfsk_address_filtering_t      address_filtering;          //!< GFSK Address filtering configuration
-    lr1110_radio_gfsk_header_type_t            header_type;                //!< GFSK Header type configuration
-    uint8_t                                    payload_length_in_byte;     //!< GFSK Payload length [bytes]
-    lr1110_radio_gfsk_crc_type_t               crc_type;                   //!< GFSK CRC configuration
-    lr1110_radio_gfsk_dc_free_t                dc_free;                    //!< GFSK Whitening configuration
-} lr1110_radio_packet_param_gfsk_t;
+    uint16_t                              preamble_len_in_bits;   //!< GFSK Preamble length [bits]
+    lr1110_radio_gfsk_preamble_detector_t preamble_detector;      //!< GFSK Preamble detection configuration
+    uint8_t                               sync_word_len_in_bits;  //!< GFSK Syncword length [bits]
+    lr1110_radio_gfsk_address_filtering_t address_filtering;      //!< GFSK Address filtering/comparison configuration
+    lr1110_radio_gfsk_pkt_len_modes_t     header_type;            //!< GFSK Header type configuration
+    uint8_t                               pld_len_in_bytes;       //!< GFSK Payload length [bytes]
+    lr1110_radio_gfsk_crc_type_t          crc_type;               //!< GFSK CRC configuration
+    lr1110_radio_gfsk_dc_free_t           dc_free;                //!< GFSK Whitening configuration
+} lr1110_radio_pkt_params_gfsk_t;
 
 /*!
  * \brief Packet parameter configuration for LoRa packets
  */
-typedef struct
+typedef struct lr1110_radio_pkt_params_lora_s
 {
-    uint16_t                        preamble_length_in_symb;  //!< LoRa Preamble length [symbols]
-    lr1110_radio_lora_header_type_t header_type;              //!< LoRa Header type configuration
-    uint8_t                         payload_length_in_byte;   //!< LoRa Payload length [bytes]
-    lr1110_radio_lora_crc_t         crc;                      //!< LoRa CRC configuration
-    lr1110_radio_lora_iq_t          iq;                       //!< LoRa IQ configuration
-} lr1110_radio_packet_param_lora_t;
+    uint16_t                          preamble_len_in_symb;  //!< LoRa Preamble length [symbols]
+    lr1110_radio_lora_pkt_len_modes_t header_type;           //!< LoRa Header type configuration
+    uint8_t                           pld_len_in_bytes;      //!< LoRa Payload length [bytes]
+    lr1110_radio_lora_crc_t           crc;                   //!< LoRa CRC configuration
+    lr1110_radio_lora_iq_t            iq;                    //!< LoRa IQ configuration
+} lr1110_radio_pkt_params_lora_t;
 
 /*!
  * \brief Configuration of Power Amplifier
@@ -537,13 +536,13 @@ typedef struct
  * In order to use output power higher than 10dBm, regPaSupply must be set
  * to value REGPASUPPLY_VBAT.
  */
-typedef struct
+typedef struct lr1110_radio_pa_cfg_s
 {
     lr1110_radio_pa_selection_t        pa_sel;         //!< Power Amplifier selection
     lr1110_radio_pa_regulator_supply_t pa_reg_supply;  //!< Power Amplifier regulator
-    uint8_t                            pa_dutycycle;   //!< Power Amplifier duty cycle (Default 0x04)
+    uint8_t                            pa_duty_cycle;  //!< Power Amplifier duty cycle (Default 0x04)
     uint8_t                            pa_hp_sel;      //!< Number of slices for HPA (Default 0x07)
-} lr1110_radio_pa_config_t;
+} lr1110_radio_pa_cfg_t;
 
 /*
  * -----------------------------------------------------------------------------

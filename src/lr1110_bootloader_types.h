@@ -55,9 +55,9 @@ extern "C" {
  */
 
 /*!
- * \brief Length in bytes of the version frame
+ * \brief Length in byte of the LR1110 version blob
  */
-#define LR1110_BL_VERSION_LENGTH 0x02
+#define LR1110_BL_VERSION_LENGTH ( 4 )
 
 /*!
  * \brief Length in bytes of a hash value
@@ -77,10 +77,11 @@ extern "C" {
 typedef uint8_t lr1110_bootloader_hash_t[LR1110_BL_HASH_LENGTH];
 typedef uint8_t lr1110_bootloader_pin_t[LR1110_BL_PIN_LENGTH];
 
-typedef struct
+typedef struct lr1110_bootloader_version_s
 {
-    uint8_t version_hw;
-    uint8_t version_fw;
+    uint8_t  hw;
+    uint8_t  type;
+    uint16_t fw;
 } lr1110_bootloader_version_t;
 
 /*

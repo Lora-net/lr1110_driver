@@ -144,15 +144,18 @@ static void interpret_basic_complete_result_from_buffer( const uint8_t nb_result
 static void interpret_basic_mac_type_channel_result_from_buffer( const uint8_t nb_results, const uint8_t* buffer,
                                                                  lr1110_wifi_basic_mac_type_channel_result_t* result );
 
-static void fetch_and_aggregate_all_results( const void* radio, const uint8_t index_result_start,
-                                             const uint8_t nb_results, const uint8_t nb_results_per_chunk_max,
-                                             const lr1110_wifi_result_format_t result_format_code,
-                                             uint8_t* result_buffer, lr1110_wifi_result_interface_t result_structures );
+static lr1110_status_t fetch_and_aggregate_all_results( const void* context, const uint8_t index_result_start,
+                                                        const uint8_t                     nb_results,
+                                                        const uint8_t                     nb_results_per_chunk_max,
+                                                        const lr1110_wifi_result_format_t result_format_code,
+                                                        uint8_t*                          result_buffer,
+                                                        lr1110_wifi_result_interface_t    result_structures );
 
 static uint8_t lr1110_wifi_get_result_size_from_format( const lr1110_wifi_result_format_t format );
 
-static void lr1110_wifi_read_results_helper( const void* radio, const uint8_t start_index, const uint8_t n_elem,
-                                             uint8_t* buffer, const lr1110_wifi_result_format_t result_format );
+static lr1110_hal_status_t lr1110_wifi_read_results_helper( const void* context, const uint8_t start_index,
+                                                            const uint8_t n_elem, uint8_t* buffer,
+                                                            const lr1110_wifi_result_format_t result_format );
 
 static void lr1110_wifi_read_mac_address_from_buffer( const uint8_t* buffer, const uint16_t index_in_buffer,
                                                       lr1110_wifi_mac_address_t mac_address );
@@ -164,10 +167,10 @@ static uint8_t lr1110_wifi_get_format_code( const lr1110_wifi_result_format_t fo
  * --- PUBLIC FUNCTIONS DEFINITION ---------------------------------------------
  */
 
-void lr1110_wifi_scan( const void* radio, const lr1110_wifi_signal_type_scan_t signal_type,
-                       const lr1110_wifi_channel_mask_t channels, const lr1110_wifi_mode_t scan_mode,
-                       const uint8_t max_results, const uint8_t nb_scan_per_channel, const uint16_t timeout_in_ms,
-                       const bool abort_on_timeout )
+lr1110_status_t lr1110_wifi_scan( const void* context, const lr1110_wifi_signal_type_scan_t signal_type,
+                                  const lr1110_wifi_channel_mask_t channels, const lr1110_wifi_mode_t scan_mode,
+                                  const uint8_t max_results, const uint8_t nb_scan_per_channel,
+                                  const uint16_t timeout_in_ms, const bool abort_on_timeout )
 {
     const uint8_t cbuffer[LR1110_WIFI_SCAN_CMD_LENGTH] = {
         ( uint8_t )( LR1110_WIFI_SCAN_OC >> 8 ),
@@ -182,12 +185,12 @@ void lr1110_wifi_scan( const void* radio, const lr1110_wifi_signal_type_scan_t s
         ( uint8_t ) timeout_in_ms,
         ( uint8_t ) abort_on_timeout,
     };
-    lr1110_hal_write( radio, cbuffer, LR1110_WIFI_SCAN_CMD_LENGTH, 0, 0 );
+    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_WIFI_SCAN_CMD_LENGTH, 0, 0 );
 }
 
-void lr1110_wifi_search_country_code( const void* radio, const lr1110_wifi_channel_mask_t channels_mask,
-                                      const uint8_t nb_max_results, const uint8_t nb_scan_per_channel,
-                                      const uint16_t timeout_in_ms, const bool abort_on_timeout )
+lr1110_status_t lr1110_wifi_search_country_code( const void* context, const lr1110_wifi_channel_mask_t channels_mask,
+                                                 const uint8_t nb_max_results, const uint8_t nb_scan_per_channel,
+                                                 const uint16_t timeout_in_ms, const bool abort_on_timeout )
 {
     const uint8_t cbuffer[LR1110_WIFI_SEARCH_COUNTRY_CODE_CMD_LENGTH] = {
         ( uint8_t )( LR1110_WIFI_SEARCH_COUNTRY_CODE_OC >> 8 ),
@@ -200,31 +203,34 @@ void lr1110_wifi_search_country_code( const void* radio, const lr1110_wifi_chann
         ( uint8_t ) timeout_in_ms,
         ( uint8_t )( abort_on_timeout ? 1 : 0 )
     };
-    lr1110_hal_write( radio, cbuffer, LR1110_WIFI_SEARCH_COUNTRY_CODE_CMD_LENGTH, 0, 0 );
+    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_WIFI_SEARCH_COUNTRY_CODE_CMD_LENGTH, 0, 0 );
 }
 
-void lr1110_wifi_configure_hardware_debarker( const void* radio, const bool enable_hardware_debarker )
+lr1110_status_t lr1110_wifi_cfg_hardware_debarker( const void* context, const bool enable_hardware_debarker )
 {
     const uint8_t cbuffer[LR1110_WIFI_CONFIGURE_HARDWARE_DEBARKER_CMD_LENGTH] = {
         ( uint8_t )( LR1110_WIFI_CONFIGURE_HARDWARE_DEBARKER_OC >> 8 ),
         ( uint8_t )( LR1110_WIFI_CONFIGURE_HARDWARE_DEBARKER_OC & 0x00FF ),
         ( uint8_t )( enable_hardware_debarker ? 1 : 0 )
     };
-    lr1110_hal_write( radio, cbuffer, LR1110_WIFI_CONFIGURE_HARDWARE_DEBARKER_CMD_LENGTH, 0, 0 );
+    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_WIFI_CONFIGURE_HARDWARE_DEBARKER_CMD_LENGTH,
+                                                 0, 0 );
 }
 
-void lr1110_wifi_get_nb_results( const void* radio, uint8_t* nb_results )
+lr1110_status_t lr1110_wifi_get_nb_results( const void* context, uint8_t* nb_results )
 {
     const uint8_t cbuffer[LR1110_WIFI_GET_RESULT_SIZE_CMD_LENGTH] = {
         ( uint8_t )( LR1110_WIFI_GET_RESULT_SIZE_OC >> 8 ),
         ( uint8_t )( LR1110_WIFI_GET_RESULT_SIZE_OC & 0x00FF ),
     };
 
-    lr1110_hal_read( radio, cbuffer, LR1110_WIFI_GET_RESULT_SIZE_CMD_LENGTH, nb_results, sizeof( *nb_results ) );
+    return ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_WIFI_GET_RESULT_SIZE_CMD_LENGTH, nb_results,
+                                                sizeof( *nb_results ) );
 }
 
-void lr1110_wifi_read_basic_complete_results( const void* radio, const uint8_t start_result_index,
-                                              const uint8_t nb_results, lr1110_wifi_basic_complete_result_t* results )
+lr1110_status_t lr1110_wifi_read_basic_complete_results( const void* context, const uint8_t start_result_index,
+                                                         const uint8_t                        nb_results,
+                                                         lr1110_wifi_basic_complete_result_t* results )
 {
     uint8_t       result_buffer[LR1110_WIFI_MAX_SIZE_PER_SPI( LR1110_WIFI_BASIC_COMPLETE_RESULT_SIZE )] = { 0 };
     const uint8_t nb_results_per_chunk_max =
@@ -233,13 +239,13 @@ void lr1110_wifi_read_basic_complete_results( const void* radio, const uint8_t s
     lr1110_wifi_result_interface_t result_interface = { 0 };
     result_interface.basic_complete                 = results;
 
-    fetch_and_aggregate_all_results( radio, start_result_index, nb_results, nb_results_per_chunk_max,
-                                     LR1110_WIFI_RESULT_FORMAT_BASIC_COMPLETE, result_buffer, result_interface );
+    return fetch_and_aggregate_all_results( context, start_result_index, nb_results, nb_results_per_chunk_max,
+                                            LR1110_WIFI_RESULT_FORMAT_BASIC_COMPLETE, result_buffer, result_interface );
 }
 
-void lr1110_wifi_read_basic_mac_type_channel_results( const void* radio, const uint8_t start_result_index,
-                                                      const uint8_t                                nb_results,
-                                                      lr1110_wifi_basic_mac_type_channel_result_t* results )
+lr1110_status_t lr1110_wifi_read_basic_mac_type_channel_results( const void* context, const uint8_t start_result_index,
+                                                                 const uint8_t nb_results,
+                                                                 lr1110_wifi_basic_mac_type_channel_result_t* results )
 {
     uint8_t       result_buffer[LR1110_WIFI_MAX_SIZE_PER_SPI( LR1110_WIFI_BASIC_MAC_TYPE_CHANNEL_RESULT_SIZE )] = { 0 };
     const uint8_t nb_results_per_chunk_max =
@@ -248,40 +254,45 @@ void lr1110_wifi_read_basic_mac_type_channel_results( const void* radio, const u
     lr1110_wifi_result_interface_t result_interface = { 0 };
     result_interface.basic_mac_type_channel         = results;
 
-    fetch_and_aggregate_all_results( radio, start_result_index, nb_results, nb_results_per_chunk_max,
-                                     LR1110_WIFI_RESULT_FORMAT_BASIC_MAC_TYPE_CHANNEL, result_buffer,
-                                     result_interface );
+    return fetch_and_aggregate_all_results( context, start_result_index, nb_results, nb_results_per_chunk_max,
+                                            LR1110_WIFI_RESULT_FORMAT_BASIC_MAC_TYPE_CHANNEL, result_buffer,
+                                            result_interface );
 }
 
-void lr1110_wifi_reset_cumulative_timing( const void* radio )
+lr1110_status_t lr1110_wifi_reset_cumulative_timing( const void* context )
 {
     const uint8_t cbuffer[LR1110_WIFI_RESET_CUMUL_TIMING_CMD_LENGTH] = {
         ( uint8_t )( LR1110_WIFI_RESET_CUMUL_TIMING_OC >> 8 ), ( uint8_t )( LR1110_WIFI_RESET_CUMUL_TIMING_OC & 0x00FF )
     };
-    lr1110_hal_write( radio, cbuffer, LR1110_WIFI_RESET_CUMUL_TIMING_CMD_LENGTH, 0, 0 );
+    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_WIFI_RESET_CUMUL_TIMING_CMD_LENGTH, 0, 0 );
 }
 
-void lr1110_wifi_read_cumulative_timing( const void* radio, lr1110_wifi_cumulative_timings_t* timing )
+lr1110_status_t lr1110_wifi_read_cumulative_timing( const void* context, lr1110_wifi_cumulative_timings_t* timing )
 {
     const uint8_t cbuffer[LR1110_WIFI_READ_CUMUL_TIMING_CMD_LENGTH] = {
         ( uint8_t )( LR1110_WIFI_READ_CUMUL_TIMING_OC >> 8 ),
         ( uint8_t )( LR1110_WIFI_READ_CUMUL_TIMING_OC & 0x00FF ),
     };
     uint8_t buffer_out[LR1110_WIFI_ALL_CUMULATIVE_TIMING_SIZE] = { 0 };
-    lr1110_hal_read( radio, cbuffer, LR1110_WIFI_READ_CUMUL_TIMING_CMD_LENGTH, buffer_out,
-                     LR1110_WIFI_ALL_CUMULATIVE_TIMING_SIZE );
 
-    timing->rx_detection_us =
-        ( buffer_out[0] << 24 ) + ( buffer_out[1] << 16 ) + ( buffer_out[2] << 8 ) + buffer_out[3];
-    timing->rx_correlation_us =
-        ( buffer_out[4] << 24 ) + ( buffer_out[5] << 16 ) + ( buffer_out[6] << 8 ) + buffer_out[7];
-    timing->rx_capture_us =
-        ( buffer_out[8] << 24 ) + ( buffer_out[9] << 16 ) + ( buffer_out[10] << 8 ) + buffer_out[11];
-    timing->demodulation_us =
-        ( buffer_out[12] << 24 ) + ( buffer_out[13] << 16 ) + ( buffer_out[14] << 8 ) + buffer_out[15];
+    const lr1110_hal_status_t hal_status = lr1110_hal_read( context, cbuffer, LR1110_WIFI_READ_CUMUL_TIMING_CMD_LENGTH,
+                                                            buffer_out, LR1110_WIFI_ALL_CUMULATIVE_TIMING_SIZE );
+
+    if( hal_status == LR1110_HAL_STATUS_OK )
+    {
+        timing->rx_detection_us =
+            ( buffer_out[0] << 24 ) + ( buffer_out[1] << 16 ) + ( buffer_out[2] << 8 ) + buffer_out[3];
+        timing->rx_correlation_us =
+            ( buffer_out[4] << 24 ) + ( buffer_out[5] << 16 ) + ( buffer_out[6] << 8 ) + buffer_out[7];
+        timing->rx_capture_us =
+            ( buffer_out[8] << 24 ) + ( buffer_out[9] << 16 ) + ( buffer_out[10] << 8 ) + buffer_out[11];
+        timing->demodulation_us =
+            ( buffer_out[12] << 24 ) + ( buffer_out[13] << 16 ) + ( buffer_out[14] << 8 ) + buffer_out[15];
+    }
+    return ( lr1110_status_t ) hal_status;
 }
 
-void lr1110_wifi_get_nb_country_code_results( const void* radio, uint8_t* country_result_size )
+lr1110_status_t lr1110_wifi_get_nb_country_code_results( const void* context, uint8_t* country_result_size )
 {
     const uint8_t cbuffer[LR1110_WIFI_GET_SIZE_COUNTRY_RESULT_CMD_LENGTH] = {
         ( uint8_t )( LR1110_WIFI_GET_SIZE_COUNTRY_RESULT_OC >> 8 ),
@@ -289,14 +300,19 @@ void lr1110_wifi_get_nb_country_code_results( const void* radio, uint8_t* countr
     };
     uint8_t rbuffer[LR1110_WIFI_COUNTRY_RESULT_LENGTH_SIZE] = { 0 };
 
-    lr1110_hal_read( radio, cbuffer, LR1110_WIFI_GET_SIZE_COUNTRY_RESULT_CMD_LENGTH, rbuffer,
-                     LR1110_WIFI_COUNTRY_RESULT_LENGTH_SIZE );
-    ( *country_result_size ) = rbuffer[0];
+    const lr1110_hal_status_t hal_status =
+        lr1110_hal_read( context, cbuffer, LR1110_WIFI_GET_SIZE_COUNTRY_RESULT_CMD_LENGTH, rbuffer,
+                         LR1110_WIFI_COUNTRY_RESULT_LENGTH_SIZE );
+    if( hal_status == LR1110_HAL_STATUS_OK )
+    {
+        ( *country_result_size ) = rbuffer[0];
+    }
+    return ( lr1110_status_t ) hal_status;
 }
 
-void lr1110_wifi_read_country_code_results( const void* radio, const uint8_t start_result_index,
-                                            const uint8_t               nb_country_results,
-                                            lr1110_wifi_country_code_t* country_code_results )
+lr1110_status_t lr1110_wifi_read_country_code_results( const void* context, const uint8_t start_result_index,
+                                                       const uint8_t               nb_country_results,
+                                                       lr1110_wifi_country_code_t* country_code_results )
 {
     const uint8_t cbuffer[LR1110_WIFI_READ_COUNTRY_CODE_CMD_LENGTH] = {
         ( uint8_t )( LR1110_WIFI_READ_COUNTRY_CODE_OC >> 8 ), ( uint8_t )( LR1110_WIFI_READ_COUNTRY_CODE_OC & 0x00FF ),
@@ -306,28 +322,32 @@ void lr1110_wifi_read_country_code_results( const void* radio, const uint8_t sta
     const uint16_t country_code_result_size_to_read =
         nb_country_results * LR1110_WIFI_SCAN_SINGLE_COUNTRY_CODE_RESULT_SIZE;
 
-    lr1110_hal_read( radio, cbuffer, LR1110_WIFI_READ_COUNTRY_CODE_CMD_LENGTH, rbuffer,
-                     country_code_result_size_to_read );
+    const lr1110_hal_status_t hal_status = lr1110_hal_read( context, cbuffer, LR1110_WIFI_READ_COUNTRY_CODE_CMD_LENGTH,
+                                                            rbuffer, country_code_result_size_to_read );
 
-    for( uint8_t result_index = 0; result_index < nb_country_results; result_index++ )
+    if( hal_status == LR1110_HAL_STATUS_OK )
     {
-        const uint8_t               local_index = result_index * LR1110_WIFI_SCAN_SINGLE_COUNTRY_CODE_RESULT_SIZE;
-        lr1110_wifi_country_code_t* local_country_code_result = &country_code_results[result_index];
-
-        local_country_code_result->country_code[0]   = rbuffer[local_index + 0];
-        local_country_code_result->country_code[1]   = rbuffer[local_index + 1];
-        local_country_code_result->io_regulation     = rbuffer[local_index + 2];
-        local_country_code_result->channel_info_byte = rbuffer[local_index + 3];
-
-        for( uint8_t field_mac_index = 0; field_mac_index < LR1110_WIFI_MAC_ADDRESS_LENGTH; field_mac_index++ )
+        for( uint8_t result_index = 0; result_index < nb_country_results; result_index++ )
         {
-            local_country_code_result->mac_address[field_mac_index] =
-                rbuffer[local_index + ( LR1110_WIFI_MAC_ADDRESS_LENGTH - field_mac_index - 1 ) + 4];
+            const uint8_t               local_index = result_index * LR1110_WIFI_SCAN_SINGLE_COUNTRY_CODE_RESULT_SIZE;
+            lr1110_wifi_country_code_t* local_country_code_result = &country_code_results[result_index];
+
+            local_country_code_result->country_code[0]   = rbuffer[local_index + 0];
+            local_country_code_result->country_code[1]   = rbuffer[local_index + 1];
+            local_country_code_result->io_regulation     = rbuffer[local_index + 2];
+            local_country_code_result->channel_info_byte = rbuffer[local_index + 3];
+
+            for( uint8_t field_mac_index = 0; field_mac_index < LR1110_WIFI_MAC_ADDRESS_LENGTH; field_mac_index++ )
+            {
+                local_country_code_result->mac_address[field_mac_index] =
+                    rbuffer[local_index + ( LR1110_WIFI_MAC_ADDRESS_LENGTH - field_mac_index - 1 ) + 4];
+            }
         }
     }
+    return ( lr1110_status_t ) hal_status;
 }
 
-void lr1110_wifi_config_timestamp_ap_phone( const void* radio, uint32_t timestamp_in_s )
+lr1110_status_t lr1110_wifi_cfg_timestamp_ap_phone( const void* context, uint32_t timestamp_in_s )
 {
     uint8_t cbuffer[LR1110_WIFI_CONFIG_TIMESTAMP_AP_PHONE_CMD_LENGTH];
 
@@ -339,19 +359,25 @@ void lr1110_wifi_config_timestamp_ap_phone( const void* radio, uint32_t timestam
     cbuffer[4] = ( uint8_t )( timestamp_in_s >> 8 );
     cbuffer[5] = ( uint8_t )( timestamp_in_s >> 0 );
 
-    lr1110_hal_write( radio, cbuffer, LR1110_WIFI_CONFIG_TIMESTAMP_AP_PHONE_CMD_LENGTH, 0, 0 );
+    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_WIFI_CONFIG_TIMESTAMP_AP_PHONE_CMD_LENGTH, 0,
+                                                 0 );
 }
 
-void lr1110_wifi_read_version( const void* radio, lr1110_wifi_version_t* wifi_version )
+lr1110_status_t lr1110_wifi_read_version( const void* context, lr1110_wifi_version_t* wifi_version )
 {
     const uint8_t cbuffer[LR1110_WIFI_GET_VERSION_CMD_LENGTH] = {
         ( uint8_t )( LR1110_WIFI_GET_VERSION_OC >> 8 ),
         ( uint8_t )( LR1110_WIFI_GET_VERSION_OC & 0x00FF ),
     };
-    uint8_t rbuffer[LR1110_WIFI_VERSION_SIZE] = { 0 };
-    lr1110_hal_read( radio, cbuffer, LR1110_WIFI_GET_VERSION_CMD_LENGTH, rbuffer, LR1110_WIFI_VERSION_SIZE );
-    wifi_version->major = rbuffer[0];
-    wifi_version->minor = rbuffer[1];
+    uint8_t                   rbuffer[LR1110_WIFI_VERSION_SIZE] = { 0 };
+    const lr1110_hal_status_t hal_status =
+        lr1110_hal_read( context, cbuffer, LR1110_WIFI_GET_VERSION_CMD_LENGTH, rbuffer, LR1110_WIFI_VERSION_SIZE );
+    if( hal_status == LR1110_HAL_STATUS_OK )
+    {
+        wifi_version->major = rbuffer[0];
+        wifi_version->minor = rbuffer[1];
+    }
+    return ( lr1110_status_t ) hal_status;
 }
 
 uint8_t lr1110_wifi_n_results_max_per_chunk( void )
@@ -432,8 +458,9 @@ lr1110_wifi_signal_type_result_t lr1110_extract_signal_type_from_data_rate_info(
  * --- PRIVATE FUNCTIONS DEFINITION --------------------------------------------
  */
 
-static void lr1110_wifi_read_results_helper( const void* radio, const uint8_t start_index, const uint8_t n_elem,
-                                             uint8_t* buffer, const lr1110_wifi_result_format_t result_format )
+static lr1110_hal_status_t lr1110_wifi_read_results_helper( const void* context, const uint8_t start_index,
+                                                            const uint8_t n_elem, uint8_t* buffer,
+                                                            const lr1110_wifi_result_format_t result_format )
 {
     const uint8_t  size_single_elem   = lr1110_wifi_get_result_size_from_format( result_format );
     const uint8_t  result_format_code = lr1110_wifi_get_format_code( result_format );
@@ -441,7 +468,7 @@ static void lr1110_wifi_read_results_helper( const void* radio, const uint8_t st
                                                                   ( uint8_t )( LR1110_WIFI_READ_RESULT_OC & 0x00FF ),
                                                                   start_index, n_elem, result_format_code };
     const uint16_t size_total                                  = n_elem * size_single_elem;
-    lr1110_hal_read( radio, cbuffer, LR1110_WIFI_READ_RESULT_CMD_LENGTH, buffer, size_total );
+    return lr1110_hal_read( context, cbuffer, LR1110_WIFI_READ_RESULT_CMD_LENGTH, buffer, size_total );
 }
 
 static uint16_t uint16_from_array( const uint8_t* array, const uint16_t index )
@@ -471,11 +498,13 @@ static uint8_t lr1110_wifi_get_format_code( const lr1110_wifi_result_format_t fo
     uint8_t format_code = 0x00;
     switch( format )
     {
-    case LR1110_WIFI_RESULT_FORMAT_BASIC_COMPLETE: {
+    case LR1110_WIFI_RESULT_FORMAT_BASIC_COMPLETE:
+    {
         format_code = 0x01;
         break;
     }
-    case LR1110_WIFI_RESULT_FORMAT_BASIC_MAC_TYPE_CHANNEL: {
+    case LR1110_WIFI_RESULT_FORMAT_BASIC_MAC_TYPE_CHANNEL:
+    {
         format_code = 0x04;
         break;
     }
@@ -488,11 +517,13 @@ static uint8_t lr1110_wifi_get_result_size_from_format( const lr1110_wifi_result
     uint8_t result_size = 0;
     switch( format )
     {
-    case LR1110_WIFI_RESULT_FORMAT_BASIC_COMPLETE: {
+    case LR1110_WIFI_RESULT_FORMAT_BASIC_COMPLETE:
+    {
         result_size = LR1110_WIFI_BASIC_COMPLETE_RESULT_SIZE;
         break;
     }
-    case LR1110_WIFI_RESULT_FORMAT_BASIC_MAC_TYPE_CHANNEL: {
+    case LR1110_WIFI_RESULT_FORMAT_BASIC_MAC_TYPE_CHANNEL:
+    {
         result_size = LR1110_WIFI_BASIC_MAC_TYPE_CHANNEL_RESULT_SIZE;
         break;
     }
@@ -500,25 +531,34 @@ static uint8_t lr1110_wifi_get_result_size_from_format( const lr1110_wifi_result
     return result_size;
 }
 
-static void fetch_and_aggregate_all_results( const void* radio, const uint8_t index_result_start,
-                                             const uint8_t nb_results, const uint8_t nb_results_per_chunk_max,
-                                             const lr1110_wifi_result_format_t result_format_code,
-                                             uint8_t* result_buffer, lr1110_wifi_result_interface_t result_structures )
+static lr1110_status_t fetch_and_aggregate_all_results( const void* context, const uint8_t index_result_start,
+                                                        const uint8_t                     nb_results,
+                                                        const uint8_t                     nb_results_per_chunk_max,
+                                                        const lr1110_wifi_result_format_t result_format_code,
+                                                        uint8_t*                          result_buffer,
+                                                        lr1110_wifi_result_interface_t    result_structures )
 {
     uint8_t index_to_read     = index_result_start;
     uint8_t remaining_results = nb_results;
 
+    lr1110_hal_status_t hal_status = LR1110_HAL_STATUS_OK;
     while( remaining_results > 0 )
     {
         uint8_t results_to_read = MIN( remaining_results, nb_results_per_chunk_max );
 
-        lr1110_wifi_read_results_helper( radio, index_to_read, results_to_read, result_buffer, result_format_code );
+        lr1110_hal_status_t local_hal_status = lr1110_wifi_read_results_helper( context, index_to_read, results_to_read,
+                                                                                result_buffer, result_format_code );
+        if( local_hal_status != LR1110_HAL_STATUS_OK )
+        {
+            return ( lr1110_status_t ) local_hal_status;
+        }
 
         generic_results_interpreter( results_to_read, result_buffer, result_structures, result_format_code );
 
         index_to_read += results_to_read;
         remaining_results -= results_to_read;
     }
+    return ( lr1110_status_t ) hal_status;
 }
 
 static void generic_results_interpreter( const uint8_t n_result_to_parse, const uint8_t* buffer,
@@ -527,12 +567,14 @@ static void generic_results_interpreter( const uint8_t n_result_to_parse, const 
 {
     switch( format_code )
     {
-    case LR1110_WIFI_RESULT_FORMAT_BASIC_COMPLETE: {
+    case LR1110_WIFI_RESULT_FORMAT_BASIC_COMPLETE:
+    {
         interpret_basic_complete_result_from_buffer( n_result_to_parse, buffer, result_interface.basic_complete );
         break;
     }
 
-    case LR1110_WIFI_RESULT_FORMAT_BASIC_MAC_TYPE_CHANNEL: {
+    case LR1110_WIFI_RESULT_FORMAT_BASIC_MAC_TYPE_CHANNEL:
+    {
         interpret_basic_mac_type_channel_result_from_buffer( n_result_to_parse, buffer,
                                                              result_interface.basic_mac_type_channel );
         break;

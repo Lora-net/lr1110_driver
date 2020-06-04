@@ -38,6 +38,7 @@
  */
 
 #include "lr1110_bootloader_types.h"
+#include "lr1110_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -66,86 +67,92 @@ extern "C" {
 /*!
  * \brief Return the status register
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] status Pointer to a structure holding the status register
  */
-void lr1110_bootloader_get_status( const void* radio );
+void lr1110_bootloader_get_status( const void* context );
 
 /*!
  * \brief Return the version of the system (hardware and software)
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] version Pointer to the structure holding the system version
+ *
+ * \returns Operation status
  */
-void lr1110_bootloader_get_version( const void* radio, lr1110_bootloader_version_t* version );
+lr1110_status_t lr1110_bootloader_get_version( const void* context, lr1110_bootloader_version_t* version );
 
 /*!
  * \brief Erase the whole flash memory of the chip
  *
- * This function shall be called before any attempt to write a new firmware in
- * flash memory
+ * This function shall be called before any attempt to write a new firmware in flash memory
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
+ *
+ * \returns Operation status
  */
-void lr1110_bootloader_erase_flash( const void* radio );
+lr1110_status_t lr1110_bootloader_erase_flash( const void* context );
 
 /*!
  * \brief Erase the specified page in the flash memory
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] page_number The index of the page to erase
+ *
+ * \returns Operation status
  */
-void lr1110_bootloader_erase_page( const void* radio, const uint8_t page_number );
+lr1110_status_t lr1110_bootloader_erase_page( const void* context, const uint8_t page_number );
 
 /*!
  * \brief Write data in program flash memory of the chip
  *
  * This function shall be used when updating the flash content of the LR1110.
- * The flash payload to transfer shall be represented as an array of words (ie 4
- * bytes values).
+ * The flash payload to transfer shall be represented as an array of words (ie 4 bytes values).
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] offset The offset from start register of flash
  *
- * \param [in] buffer A pointer to the buffer holding the content of
- * flash to transfert. Its size in words must be at least length
+ * \param [in] buffer A pointer to the buffer holding the content of flash to transfert. Its size in words must be at
+ * least length
  *
  * \param [in] length Number of words (i.e. 4 bytes) in the buffer to transfer
+ *
+ * \returns Operation status
  */
-void lr1110_bootloader_write_flash( const void* radio, const uint32_t offset, const uint32_t* buffer,
-                                    const uint8_t length );
+lr1110_status_t lr1110_bootloader_write_flash( const void* context, const uint32_t offset, const uint32_t* buffer,
+                                               const uint8_t length );
 
 /*!
  * \brief Write data in program flash memory of the chip
  *
  * This function shall be used when updating the flash content of the LR1110.
- * The flash payload to transfer shall be represented as an array of words (ie 4
- * bytes values).
+ * The flash payload to transfer shall be represented as an array of words (i.e. 4 bytes values).
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] offset The offset from start register of flash
  *
- * \param [in] buffer A pointer to the buffer holding the content of
- * flash to transfert. Its size in words must be at least length
+ * \param [in] buffer A pointer to the buffer holding the content of flash to transfert. Its size in words must be at
+ * least length
  *
  * \param [in] length Number of words (i.e. 4 bytes) in the buffer to transfer
+ *
+ * \returns Operation status
  */
-void lr1110_bootloader_write_flash_full( const void* radio, const uint32_t offset, const uint32_t* buffer,
-                                         const uint32_t length );
+lr1110_status_t lr1110_bootloader_write_flash_full( const void* context, const uint32_t offset, const uint32_t* buffer,
+                                                    const uint32_t length );
 
 /*!
  * \brief Write encrypted data in program flash memory of the chip
  *
  * This function shall be used when updating the encrypted flash content of the LR1110.
- * The encrypted flash payload to transfer shall be represented as an array of words (ie 4
- * bytes values).
+ * The encrypted flash payload to transfer shall be represented as an array of words (i.e. 4 bytes values).
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] offset The offset from start register of flash
  *
@@ -153,18 +160,19 @@ void lr1110_bootloader_write_flash_full( const void* radio, const uint32_t offse
  * flash to transfert. Its size in words must be at least length
  *
  * \param [in] length Number of words (i.e. 4 bytes) in the buffer to transfer
+ *
+ * \returns Operation status
  */
-void lr1110_bootloader_write_flash_encrypted( const void* radio, const uint32_t offset, const uint32_t* buffer,
-                                              const uint8_t length );
+lr1110_status_t lr1110_bootloader_write_flash_encrypted( const void* context, const uint32_t offset,
+                                                         const uint32_t* buffer, const uint8_t length );
 
 /*!
  * \brief Write encrypted data in program flash memory of the chip
  *
  * This function shall be used when updating the encrypted flash content of the LR1110.
- * The encrypted flash payload to transfer shall be represented as an array of words (ie 4
- * bytes values).
+ * The encrypted flash payload to transfer shall be represented as an array of words (ie 4 * bytes values).
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] offset The offset from start register of flash
  *
@@ -172,46 +180,52 @@ void lr1110_bootloader_write_flash_encrypted( const void* radio, const uint32_t 
  * flash to transfert. Its size in words must be at least length
  *
  * \param [in] length Number of words (i.e. 4 bytes) in the buffer to transfer
+ *
+ * \returns Operation status
  */
-void lr1110_bootloader_write_flash_encrypted_full( const void* radio, const uint32_t offset, const uint32_t* buffer,
-                                                   const uint32_t length );
+lr1110_status_t lr1110_bootloader_write_flash_encrypted_full( const void* context, const uint32_t offset,
+                                                              const uint32_t* buffer, const uint32_t length );
 
 /*!
  * \brief Get calculated hash of flash content.
  *
  * This method should be used to get the hash of flash content.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] hash Pointer to the hash array to be populated with hash value
+ *
+ * \returns Operation status
  */
-void lr1110_bootloader_get_hash( const void* radio, lr1110_bootloader_hash_t hash );
+lr1110_status_t lr1110_bootloader_get_hash( const void* context, lr1110_bootloader_hash_t hash );
 
 /*!
  * \brief Software reset of the chip.
  *
  * This method should be used to reboot the chip in a specified mode.
- * Rebooting in flash mode presumes that the content in flash memory is not
- * corrupted (i.e. the integrity check performed by the bootloader before
- * executing the first instruction in flash is OK).
+ * Rebooting in flash mode presumes that the content in flash memory is not corrupted (i.e. the integrity check
+ * performed by the bootloader before executing the first instruction in flash is OK).
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
- * \param [in] stay_in_bootloader Selector to stay in bootloader or execute
- * flash code after reboot. If true, the bootloader will not execute the flash
- * code but activate SPI interface to allow firmware upgrade
+ * \param [in] stay_in_bootloader Selector to stay in bootloader or execute flash code after reboot. If true, the
+ * bootloader will not execute the flash code but activate SPI interface to allow firmware upgrade
+ *
+ * \returns Operation status
  */
-void lr1110_bootloader_reboot( const void* radio, const bool stay_in_bootloader );
+lr1110_status_t lr1110_bootloader_reboot( const void* context, const bool stay_in_bootloader );
 
 /*!
  * \brief Returns the 4-byte PIN which can be used to register a device on cloud
  * services.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] pin Pointer to the array to be populated with the PIN
+ *
+ * \returns Operation status
  */
-void lr1110_bootloader_read_pin( const void* radio, lr1110_bootloader_pin_t pin );
+lr1110_status_t lr1110_bootloader_read_pin( const void* context, lr1110_bootloader_pin_t pin );
 
 #ifdef __cplusplus
 }

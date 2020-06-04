@@ -34,6 +34,8 @@
  * --- DEPENDENCIES ------------------------------------------------------------
  */
 
+#include <stdlib.h>
+
 #include "lr1110_system.h"
 #include "lr1110_hal.h"
 
@@ -122,82 +124,125 @@ enum
  * --- PUBLIC FUNCTIONS DEFINITION ---------------------------------------------
  */
 
-void lr1110_system_reset( const void* radio )
+lr1110_status_t lr1110_system_reset( const void* context )
 {
-    lr1110_hal_reset( radio );
+    return ( lr1110_status_t ) lr1110_hal_reset( context );
 }
 
-void lr1110_system_get_status( const void* radio, lr1110_system_stat1_t* stat1, lr1110_system_stat2_t* stat2,
-                               uint32_t* irq_status )
+lr1110_status_t lr1110_system_get_status( const void* context, lr1110_system_stat1_t* stat1,
+                                          lr1110_system_stat2_t* stat2, lr1110_system_irq_mask_t* irq_status )
 {
-    uint8_t cbuffer[LR1110_SYSTEM_GET_STATUS_CMD_LENGTH] = { 0x00 };
+    uint8_t         cbuffer[LR1110_SYSTEM_GET_STATUS_CMD_LENGTH] = { 0x00 };
+    lr1110_status_t status                                       = LR1110_STATUS_ERROR;
 
     cbuffer[0] = ( uint8_t )( LR1110_SYSTEM_GET_STATUS_OC >> 8 );
     cbuffer[1] = ( uint8_t )( LR1110_SYSTEM_GET_STATUS_OC >> 0 );
 
-    lr1110_hal_write_read( radio, cbuffer, cbuffer, LR1110_SYSTEM_GET_STATUS_CMD_LENGTH );
+    status =
+        ( lr1110_status_t ) lr1110_hal_write_read( context, cbuffer, cbuffer, LR1110_SYSTEM_GET_STATUS_CMD_LENGTH );
 
-    stat1->is_interrupt_active = ( ( cbuffer[0] & 0x01 ) != 0 ) ? true : false;
-    stat1->command_status      = ( lr1110_system_command_status_t )( cbuffer[0] >> 1 );
+    if( status == LR1110_STATUS_OK )
+    {
+        stat1->is_interrupt_active = ( ( cbuffer[0] & 0x01 ) != 0 ) ? true : false;
+        stat1->command_status      = ( lr1110_system_command_status_t )( cbuffer[0] >> 1 );
 
-    stat2->is_running_from_flash = ( ( cbuffer[1] & 0x01 ) != 0 ) ? true : false;
-    stat2->chip_mode             = ( lr1110_system_chip_mode_t )( cbuffer[1] >> 1 );
+        stat2->is_running_from_flash = ( ( cbuffer[1] & 0x01 ) != 0 ) ? true : false;
+        stat2->chip_mode             = ( lr1110_system_chip_modes_t )( cbuffer[1] >> 1 );
 
-    *irq_status = ( ( uint32_t ) cbuffer[2] << 24 ) + ( ( uint32_t ) cbuffer[3] << 16 ) +
-                  ( ( uint32_t ) cbuffer[4] << 8 ) + ( ( uint32_t ) cbuffer[5] << 0 );
+        *irq_status =
+            ( ( lr1110_system_irq_mask_t ) cbuffer[2] << 24 ) + ( ( lr1110_system_irq_mask_t ) cbuffer[3] << 16 ) +
+            ( ( lr1110_system_irq_mask_t ) cbuffer[4] << 8 ) + ( ( lr1110_system_irq_mask_t ) cbuffer[5] << 0 );
+    }
+
+    return status;
 }
 
-void lr1110_system_get_version( const void* radio, lr1110_system_version_t* version )
+lr1110_status_t lr1110_system_get_irq_status( const void* context, lr1110_system_irq_mask_t* irq_status )
 {
-    uint8_t cbuffer[LR1110_SYSTEM_GET_VERSION_CMD_LENGTH];
-    uint8_t rbuffer[sizeof( lr1110_system_version_t )] = { 0x00 };
+    uint8_t rbuffer[5];
+    uint8_t cbuffer[2] = {
+        ( uint8_t )( LR1110_SYSTEM_GET_STATUS_OC >> 8 ),
+        ( uint8_t )( LR1110_SYSTEM_GET_STATUS_OC >> 0 ),
+    };
+
+    lr1110_status_t status =
+        ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, sizeof( cbuffer ), rbuffer, sizeof( rbuffer ) );
+
+    if( status == LR1110_STATUS_OK )
+    {
+        *irq_status =
+            ( ( lr1110_system_irq_mask_t ) rbuffer[1] << 24 ) + ( ( lr1110_system_irq_mask_t ) rbuffer[2] << 16 ) +
+            ( ( lr1110_system_irq_mask_t ) rbuffer[3] << 8 ) + ( ( lr1110_system_irq_mask_t ) rbuffer[4] << 0 );
+    }
+
+    return status;
+}
+
+lr1110_status_t lr1110_system_get_version( const void* context, lr1110_system_version_t* version )
+{
+    uint8_t         cbuffer[LR1110_SYSTEM_GET_VERSION_CMD_LENGTH];
+    uint8_t         rbuffer[LR1110_SYSTEM_VERSION_LENGTH] = { 0x00 };
+    lr1110_status_t status                                = LR1110_STATUS_ERROR;
 
     cbuffer[0] = ( uint8_t )( LR1110_SYSTEM_GET_VERSION_OC >> 8 );
     cbuffer[1] = ( uint8_t )( LR1110_SYSTEM_GET_VERSION_OC >> 0 );
 
-    lr1110_hal_read( radio, cbuffer, LR1110_SYSTEM_GET_VERSION_CMD_LENGTH, rbuffer, sizeof( lr1110_system_version_t ) );
+    status = ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_SYSTEM_GET_VERSION_CMD_LENGTH, rbuffer,
+                                                  LR1110_SYSTEM_VERSION_LENGTH );
 
-    version->hw   = rbuffer[0];
-    version->type = rbuffer[1];
-    version->fw   = ( ( uint16_t ) rbuffer[2] << 8 ) + ( uint16_t ) rbuffer[3];
+    if( status == LR1110_STATUS_OK )
+    {
+        version->hw   = rbuffer[0];
+        version->type = rbuffer[1];
+        version->fw   = ( ( uint16_t ) rbuffer[2] << 8 ) + ( uint16_t ) rbuffer[3];
+    }
+
+    return status;
 }
 
-void lr1110_system_get_errors( const void* radio, lr1110_system_errors_t* errors )
+lr1110_status_t lr1110_system_get_errors( const void* context, lr1110_system_errors_t* errors )
 {
-    uint8_t cbuffer[LR1110_SYSTEM_GET_ERRORS_CMD_LENGTH];
-    uint8_t rbuffer[sizeof( errors )] = { 0x00 };
+    uint8_t         cbuffer[LR1110_SYSTEM_GET_ERRORS_CMD_LENGTH];
+    uint8_t         rbuffer[sizeof( errors )] = { 0x00 };
+    lr1110_status_t status                    = LR1110_STATUS_ERROR;
 
     cbuffer[0] = ( uint8_t )( LR1110_SYSTEM_GET_ERRORS_OC >> 8 );
     cbuffer[1] = ( uint8_t )( LR1110_SYSTEM_GET_ERRORS_OC >> 0 );
 
-    lr1110_hal_read( radio, cbuffer, LR1110_SYSTEM_GET_ERRORS_CMD_LENGTH, rbuffer, sizeof( *errors ) );
+    status = ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_SYSTEM_GET_ERRORS_CMD_LENGTH, rbuffer,
+                                                  sizeof( *errors ) );
 
-    *errors = ( ( uint16_t ) rbuffer[0] << 8 ) + ( uint16_t ) rbuffer[1];
+    if( status == LR1110_STATUS_OK )
+    {
+        *errors = ( ( uint16_t ) rbuffer[0] << 8 ) + ( uint16_t ) rbuffer[1];
+    }
+
+    return status;
 }
 
-void lr1110_system_clear_errors( const void* radio )
+lr1110_status_t lr1110_system_clear_errors( const void* context )
 {
     uint8_t cbuffer[LR1110_SYSTEM_CLEAR_ERRORS_CMD_LENGTH];
 
     cbuffer[0] = ( uint8_t )( LR1110_SYSTEM_CLEAR_ERRORS_OC >> 8 );
     cbuffer[1] = ( uint8_t )( LR1110_SYSTEM_CLEAR_ERRORS_OC >> 0 );
 
-    lr1110_hal_write( radio, cbuffer, LR1110_SYSTEM_CLEAR_ERRORS_CMD_LENGTH, 0, 0 );
+    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_SYSTEM_CLEAR_ERRORS_CMD_LENGTH, 0, 0 );
 }
 
-void lr1110_system_calibrate( const void* radio, const uint8_t calib_params )
+lr1110_status_t lr1110_system_calibrate( const void* context, const uint8_t calib_param )
 {
     uint8_t cbuffer[LR1110_SYSTEM_CALIBRATE_CMD_LENGTH];
 
     cbuffer[0] = ( uint8_t )( LR1110_SYSTEM_CALIBRATE_OC >> 8 );
     cbuffer[1] = ( uint8_t )( LR1110_SYSTEM_CALIBRATE_OC >> 0 );
 
-    cbuffer[2] = calib_params;
+    cbuffer[2] = calib_param;
 
-    lr1110_hal_write( radio, cbuffer, LR1110_SYSTEM_CALIBRATE_CMD_LENGTH, 0, 0 );
+    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_SYSTEM_CALIBRATE_CMD_LENGTH, 0, 0 );
 }
 
-void lr1110_system_set_regmode( const void* radio, const lr1110_regmodes_t reg_mode )
+lr1110_status_t lr1110_system_set_reg_mode( const void* context, const lr1110_system_reg_mode_t reg_mode )
 {
     uint8_t cbuffer[LR1110_SYSTEM_SET_REGMODE_CMD_LENGTH];
 
@@ -206,10 +251,10 @@ void lr1110_system_set_regmode( const void* radio, const lr1110_regmodes_t reg_m
 
     cbuffer[2] = ( uint8_t ) reg_mode;
 
-    lr1110_hal_write( radio, cbuffer, LR1110_SYSTEM_SET_REGMODE_CMD_LENGTH, 0, 0 );
+    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_SYSTEM_SET_REGMODE_CMD_LENGTH, 0, 0 );
 }
 
-void lr1110_system_calibrate_image( const void* radio, const uint8_t freq1, const uint8_t freq2 )
+lr1110_status_t lr1110_system_calibrate_image( const void* context, const uint8_t freq1, const uint8_t freq2 )
 {
     uint8_t cbuffer[LR1110_SYSTEM_CALIBRATE_IMAGE_CMD_LENGTH];
 
@@ -219,31 +264,32 @@ void lr1110_system_calibrate_image( const void* radio, const uint8_t freq1, cons
     cbuffer[2] = freq1;
     cbuffer[3] = freq2;
 
-    lr1110_hal_write( radio, cbuffer, LR1110_SYSTEM_CALIBRATE_IMAGE_CMD_LENGTH, 0, 0 );
+    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_SYSTEM_CALIBRATE_IMAGE_CMD_LENGTH, 0, 0 );
 }
 
-void lr1110_system_set_dio_as_rf_switch( const void*                            radio,
-                                         const lr1110_system_rfswitch_config_t* rf_switch_configuration )
+lr1110_status_t lr1110_system_set_dio_as_rf_switch( const void*                         context,
+                                                    const lr1110_system_rfswitch_cfg_t* rf_switch_cfg )
 {
     uint8_t cbuffer[LR1110_SYSTEM_SET_DIO_AS_RF_SWITCH_CMD_LENGTH];
 
     cbuffer[0] = ( uint8_t )( LR1110_SYSTEM_SET_DIO_AS_RF_SWITCH_OC >> 8 );
     cbuffer[1] = ( uint8_t )( LR1110_SYSTEM_SET_DIO_AS_RF_SWITCH_OC >> 0 );
 
-    cbuffer[2] = rf_switch_configuration->enable;
-    cbuffer[3] = rf_switch_configuration->standby;
-    cbuffer[4] = rf_switch_configuration->rx;
-    cbuffer[5] = rf_switch_configuration->tx;
-    cbuffer[6] = rf_switch_configuration->tx_hp;
-    cbuffer[7] = rf_switch_configuration->tx_hf;
-    cbuffer[8] = rf_switch_configuration->gnss;
-    cbuffer[9] = rf_switch_configuration->wifi;
+    cbuffer[2] = rf_switch_cfg->enable;
+    cbuffer[3] = rf_switch_cfg->standby;
+    cbuffer[4] = rf_switch_cfg->rx;
+    cbuffer[5] = rf_switch_cfg->tx;
+    cbuffer[6] = rf_switch_cfg->tx_hp;
+    cbuffer[7] = rf_switch_cfg->tx_hf;
+    cbuffer[8] = rf_switch_cfg->gnss;
+    cbuffer[9] = rf_switch_cfg->wifi;
 
-    lr1110_hal_write( radio, cbuffer, LR1110_SYSTEM_SET_DIO_AS_RF_SWITCH_CMD_LENGTH, 0, 0 );
+    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_SYSTEM_SET_DIO_AS_RF_SWITCH_CMD_LENGTH, 0,
+                                                 0 );
 }
 
-void lr1110_system_set_dio_irq_params( const void* radio, const uint32_t irqs_to_enable_dio1,
-                                       const uint32_t irqs_to_enable_dio2 )
+lr1110_status_t lr1110_system_set_dio_irq_params( const void* context, const uint32_t irqs_to_enable_dio1,
+                                                  const uint32_t irqs_to_enable_dio2 )
 {
     uint8_t cbuffer[LR1110_SYSTEM_SET_DIO_IRQ_PARAMS_CMD_LENGTH];
 
@@ -260,10 +306,10 @@ void lr1110_system_set_dio_irq_params( const void* radio, const uint32_t irqs_to
     cbuffer[8] = ( uint8_t )( irqs_to_enable_dio2 >> 8 );
     cbuffer[9] = ( uint8_t )( irqs_to_enable_dio2 >> 0 );
 
-    lr1110_hal_write( radio, cbuffer, LR1110_SYSTEM_SET_DIO_IRQ_PARAMS_CMD_LENGTH, 0, 0 );
+    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_SYSTEM_SET_DIO_IRQ_PARAMS_CMD_LENGTH, 0, 0 );
 }
 
-void lr1110_system_clear_irq( const void* radio, const uint32_t irqs_to_clear )
+lr1110_status_t lr1110_system_clear_irq_status( const void* context, const lr1110_system_irq_mask_t irqs_to_clear )
 {
     uint8_t cbuffer[LR1110_SYSTEM_CLEAR_IRQ_CMD_LENGTH];
 
@@ -275,25 +321,42 @@ void lr1110_system_clear_irq( const void* radio, const uint32_t irqs_to_clear )
     cbuffer[4] = ( uint8_t )( irqs_to_clear >> 8 );
     cbuffer[5] = ( uint8_t )( irqs_to_clear >> 0 );
 
-    lr1110_hal_write( radio, cbuffer, LR1110_SYSTEM_CLEAR_IRQ_CMD_LENGTH, 0, 0 );
+    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_SYSTEM_CLEAR_IRQ_CMD_LENGTH, 0, 0 );
 }
 
-void lr1110_system_config_lfclk( const void* radio, const lr1110_system_lfclk_config_t lfclock_config,
-                                 const bool wait_for_32k_ready )
+lr1110_status_t lr1110_system_get_and_clear_irq_status( const void* context, lr1110_system_irq_mask_t* irq )
+{
+    lr1110_system_irq_mask_t lr1110_irq_mask = LR1110_SYSTEM_IRQ_NONE;
+
+    lr1110_status_t status = lr1110_system_get_irq_status( context, &lr1110_irq_mask );
+
+    if( ( status == LR1110_STATUS_OK ) && ( lr1110_irq_mask != 0 ) )
+    {
+        status = lr1110_system_clear_irq_status( context, lr1110_irq_mask );
+    }
+    if( ( status == LR1110_STATUS_OK ) && ( irq != NULL ) )
+    {
+        *irq = lr1110_irq_mask;
+    }
+    return status;
+}
+
+lr1110_status_t lr1110_system_cfg_lfclk( const void* context, const lr1110_system_lfclk_cfg_t lfclock_cfg,
+                                         const bool wait_for_32k_ready )
 {
     uint8_t cbuffer[LR1110_SYSTEM_CONFIG_LFCLK_CMD_LENGTH];
-    uint8_t config = lfclock_config | ( wait_for_32k_ready << 2 );
+    uint8_t config = lfclock_cfg | ( wait_for_32k_ready << 2 );
 
     cbuffer[0] = ( uint8_t )( LR1110_SYSTEM_CONFIG_LFCLK_OC >> 8 );
     cbuffer[1] = ( uint8_t )( LR1110_SYSTEM_CONFIG_LFCLK_OC >> 0 );
 
     cbuffer[2] = config;
 
-    lr1110_hal_write( radio, cbuffer, LR1110_SYSTEM_CONFIG_LFCLK_CMD_LENGTH, 0, 0 );
+    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_SYSTEM_CONFIG_LFCLK_CMD_LENGTH, 0, 0 );
 }
 
-void lr1110_system_set_tcxo_mode( const void* radio, const lr1110_system_tcxo_supply_voltage_t tune,
-                                  const uint32_t timeout )
+lr1110_status_t lr1110_system_set_tcxo_mode( const void* context, const lr1110_system_tcxo_supply_voltage_t tune,
+                                             const uint32_t timeout )
 {
     uint8_t cbuffer[LR1110_SYSTEM_SET_TCXO_MODE_CMD_LENGTH];
 
@@ -306,10 +369,10 @@ void lr1110_system_set_tcxo_mode( const void* radio, const lr1110_system_tcxo_su
     cbuffer[4] = ( uint8_t )( timeout >> 8 );
     cbuffer[5] = ( uint8_t )( timeout >> 0 );
 
-    lr1110_hal_write( radio, cbuffer, LR1110_SYSTEM_SET_TCXO_MODE_CMD_LENGTH, 0, 0 );
+    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_SYSTEM_SET_TCXO_MODE_CMD_LENGTH, 0, 0 );
 }
 
-void lr1110_system_reboot( const void* radio, const bool stay_in_bootloader )
+lr1110_status_t lr1110_system_reboot( const void* context, const bool stay_in_bootloader )
 {
     uint8_t cbuffer[LR1110_SYSTEM_REBOOT_CMD_LENGTH];
 
@@ -318,73 +381,81 @@ void lr1110_system_reboot( const void* radio, const bool stay_in_bootloader )
 
     cbuffer[2] = ( stay_in_bootloader == true ) ? 0x03 : 0x00;
 
-    lr1110_hal_write( radio, cbuffer, LR1110_SYSTEM_REBOOT_CMD_LENGTH, 0, 0 );
+    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_SYSTEM_REBOOT_CMD_LENGTH, 0, 0 );
 }
 
-void lr1110_system_get_vbat( const void* radio, uint8_t* vbat )
+lr1110_status_t lr1110_system_get_vbat( const void* context, uint8_t* vbat )
 {
     uint8_t cbuffer[LR1110_SYSTEM_GET_VBAT_CMD_LENGTH];
 
     cbuffer[0] = ( uint8_t )( LR1110_SYSTEM_GET_VBAT_OC >> 8 );
     cbuffer[1] = ( uint8_t )( LR1110_SYSTEM_GET_VBAT_OC >> 0 );
 
-    lr1110_hal_read( radio, cbuffer, LR1110_SYSTEM_GET_VBAT_CMD_LENGTH, vbat, sizeof( *vbat ) );
+    return ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_SYSTEM_GET_VBAT_CMD_LENGTH, vbat,
+                                                sizeof( *vbat ) );
 }
 
-void lr1110_system_get_temp( const void* radio, uint16_t* temp )
+lr1110_status_t lr1110_system_get_temp( const void* context, uint16_t* temp )
 {
-    uint8_t cbuffer[LR1110_SYSTEM_GET_TEMP_CMD_LENGTH];
-    uint8_t rbuffer[sizeof( uint16_t )] = { 0x00 };
+    uint8_t         cbuffer[LR1110_SYSTEM_GET_TEMP_CMD_LENGTH];
+    uint8_t         rbuffer[sizeof( uint16_t )] = { 0x00 };
+    lr1110_status_t status                      = LR1110_STATUS_ERROR;
 
     cbuffer[0] = ( uint8_t )( LR1110_SYSTEM_GET_TEMP_OC >> 8 );
     cbuffer[1] = ( uint8_t )( LR1110_SYSTEM_GET_TEMP_OC >> 0 );
 
-    lr1110_hal_read( radio, cbuffer, LR1110_SYSTEM_GET_TEMP_CMD_LENGTH, rbuffer, sizeof( uint16_t ) );
+    status = ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_SYSTEM_GET_TEMP_CMD_LENGTH, rbuffer,
+                                                  sizeof( uint16_t ) );
 
-    *temp = ( ( uint16_t ) rbuffer[0] << 8 ) + ( uint16_t ) rbuffer[1];
+    if( status == LR1110_STATUS_OK )
+    {
+        *temp = ( ( uint16_t ) rbuffer[0] << 8 ) + ( uint16_t ) rbuffer[1];
+    }
+
+    return status;
 }
 
-void lr1110_system_set_sleep( const void* radio, const lr1110_system_sleep_config_t sleep_config,
-                              const uint32_t sleep_time )
+lr1110_status_t lr1110_system_set_sleep( const void* context, const lr1110_system_sleep_cfg_t sleep_cfg,
+                                         const uint32_t sleep_time )
 {
     uint8_t cbuffer[LR1110_SYSTEM_SET_SLEEP_CMD_LENGTH];
 
     cbuffer[0] = ( uint8_t )( LR1110_SYSTEM_SET_SLEEP_OC >> 8 );
     cbuffer[1] = ( uint8_t )( LR1110_SYSTEM_SET_SLEEP_OC >> 0 );
 
-    cbuffer[2] = ( sleep_config.is_rtc_timeout << 1 ) + sleep_config.is_warm_start;
+    cbuffer[2] = ( sleep_cfg.is_rtc_timeout << 1 ) + sleep_cfg.is_warm_start;
 
     cbuffer[3] = ( uint8_t )( sleep_time >> 24 );
     cbuffer[4] = ( uint8_t )( sleep_time >> 16 );
     cbuffer[5] = ( uint8_t )( sleep_time >> 8 );
     cbuffer[6] = ( uint8_t )( sleep_time >> 0 );
 
-    lr1110_hal_write( radio, cbuffer, LR1110_SYSTEM_SET_SLEEP_CMD_LENGTH, 0, 0 );
+    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_SYSTEM_SET_SLEEP_CMD_LENGTH, 0, 0 );
 }
 
-void lr1110_system_set_standby( const void* radio, const lr1110_system_standby_config_t standby_config )
+lr1110_status_t lr1110_system_set_standby( const void* context, const lr1110_system_standby_cfg_t standby_cfg )
 {
     uint8_t cbuffer[LR1110_SYSTEM_SET_STANDBY_CMD_LENGTH];
 
     cbuffer[0] = ( uint8_t )( LR1110_SYSTEM_SET_STANDBY_OC >> 8 );
     cbuffer[1] = ( uint8_t )( LR1110_SYSTEM_SET_STANDBY_OC >> 0 );
 
-    cbuffer[2] = ( uint8_t ) standby_config;
+    cbuffer[2] = ( uint8_t ) standby_cfg;
 
-    lr1110_hal_write( radio, cbuffer, LR1110_SYSTEM_SET_STANDBY_CMD_LENGTH, 0, 0 );
+    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_SYSTEM_SET_STANDBY_CMD_LENGTH, 0, 0 );
 }
 
-void lr1110_system_set_fs( const void* radio )
+lr1110_status_t lr1110_system_set_fs( const void* context )
 {
     uint8_t cbuffer[LR1110_SYSTEM_SET_FS_CMD_LENGTH];
 
     cbuffer[0] = ( uint8_t )( LR1110_SYSTEM_SET_FS_OC >> 8 );
     cbuffer[1] = ( uint8_t )( LR1110_SYSTEM_SET_FS_OC >> 0 );
 
-    lr1110_hal_write( radio, cbuffer, LR1110_SYSTEM_SET_FS_CMD_LENGTH, 0, 0 );
+    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_SYSTEM_SET_FS_CMD_LENGTH, 0, 0 );
 }
 
-void lr1110_system_erase_infopage( const void* radio, const lr1110_system_infopage_id_t infopage_id )
+lr1110_status_t lr1110_system_erase_infopage( const void* context, const lr1110_system_infopage_id_t infopage_id )
 {
     uint8_t cbuffer[LR1110_SYSTEM_ERASE_INFOPAGE_CMD_LENGTH];
 
@@ -393,11 +464,11 @@ void lr1110_system_erase_infopage( const void* radio, const lr1110_system_infopa
 
     cbuffer[2] = ( uint8_t ) infopage_id;
 
-    lr1110_hal_write( radio, cbuffer, LR1110_SYSTEM_ERASE_INFOPAGE_CMD_LENGTH, 0, 0 );
+    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_SYSTEM_ERASE_INFOPAGE_CMD_LENGTH, 0, 0 );
 }
 
-void lr1110_system_write_infopage( const void* radio, const lr1110_system_infopage_id_t infopage_id,
-                                   const uint16_t address, const uint32_t* data, const uint8_t length )
+lr1110_status_t lr1110_system_write_infopage( const void* context, const lr1110_system_infopage_id_t infopage_id,
+                                              const uint16_t address, const uint32_t* data, const uint8_t length )
 {
     uint8_t cbuffer[LR1110_SYSTEM_WRITE_INFOPAGE_CMD_LENGTH];
     uint8_t cdata[256];
@@ -420,13 +491,15 @@ void lr1110_system_write_infopage( const void* radio, const lr1110_system_infopa
         cdata_local[3] = ( uint8_t )( data[index] >> 0 );
     }
 
-    lr1110_hal_write( radio, cbuffer, LR1110_SYSTEM_WRITE_INFOPAGE_CMD_LENGTH, cdata, length * sizeof( uint32_t ) );
+    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_SYSTEM_WRITE_INFOPAGE_CMD_LENGTH, cdata,
+                                                 length * sizeof( uint32_t ) );
 }
 
-void lr1110_system_read_infopage( const void* radio, const lr1110_system_infopage_id_t infopage_id,
-                                  const uint16_t address, uint32_t* data, const uint8_t length )
+lr1110_status_t lr1110_system_read_infopage( const void* context, const lr1110_system_infopage_id_t infopage_id,
+                                             const uint16_t address, uint32_t* data, const uint8_t length )
 {
-    uint8_t cbuffer[LR1110_SYSTEM_READ_INFOPAGE_CMD_LENGTH];
+    uint8_t         cbuffer[LR1110_SYSTEM_READ_INFOPAGE_CMD_LENGTH];
+    lr1110_status_t status = LR1110_STATUS_ERROR;
 
     cbuffer[0] = ( uint8_t )( LR1110_SYSTEM_READ_INFOPAGE_OC >> 8 );
     cbuffer[1] = ( uint8_t )( LR1110_SYSTEM_READ_INFOPAGE_OC >> 0 );
@@ -438,56 +511,64 @@ void lr1110_system_read_infopage( const void* radio, const lr1110_system_infopag
 
     cbuffer[5] = length;
 
-    lr1110_hal_read( radio, cbuffer, LR1110_SYSTEM_READ_INFOPAGE_CMD_LENGTH, ( uint8_t* ) data,
-                     length * sizeof( *data ) );
+    status = ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_SYSTEM_READ_INFOPAGE_CMD_LENGTH,
+                                                  ( uint8_t* ) data, length * sizeof( *data ) );
 
-    for( uint8_t index = 0; index < length; index++ )
+    if( status == LR1110_STATUS_OK )
     {
-        uint8_t* buffer_local = ( uint8_t* ) &data[index];
+        for( uint8_t index = 0; index < length; index++ )
+        {
+            uint8_t* buffer_local = ( uint8_t* ) &data[index];
 
-        data[index] = ( ( uint32_t ) buffer_local[0] << 24 ) + ( ( uint32_t ) buffer_local[1] << 16 ) +
-                      ( ( uint32_t ) buffer_local[2] << 8 ) + ( ( uint32_t ) buffer_local[3] << 0 );
+            data[index] = ( ( uint32_t ) buffer_local[0] << 24 ) + ( ( uint32_t ) buffer_local[1] << 16 ) +
+                          ( ( uint32_t ) buffer_local[2] << 8 ) + ( ( uint32_t ) buffer_local[3] << 0 );
+        }
     }
+
+    return status;
 }
 
-void lr1110_system_read_uid( const void* radio, lr1110_system_uid_t unique_identifier )
+lr1110_status_t lr1110_system_read_uid( const void* context, lr1110_system_uid_t unique_identifier )
 {
     uint8_t cbuffer[LR1110_SYSTEM_READ_UID_CMD_LENGTH];
     cbuffer[0] = ( uint8_t )( LR1110_SYSTEM_READ_UID_OC >> 8 );
     cbuffer[1] = ( uint8_t )( LR1110_SYSTEM_READ_UID_OC >> 0 );
 
-    lr1110_hal_read( radio, cbuffer, LR1110_SYSTEM_READ_UID_CMD_LENGTH, unique_identifier, LR1110_SYSTEM_UID_LENGTH );
+    return ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_SYSTEM_READ_UID_CMD_LENGTH, unique_identifier,
+                                                LR1110_SYSTEM_UID_LENGTH );
 }
 
-void lr1110_system_read_join_eui( const void* radio, lr1110_system_join_eui_t join_eui )
+lr1110_status_t lr1110_system_read_join_eui( const void* context, lr1110_system_join_eui_t join_eui )
 {
     uint8_t cbuffer[LR1110_SYSTEM_READ_UID_CMD_LENGTH];
 
     cbuffer[0] = ( uint8_t )( LR1110_SYSTEM_READ_JOIN_EUI_OC >> 8 );
     cbuffer[1] = ( uint8_t )( LR1110_SYSTEM_READ_JOIN_EUI_OC >> 0 );
 
-    lr1110_hal_read( radio, cbuffer, LR1110_SYSTEM_READ_JOIN_EUI_CMD_LENGTH, join_eui, LR1110_SYSTEM_JOIN_EUI_LENGTH );
+    return ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_SYSTEM_READ_JOIN_EUI_CMD_LENGTH, join_eui,
+                                                LR1110_SYSTEM_JOIN_EUI_LENGTH );
 }
 
-void lr1110_system_read_pin( const void* radio, lr1110_system_pin_t pin )
+lr1110_status_t lr1110_system_read_pin( const void* context, lr1110_system_pin_t pin )
 {
     uint8_t cbuffer[LR1110_SYSTEM_READ_UID_CMD_LENGTH];
 
     cbuffer[0] = ( uint8_t )( LR1110_SYSTEM_READ_PIN_OC >> 8 );
     cbuffer[1] = ( uint8_t )( LR1110_SYSTEM_READ_PIN_OC >> 0 );
 
-    lr1110_hal_read( radio, cbuffer, LR1110_SYSTEM_READ_PIN_CMD_LENGTH, pin, LR1110_SYSTEM_PIN_LENGTH );
+    return ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_SYSTEM_READ_PIN_CMD_LENGTH, pin,
+                                                LR1110_SYSTEM_PIN_LENGTH );
 }
 
-void lr1110_system_get_random_number( const void* radio, uint32_t* random_number )
+lr1110_status_t lr1110_system_get_random_number( const void* context, uint32_t* random_number )
 {
     uint8_t cbuffer[LR1110_SYSTEM_GET_RANDOM_CMD_LENGTH];
 
     cbuffer[0] = ( uint8_t )( LR1110_SYSTEM_GET_RANDOM_OC >> 8 );
     cbuffer[1] = ( uint8_t )( LR1110_SYSTEM_GET_RANDOM_OC >> 0 );
 
-    lr1110_hal_read( radio, cbuffer, LR1110_SYSTEM_GET_RANDOM_CMD_LENGTH, ( uint8_t* ) random_number,
-                     sizeof( uint32_t ) );
+    return ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_SYSTEM_GET_RANDOM_CMD_LENGTH,
+                                                ( uint8_t* ) random_number, sizeof( uint32_t ) );
 }
 
 /*

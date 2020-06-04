@@ -32,16 +32,17 @@
 #ifndef __LR1110_SYSTEM_H__
 #define __LR1110_SYSTEM_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * -----------------------------------------------------------------------------
  * --- DEPENDENCIES ------------------------------------------------------------
  */
 
 #include "lr1110_system_types.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "lr1110_types.h"
 
 /*
  * -----------------------------------------------------------------------------
@@ -58,6 +59,8 @@ extern "C" {
  * --- PUBLIC TYPES ------------------------------------------------------------
  */
 
+typedef uint32_t lr1110_system_irq_mask_t;
+
 /*
  * -----------------------------------------------------------------------------
  * --- PUBLIC FUNCTIONS PROTOTYPES ---------------------------------------------
@@ -66,30 +69,51 @@ extern "C" {
 /*!
  * \brief Reset the radio
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
- * \param [in] radio Pointer to the structure holding the radio context
+ * \returns Operation status
  */
-void lr1110_system_reset( const void* radio );
+lr1110_status_t lr1110_system_reset( const void* context );
+
+/*!
+ * \brief Return stat1, stat2, and irq_status
+ *
+ * \param [in] context Chip implementation context
+ *
+ * \param [out] stat1 stat1 status variable
+ * \param [out] stat2 stat2 status variable
+ * \param [out] irq_status irq_status status variable
+ *
+ * \returns Operation status
+ *
+ * \note This function requires lr1110_hal_write_read to be implemented
+ */
+lr1110_status_t lr1110_system_get_status( const void* context, lr1110_system_stat1_t* stat1,
+                                          lr1110_system_stat2_t* stat2, lr1110_system_irq_mask_t* irq_status );
+
+/*!
+ * \brief Return irq_status
+ *
+ * \param [in] context Chip implementation context
+ *
+ * \param [out] irq_status irq_status status variable
+ *
+ * \returns Operation status
+ *
+ * \note Unlike lr1110_system_get_status, this function does not require lr1110_hal_write_read to be implemented
+ */
+lr1110_status_t lr1110_system_get_irq_status( const void* context, lr1110_system_irq_mask_t* irq_status );
 
 /*!
  * \brief Return the version of the system (hardware and software)
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] version Pointer to the structure holding the system version
- */
-void lr1110_system_get_status( const void* radio, lr1110_system_stat1_t* stat1, lr1110_system_stat2_t* stat2,
-                               uint32_t* irq_status );
-
-/*!
- * \brief Return the version of the system (hardware and software)
  *
- * \param [in] radio Radio abstraction
- *
- * \param [out] version Pointer to the structure holding the system version
+ * \returns Operation status
  */
-void lr1110_system_get_version( const void* radio, lr1110_system_version_t* version );
+lr1110_status_t lr1110_system_get_version( const void* context, lr1110_system_version_t* version );
 
 /*!
  * \brief Return the system errors
@@ -102,25 +126,29 @@ void lr1110_system_get_version( const void* radio, lr1110_system_version_t* vers
  * use an out-of-band frequency, can be fix by executing a PLL calibration, or
  * by using other frequencies.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] errors Pointer to a value holding error flags
+ *
+ * \returns Operation status
  *
  * \see lr1110_system_calibrate, lr1110_system_calibrate_image,
  * lr1110_system_clear_errors
  */
-void lr1110_system_get_errors( const void* radio, uint16_t* errors );
+lr1110_status_t lr1110_system_get_errors( const void* context, uint16_t* errors );
 
 /*!
  * \brief Clear all error flags pending.
  *
  * This function cannot be used to clear flags individually.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
+ *
+ * \returns Operation status
  *
  * \see lr1110_system_get_errors
  */
-void lr1110_system_clear_errors( const void* radio );
+lr1110_status_t lr1110_system_clear_errors( const void* context );
 
 /*!
  * \brief lr1110_system_calibrate the requested blocks
@@ -130,14 +158,16 @@ void lr1110_system_clear_errors( const void* radio );
  * The chip will return to standby RC mode on exit. Potential calibration
  * issues can be read out with lr1110_system_get_errors command.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
- * \param [in] calib_params Structure holding the reference to blocks to be
+ * \param [in] calib_param Structure holding the reference to blocks to be
  * calibrated
+ *
+ * \returns Operation status
  *
  * \see lr1110_system_get_errors
  */
-void lr1110_system_calibrate( const void* radio, const uint8_t calib_params );
+lr1110_status_t lr1110_system_calibrate( const void* context, const uint8_t calib_param );
 
 /*!
  * \brief Configure the regulator mode to be used in specific modes
@@ -147,11 +177,13 @@ void lr1110_system_calibrate( const void* radio, const uint8_t calib_params );
  * The reg_mode parameter defines if the DC-DC converter is switched on in the
  * following modes: STANDBY XOSC, FS, RX, TX and RX_CAPTURE.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] reg_mode Regulator mode configuration
+ *
+ * \returns Operation status
  */
-void lr1110_system_set_regmode( const void* radio, const lr1110_regmodes_t reg_mode );
+lr1110_status_t lr1110_system_set_reg_mode( const void* context, const lr1110_system_reg_mode_t reg_mode );
 
 /*!
  * \brief Launch an image calibration at frequencies given in parameters
@@ -164,31 +196,33 @@ void lr1110_system_set_regmode( const void* radio, const lr1110_regmodes_t reg_m
  * The frequencies given in parameters are defined in 4MHz step (Eg. 900MHz
  * corresponds to 0xE1). If freq1 = freq2, only one calibration is performed.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] freq1 First frequency used to perform image calibration
  *
  * \param [in] freq2 Second frequency used to perform image calibration
  *
+ * \returns Operation status
+ *
  * \see lr1110_system_get_errors
  */
-void lr1110_system_calibrate_image( const void* radio, const uint8_t freq1, const uint8_t freq2 );
+lr1110_status_t lr1110_system_calibrate_image( const void* context, const uint8_t freq1, const uint8_t freq2 );
 
 /*!
  * \brief Set the RF switch configurations for each RF setup
  *
  * This function shall only be called in standby RC mode.
  *
- * By default, no DIO is used to control a RF switch. All DIOs are set in
- * High-Z mode.
+ * By default, no DIO is used to control a RF switch. All DIOs are set in High-Z mode.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
- * \param [in] rfSwitch Pointer to a structure that holds the switches
- * configuration
+ * \param [in] rfSwitch Pointer to a structure that holds the switches configuration
+ *
+ * \returns Operation status
  */
-void lr1110_system_set_dio_as_rf_switch( const void*                            radio,
-                                         const lr1110_system_rfswitch_config_t* rf_switch_configuration );
+lr1110_status_t lr1110_system_set_dio_as_rf_switch( const void*                         context,
+                                                    const lr1110_system_rfswitch_cfg_t* rf_switch_cfg );
 
 /*!
  * \brief Set which interrupt signals are redirected to the dedicated DIO pin
@@ -196,43 +230,62 @@ void lr1110_system_set_dio_as_rf_switch( const void*                            
  * By default, no interrupt signal is redirected.
  *
  * The dedicated DIO pin will remain asserted until all redirected interrupt
- * signals are cleared with a call to lr1110_system_clear_irq.
+ * signals are cleared with a call to lr1110_system_clear_irq_status.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
- * \param [in] irqs_to_enable_dio1 Variable that holds the interrupt mask for
- * dio1
+ * \param [in] irqs_to_enable_dio1 Variable that holds the interrupt mask for dio1
  *
- * \param [in] irqs_to_enable_dio2 Variable that holds the interrupt mask for
- * dio2
+ * \param [in] irqs_to_enable_dio2 Variable that holds the interrupt mask for dio2
  *
- * \see lr1110_system_clear_irq
+ * \returns Operation status
+ *
+ * \see lr1110_system_clear_irq_status
  */
-void lr1110_system_set_dio_irq_params( const void* radio, const uint32_t irqs_to_enable_dio1,
-                                       const uint32_t irqs_to_enable_dio2 );
+lr1110_status_t lr1110_system_set_dio_irq_params( const void*                    context,
+                                                  const lr1110_system_irq_mask_t irqs_to_enable_dio1,
+                                                  const lr1110_system_irq_mask_t irqs_to_enable_dio2 );
 
 /*!
  * \brief Clear requested bits in the internal pending interrupt register
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] irqs_to_clear Variable that holds the interrupts to be cleared
+ *
+ * \returns Operation status
  */
-void lr1110_system_clear_irq( const void* radio, const uint32_t irqs_to_clear );
+lr1110_status_t lr1110_system_clear_irq_status( const void* context, const lr1110_system_irq_mask_t irqs_to_clear );
+
+/**
+ * @brief This helper function clears any radio irq status flags that are set
+ * and returns the flags that were cleared.
+ *
+ * @param [in] context Chip implementation context.
+ * @param [out] irq Pointer to a variable for holding the system interrupt
+ * status. Can be NULL.
+ *
+ * @returns Operation status
+ *
+ * \see lr1110_system_get_irq_status, lr1110_system_clear_irq_status
+ */
+lr1110_status_t lr1110_system_get_and_clear_irq_status( const void* context, lr1110_system_irq_mask_t* irq );
 
 /*!
  * \brief Defines which clock is used as Low Frequency (LF) clock
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
- * \param [in] lfclock_config Low frequency clock configuration
+ * \param [in] lfclock_cfg Low frequency clock configuration
  *
  * \param [in] wait_for_32k_ready
  *
+ * \returns Operation status
+ *
  * \see lr1110_system_calibrate, lr1110_system_calibrate_image
  */
-void lr1110_system_config_lfclk( const void* radio, const lr1110_system_lfclk_config_t lfclock_config,
-                                 const bool wait_for_32k_ready );
+lr1110_status_t lr1110_system_cfg_lfclk( const void* context, const lr1110_system_lfclk_cfg_t lfclock_cfg,
+                                         const bool wait_for_32k_ready );
 
 /*!
  * \brief Enable and configure TCXO supply voltage and detection timeout
@@ -245,16 +298,18 @@ void lr1110_system_config_lfclk( const void* radio, const lr1110_system_lfclk_co
  *
  * The TCXO mode can be disabled by setting timeout parameter to 0.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] tune Supply voltage value
  *
  * \param [in] timeout
  *
+ * \returns Operation status
+ *
  * \see lr1110_system_calibrate, lr1110_system_calibrate_image
  */
-void lr1110_system_set_tcxo_mode( const void* radio, const lr1110_system_tcxo_supply_voltage_t tune,
-                                  const uint32_t timeout );
+lr1110_status_t lr1110_system_set_tcxo_mode( const void* context, const lr1110_system_tcxo_supply_voltage_t tune,
+                                             const uint32_t timeout );
 
 /*!
  * \brief Software reset of the chip.
@@ -264,13 +319,15 @@ void lr1110_system_set_tcxo_mode( const void* radio, const lr1110_system_tcxo_su
  * corrupted (i.e. the integrity check performed by the bootloader before
  * executing the first instruction in flash is OK).
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] stay_in_bootloader Selector to stay in bootloader or execute
  * flash code after reboot. If true, the bootloader will not execute the flash
  * code but activate SPI interface to allow firmware upgrade
+ *
+ * \returns Operation status
  */
-void lr1110_system_reboot( const void* radio, const bool stay_in_bootloader );
+lr1110_status_t lr1110_system_reboot( const void* context, const bool stay_in_bootloader );
 
 /*!
  * \brief Returns the value of Vbat
@@ -278,11 +335,13 @@ void lr1110_system_reboot( const void* radio, const bool stay_in_bootloader );
  * Vbat value (in V) is a function of Vana (typ. 1.35V) using the following
  * formula: \f$ Vbat_{V} = (5 \times \frac{Vbat}{255} - 1) \times Vana \f$
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] vbat A pointer to the Vbat value
+ *
+ * \returns Operation status
  */
-void lr1110_system_get_vbat( const void* radio, uint8_t* vbat );
+lr1110_status_t lr1110_system_get_vbat( const void* context, uint8_t* vbat );
 
 /*!
  * \brief Returns the value of Temp
@@ -292,70 +351,80 @@ void lr1110_system_get_vbat( const void* radio, uint8_t* vbat );
  * following formula: \f$ Temperature_{°C} = (\frac{Temp(10:0)}{2047} \times
  * Vana - Vbe25) \times \frac{1000}{VbeSlope} + 25 \f$
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] temp A pointer to the Temp value
+ *
+ * \returns Operation status
  */
-void lr1110_system_get_temp( const void* radio, uint16_t* temp );
+lr1110_status_t lr1110_system_get_temp( const void* context, uint16_t* temp );
 
 /*!
  * \brief Set the device into Sleep or Deep Sleep Mode
  *
- * The sleep_config parameter defines in which sleep mode the device is put and
+ * The sleep_cfg parameter defines in which sleep mode the device is put and
  * if it wakes up after a given time on the RTC event.
  *
  * The sleep_time parameter is taken into account only when RtcTimeout = 1. It
  * sets the sleep time in number of clock cycles: \f$ sleep\_time\_ms =
  * sleep_time \times \frac{1}{32.768} \f$
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
- * \param [in] sleep_config Sleep mode configuration
+ * \param [in] sleep_cfg Sleep mode configuration
  *
  * \param [in] sleep_time Value of the RTC timeout (if RtcTimeout = 1)
  *
+ * \returns Operation status
+ *
  * \see lr1110_system_set_standby, lr1110_system_set_fs
  */
-void lr1110_system_set_sleep( const void* radio, const lr1110_system_sleep_config_t sleep_config,
-                              const uint32_t sleep_time );
+lr1110_status_t lr1110_system_set_sleep( const void* context, const lr1110_system_sleep_cfg_t sleep_cfg,
+                                         const uint32_t sleep_time );
 
 /*!
  * \brief Set the device into the requested Standby mode
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
- * \param [in] standby_config Stand by mode configuration (RC or XOSC)
+ * \param [in] standby_cfg Stand by mode configuration (RC or XOSC)
+ *
+ * \returns Operation status
  *
  * \see lr1110_system_set_sleep, lr1110_system_set_fs
  */
-void lr1110_system_set_standby( const void* radio, const lr1110_system_standby_config_t standby_config );
+lr1110_status_t lr1110_system_set_standby( const void* context, const lr1110_system_standby_cfg_t standby_cfg );
 
 /*!
  * \brief Set the device into Frequency Synthesis (FS) mode
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
+ *
+ * \returns Operation status
  *
  * \see lr1110_system_set_standby, lr1110_system_set_sleep
  */
-void lr1110_system_set_fs( const void* radio );
+lr1110_status_t lr1110_system_set_fs( const void* context );
 
 /*!
  * \brief Erase an info page
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] info_page_id Info page to be erased
  *
+ * \returns Operation status
+ *
  * \see lr1110_system_write_infopage, lr1110_system_read_infopage
  */
-void lr1110_system_erase_infopage( const void* radio, const lr1110_system_infopage_id_t info_page_id );
+lr1110_status_t lr1110_system_erase_infopage( const void* context, const lr1110_system_infopage_id_t info_page_id );
 
 /*!
  * \brief Write data in an info page
  *
  * It is possibe to cross from page 0 to 1 if (address + length >= 512)
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] info_page_id Info page where data are written
  *
@@ -366,17 +435,19 @@ void lr1110_system_erase_infopage( const void* radio, const lr1110_system_infopa
  *
  * \param [in] length Number of 32-bit data to write (maximum value is 64)
  *
+ * \returns Operation status
+ *
  * \see lr1110_system_erase_infopage, lr1110_system_read_infopage
  */
-void lr1110_system_write_infopage( const void* radio, const lr1110_system_infopage_id_t info_page_id,
-                                   const uint16_t address, const uint32_t* data, const uint8_t length );
+lr1110_status_t lr1110_system_write_infopage( const void* context, const lr1110_system_infopage_id_t info_page_id,
+                                              const uint16_t address, const uint32_t* data, const uint8_t length );
 
 /*!
  * \brief Read data from an info page
  *
  * It is possible to cross from page 0 to 1 if (address + length >= 512)
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] info_page_id Info page where data are read
  *
@@ -387,60 +458,70 @@ void lr1110_system_write_infopage( const void* radio, const lr1110_system_infopa
  *
  * \param [in] length Number of 32-bit data to read (maximum value is 64)
  *
+ * \returns Operation status
+ *
  * \see lr1110_system_erase_infopage, lr1110_system_write_infopage
  */
-void lr1110_system_read_infopage( const void* radio, const lr1110_system_infopage_id_t info_page_id,
-                                  const uint16_t address, uint32_t* data, const uint8_t length );
+lr1110_status_t lr1110_system_read_infopage( const void* context, const lr1110_system_infopage_id_t info_page_id,
+                                             const uint16_t address, uint32_t* data, const uint8_t length );
 
 /*!
  * \brief Read and return the Unique Identifier of the LR1110
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] unique_identifier The buffer to be filled with the Unique
  * Identifier of the LR1110. It is up to the application to ensure
  * unique_identifier is long enough to hold the unique identifier
  *
+ * \returns Operation status
+ *
  * \see LR1110_SYSTEM_UID_LENGTH
  */
-void lr1110_system_read_uid( const void* radio, lr1110_system_uid_t unique_identifier );
+lr1110_status_t lr1110_system_read_uid( const void* context, lr1110_system_uid_t unique_identifier );
 
 /*!
  * \brief Read and return the Join EUI of the LR1110
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] join_eui The buffer to be filled with Join EUI of the LR1110.
  * It is up to the application to ensure join_eui is long enough to
  * hold the join EUI
  *
+ * \returns Operation status
+ *
  * \see LR1110_SYSTEM_JOIN_EUI_LENGTH
  */
-void lr1110_system_read_join_eui( const void* radio, lr1110_system_join_eui_t join_eui );
+lr1110_status_t lr1110_system_read_join_eui( const void* context, lr1110_system_join_eui_t join_eui );
 
 /*!
  * \brief Read and return the PIN of the LR1110
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] pin The buffer to be filled with PIN of the LR1110.
  * It is up to the application to ensure pin is long enough to
  * hold the PIN
  *
+ * \returns Operation status
+ *
  * \see LR1110_SYSTEM_PIN_LENGTH
  */
-void lr1110_system_read_pin( const void* radio, lr1110_system_pin_t pin );
+lr1110_status_t lr1110_system_read_pin( const void* context, lr1110_system_pin_t pin );
 
 /*!
  * \brief Read and return a 32-bit random number
  *
  * \remark Radio operating mode must be set into standby.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] random_number 32-bit random number
+ *
+ * \returns Operation status
  */
-void lr1110_system_get_random_number( const void* radio, uint32_t* random_number );
+lr1110_status_t lr1110_system_get_random_number( const void* context, uint32_t* random_number );
 
 #ifdef __cplusplus
 }

@@ -55,6 +55,11 @@ extern "C" {
  */
 
 /*!
+ * \brief Length in byte of the LR1110 version blob
+ */
+#define LR1110_SYSTEM_VERSION_LENGTH ( 4 )
+
+/*!
  * \brief Length of the LR1110 Unique Identifier in bytes
  *
  * The LR1110 Unique Identifiers is an 8 byte long buffer
@@ -74,51 +79,43 @@ typedef uint8_t lr1110_system_pin_t[LR1110_SYSTEM_PIN_LENGTH];
 
 enum lr1110_system_irq_e
 {
-    LR1110_SYSTEM_IRQ_NONE_MASK                 = ( 0 << 0 ),
-    LR1110_SYSTEM_IRQ_TXDONE_MASK               = ( 1 << 2 ),
-    LR1110_SYSTEM_IRQ_RXDONE_MASK               = ( 1 << 3 ),
-    LR1110_SYSTEM_IRQ_PREAMBLEDETECTED_MASK     = ( 1 << 4 ),
-    LR1110_SYSTEM_IRQ_SYNCWORD_HEADERVALID_MASK = ( 1 << 5 ),
-    LR1110_SYSTEM_IRQ_HEADERERR_MASK            = ( 1 << 6 ),
-    LR1110_SYSTEM_IRQ_CRCERR_MASK               = ( 1 << 7 ),
-    LR1110_SYSTEM_IRQ_CADDONE_MASK              = ( 1 << 8 ),
-    LR1110_SYSTEM_IRQ_CADDETECTED_MASK          = ( 1 << 9 ),
-    LR1110_SYSTEM_IRQ_TIMEOUT_MASK              = ( 1 << 10 ),
-    LR1110_SYSTEM_IRQ_FHSS_MASK                 = ( 1 << 11 ),
-    LR1110_SYSTEM_IRQ_INTERPACKET1_MASK         = ( 1 << 12 ),
-    LR1110_SYSTEM_IRQ_INTERPACKET2_MASK         = ( 1 << 13 ),
-    LR1110_SYSTEM_IRQ_RNGREQVLD_MASK            = ( 1 << 14 ),
-    LR1110_SYSTEM_IRQ_RNGREQDISC_MASK           = ( 1 << 15 ),
-    LR1110_SYSTEM_IRQ_RNGRESPDONE_MASK          = ( 1 << 16 ),
-    LR1110_SYSTEM_IRQ_RNGEXCHVLD_MASK           = ( 1 << 17 ),
-    LR1110_SYSTEM_IRQ_RNGTIMEOUT_MASK           = ( 1 << 18 ),
-    LR1110_SYSTEM_IRQ_GNSSSCANDONE_MASK         = ( 1 << 19 ),
-    LR1110_SYSTEM_IRQ_WIFISCANDONE_MASK         = ( 1 << 20 ),
-    LR1110_SYSTEM_IRQ_EOL_MASK                  = ( 1 << 21 ),
-    LR1110_SYSTEM_IRQ_CMDERR_MASK               = ( 1 << 22 ),
-    LR1110_SYSTEM_IRQ_ERR_MASK                  = ( 1 << 23 ),
-    LR1110_SYSTEM_IRQ_FSK_LENGTH_ERROR_MASK     = ( 1 << 24 ),
-    LR1110_SYSTEM_IRQ_FSK_ADDRESS_ERROR_MASK    = ( 1 << 25 ),
+    LR1110_SYSTEM_IRQ_NONE                   = ( 0 << 0 ),
+    LR1110_SYSTEM_IRQ_TX_DONE                = ( 1 << 2 ),
+    LR1110_SYSTEM_IRQ_RX_DONE                = ( 1 << 3 ),
+    LR1110_SYSTEM_IRQ_PREAMBLE_DETECTED      = ( 1 << 4 ),
+    LR1110_SYSTEM_IRQ_SYNC_WORD_HEADER_VALID = ( 1 << 5 ),
+    LR1110_SYSTEM_IRQ_HEADER_ERROR           = ( 1 << 6 ),
+    LR1110_SYSTEM_IRQ_CRC_ERROR              = ( 1 << 7 ),
+    LR1110_SYSTEM_IRQ_CAD_DONE               = ( 1 << 8 ),
+    LR1110_SYSTEM_IRQ_CAD_DETECTED           = ( 1 << 9 ),
+    LR1110_SYSTEM_IRQ_TIMEOUT                = ( 1 << 10 ),
+    LR1110_SYSTEM_IRQ_GNSS_SCAN_DONE         = ( 1 << 19 ),
+    LR1110_SYSTEM_IRQ_WIFI_SCAN_DONE         = ( 1 << 20 ),
+    LR1110_SYSTEM_IRQ_EOL                    = ( 1 << 21 ),
+    LR1110_SYSTEM_IRQ_CMD_ERROR              = ( 1 << 22 ),
+    LR1110_SYSTEM_IRQ_ERROR                  = ( 1 << 23 ),
+    LR1110_SYSTEM_IRQ_FSK_LEN_ERROR          = ( 1 << 24 ),
+    LR1110_SYSTEM_IRQ_FSK_ADDR_ERROR         = ( 1 << 25 ),
     LR1110_SYSTEM_IRQ_ALL_MASK =
-        LR1110_SYSTEM_IRQ_TXDONE_MASK | LR1110_SYSTEM_IRQ_RXDONE_MASK | LR1110_SYSTEM_IRQ_PREAMBLEDETECTED_MASK |
-        LR1110_SYSTEM_IRQ_SYNCWORD_HEADERVALID_MASK | LR1110_SYSTEM_IRQ_HEADERERR_MASK | LR1110_SYSTEM_IRQ_CRCERR_MASK |
-        LR1110_SYSTEM_IRQ_CADDONE_MASK | LR1110_SYSTEM_IRQ_CADDETECTED_MASK | LR1110_SYSTEM_IRQ_TIMEOUT_MASK |
-        LR1110_SYSTEM_IRQ_FHSS_MASK | LR1110_SYSTEM_IRQ_INTERPACKET1_MASK | LR1110_SYSTEM_IRQ_INTERPACKET2_MASK |
-        LR1110_SYSTEM_IRQ_RNGREQVLD_MASK | LR1110_SYSTEM_IRQ_RNGREQDISC_MASK | LR1110_SYSTEM_IRQ_RNGRESPDONE_MASK |
-        LR1110_SYSTEM_IRQ_RNGEXCHVLD_MASK | LR1110_SYSTEM_IRQ_RNGTIMEOUT_MASK | LR1110_SYSTEM_IRQ_GNSSSCANDONE_MASK |
-        LR1110_SYSTEM_IRQ_WIFISCANDONE_MASK | LR1110_SYSTEM_IRQ_EOL_MASK | LR1110_SYSTEM_IRQ_CMDERR_MASK |
-        LR1110_SYSTEM_IRQ_ERR_MASK | LR1110_SYSTEM_IRQ_FSK_LENGTH_ERROR_MASK | LR1110_SYSTEM_IRQ_FSK_ADDRESS_ERROR_MASK,
+        LR1110_SYSTEM_IRQ_TX_DONE | LR1110_SYSTEM_IRQ_RX_DONE | LR1110_SYSTEM_IRQ_PREAMBLE_DETECTED |
+        LR1110_SYSTEM_IRQ_SYNC_WORD_HEADER_VALID | LR1110_SYSTEM_IRQ_HEADER_ERROR | LR1110_SYSTEM_IRQ_CRC_ERROR |
+        LR1110_SYSTEM_IRQ_CAD_DONE | LR1110_SYSTEM_IRQ_CAD_DETECTED | LR1110_SYSTEM_IRQ_TIMEOUT |
+        LR1110_SYSTEM_IRQ_GNSS_SCAN_DONE | LR1110_SYSTEM_IRQ_WIFI_SCAN_DONE | LR1110_SYSTEM_IRQ_EOL |
+        LR1110_SYSTEM_IRQ_CMD_ERROR | LR1110_SYSTEM_IRQ_ERROR | LR1110_SYSTEM_IRQ_FSK_LEN_ERROR |
+        LR1110_SYSTEM_IRQ_FSK_ADDR_ERROR,
 };
 
 enum lr1110_system_calibration_e
 {
-    LR1110_SYSTEM_CALIBRATE_LF_RC_MASK  = ( 1 << 0 ),
-    LR1110_SYSTEM_CALIBRATE_HF_RC_MASK  = ( 1 << 1 ),
-    LR1110_SYSTEM_CALIBRATE_PLL_MASK    = ( 1 << 2 ),
-    LR1110_SYSTEM_CALIBRATE_ADC_MASK    = ( 1 << 3 ),
-    LR1110_SYSTEM_CALIBRATE_IMG_MASK    = ( 1 << 4 ),
-    LR1110_SYSTEM_CALIBRATE_PLL_TX_MASK = ( 1 << 5 ),
+    LR1110_SYSTEM_CALIB_LF_RC_MASK  = ( 1 << 0 ),
+    LR1110_SYSTEM_CALIB_HF_RC_MASK  = ( 1 << 1 ),
+    LR1110_SYSTEM_CALIB_PLL_MASK    = ( 1 << 2 ),
+    LR1110_SYSTEM_CALIB_ADC_MASK    = ( 1 << 3 ),
+    LR1110_SYSTEM_CALIB_IMG_MASK    = ( 1 << 4 ),
+    LR1110_SYSTEM_CALIB_PLL_TX_MASK = ( 1 << 5 ),
 };
+
+typedef uint8_t lr1110_system_cal_mask_t;
 
 enum lr1110_system_errors_e
 {
@@ -136,14 +133,14 @@ typedef uint16_t lr1110_system_errors_t;
 
 typedef enum
 {
-    LR1110_SYSTEM_CHIP_MODE_SLEEP = 0x00,
-    LR1110_SYSTEM_CHIP_MODE_RC    = 0x01,
-    LR1110_SYSTEM_CHIP_MODE_XOSC  = 0x02,
-    LR1110_SYSTEM_CHIP_MODE_FS    = 0x03,
-    LR1110_SYSTEM_CHIP_MODE_RX    = 0x04,
-    LR1110_SYSTEM_CHIP_MODE_TX    = 0x05,
-    LR1110_SYSTEM_CHIP_MODE_LOC   = 0x06,
-} lr1110_system_chip_mode_t;
+    LR1110_SYSTEM_CHIP_MODE_SLEEP     = 0x00,
+    LR1110_SYSTEM_CHIP_MODE_STBY_RC   = 0x01,
+    LR1110_SYSTEM_CHIP_MODE_STBY_XOSC = 0x02,
+    LR1110_SYSTEM_CHIP_MODE_FS        = 0x03,
+    LR1110_SYSTEM_CHIP_MODE_RX        = 0x04,
+    LR1110_SYSTEM_CHIP_MODE_TX        = 0x05,
+    LR1110_SYSTEM_CHIP_MODE_LOC       = 0x06,
+} lr1110_system_chip_modes_t;
 
 typedef enum
 {
@@ -158,13 +155,13 @@ typedef enum
     LR1110_SYSTEM_LFCLK_RC   = 0x00,  //!<  (Default)
     LR1110_SYSTEM_LFCLK_XTAL = 0x01,
     LR1110_SYSTEM_LFCLK_EXT  = 0x02
-} lr1110_system_lfclk_config_t;
+} lr1110_system_lfclk_cfg_t;
 
 typedef enum
 {
-    LR1110_SYSTEM_REGMODE_NO_DCDC        = 0x00,  //!< (Default)
-    LR1110_SYSTEM_REGMODE_DCDC_CONVERTER = 0x01,
-} lr1110_regmodes_t;
+    LR1110_SYSTEM_REG_MODE_LDO  = 0x00,  //!< (Default)
+    LR1110_SYSTEM_REG_MODE_DCDC = 0x01,
+} lr1110_system_reg_mode_t;
 
 /*!
  * \brief Info page ID
@@ -175,7 +172,7 @@ typedef enum
     LR1110_SYSTEM_INFOPAGE_1 = 0x01,  //!< Info page #1
 } lr1110_system_infopage_id_t;
 
-enum lr1110_system_rfswitch_config_pin_e
+enum lr1110_system_rfswitch_cfg_pin_e
 {
     LR1110_SYSTEM_RFSW0_HIGH = ( 1 << 0 ),
     LR1110_SYSTEM_RFSW1_HIGH = ( 1 << 1 ),
@@ -184,7 +181,7 @@ enum lr1110_system_rfswitch_config_pin_e
     LR1110_SYSTEM_RFSW4_HIGH = ( 1 << 4 ),
 };
 
-typedef struct
+typedef struct lr1110_system_rfswitch_cfg_s
 {
     uint8_t enable;
     uint8_t standby;
@@ -194,56 +191,56 @@ typedef struct
     uint8_t tx_hf;
     uint8_t gnss;
     uint8_t wifi;
-} lr1110_system_rfswitch_config_t;
+} lr1110_system_rfswitch_cfg_t;
 
 /*!
  * \brief Stand by configuration values
  */
 typedef enum
 {
-    LR1110_SYSTEM_STDBY_CONFIG_RC   = 0x00,
-    LR1110_SYSTEM_STDBY_CONFIG_XOSC = 0x01
-} lr1110_system_standby_config_t;
+    LR1110_SYSTEM_STANDBY_CFG_RC   = 0x00,
+    LR1110_SYSTEM_STANDBY_CFG_XOSC = 0x01
+} lr1110_system_standby_cfg_t;
 
 /*!
  * \brief TCXO supply voltage values
  */
 typedef enum
 {
-    LR1110_SYSTEM_TCXO_SUPPLY_VOLTAGE_1_6V = 0x00,  //!< Supply voltage = 1.6v
-    LR1110_SYSTEM_TCXO_SUPPLY_VOLTAGE_1_7V = 0x01,  //!< Supply voltage = 1.7v
-    LR1110_SYSTEM_TCXO_SUPPLY_VOLTAGE_1_8V = 0x02,  //!< Supply voltage = 1.8v
-    LR1110_SYSTEM_TCXO_SUPPLY_VOLTAGE_2_2V = 0x03,  //!< Supply voltage = 2.2v
-    LR1110_SYSTEM_TCXO_SUPPLY_VOLTAGE_2_4V = 0x04,  //!< Supply voltage = 2.4v
-    LR1110_SYSTEM_TCXO_SUPPLY_VOLTAGE_2_7V = 0x05,  //!< Supply voltage = 2.7v
-    LR1110_SYSTEM_TCXO_SUPPLY_VOLTAGE_3_0V = 0x06,  //!< Supply voltage = 3.0v
-    LR1110_SYSTEM_TCXO_SUPPLY_VOLTAGE_3_3V = 0x07,  //!< Supply voltage = 3.3v
+    LR1110_SYSTEM_TCXO_CTRL_1_6V = 0x00,  //!< Supply voltage = 1.6v
+    LR1110_SYSTEM_TCXO_CTRL_1_7V = 0x01,  //!< Supply voltage = 1.7v
+    LR1110_SYSTEM_TCXO_CTRL_1_8V = 0x02,  //!< Supply voltage = 1.8v
+    LR1110_SYSTEM_TCXO_CTRL_2_2V = 0x03,  //!< Supply voltage = 2.2v
+    LR1110_SYSTEM_TCXO_CTRL_2_4V = 0x04,  //!< Supply voltage = 2.4v
+    LR1110_SYSTEM_TCXO_CTRL_2_7V = 0x05,  //!< Supply voltage = 2.7v
+    LR1110_SYSTEM_TCXO_CTRL_3_0V = 0x06,  //!< Supply voltage = 3.0v
+    LR1110_SYSTEM_TCXO_CTRL_3_3V = 0x07,  //!< Supply voltage = 3.3v
 } lr1110_system_tcxo_supply_voltage_t;
 
-typedef struct
+typedef struct lr1110_system_stat1_s
 {
     lr1110_system_command_status_t command_status;
     bool                           is_interrupt_active;
 } lr1110_system_stat1_t;
 
-typedef struct
+typedef struct lr1110_system_stat2_s
 {
-    lr1110_system_chip_mode_t chip_mode;
-    bool                      is_running_from_flash;
+    lr1110_system_chip_modes_t chip_mode;
+    bool                       is_running_from_flash;
 } lr1110_system_stat2_t;
 
-typedef struct
+typedef struct lr1110_system_version_s
 {
     uint8_t  hw;
     uint8_t  type;
     uint16_t fw;
 } lr1110_system_version_t;
 
-typedef struct
+typedef struct lr1110_system_sleep_cfg_s
 {
     bool is_warm_start;
     bool is_rtc_timeout;
-} lr1110_system_sleep_config_t;
+} lr1110_system_sleep_cfg_t;
 
 /*
  * -----------------------------------------------------------------------------

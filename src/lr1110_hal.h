@@ -115,8 +115,10 @@ lr1110_hal_status_t lr1110_hal_write_read( const void* context, const uint8_t* c
  * \remark Must be implemented by the upper layer
  *
  * \param [in] context Radio implementation parameters
+ *
+ * \retval status     Operation status
  */
-void lr1110_hal_reset( const void* context );
+lr1110_hal_status_t lr1110_hal_reset( const void* context );
 
 /*!
  * Wake the radio up.

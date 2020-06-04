@@ -190,7 +190,7 @@ typedef uint8_t lr1110_gnss_almanac_full_read_bytestream_t[LR1110_GNSS_FULL_ALMA
 /*!
  * \brief Assistance position.
  */
-typedef struct
+typedef struct lr1110_gnss_solver_assistance_position_s
 {
     float latitude;   //!< Latitude 12 bits (latitude in degree * 2048/90) with
                       //!< resolution 0.044°
@@ -201,7 +201,7 @@ typedef struct
 /*!
  * \brief Detected satellite structure
  */
-typedef struct
+typedef struct lr1110_gnss_detected_satellite_s
 {
     lr1110_gnss_satellite_id_t satellite_id;
     int8_t                     cnr;  //!< Carrier-to-noise ration (C/N) in dB
@@ -210,7 +210,7 @@ typedef struct
 /*!
  * \brief GNSS timings of the LR1110
  */
-typedef struct
+typedef struct lr1110_gnss_timings_s
 {
     uint32_t radio_ms;
     uint32_t computation_ms;
@@ -219,7 +219,7 @@ typedef struct
 /*!
  * \brief Version structure of the LR1110 GNSS firmware
  */
-typedef struct
+typedef struct lr1110_gnss_version_s
 {
     uint8_t gnss_firmware;  //!< Version of the firmware
     uint8_t gnss_almanac;   //!< Version of the almanac format

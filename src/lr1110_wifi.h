@@ -43,6 +43,7 @@ extern "C" {
 
 #include "lr1110_regmem.h"
 #include "lr1110_wifi_types.h"
+#include "lr1110_types.h"
 
 /*
  * -----------------------------------------------------------------------------
@@ -97,23 +98,10 @@ extern "C" {
  * command **DOES** reset the results already obtained by previous passive scan operations.
  *
  * The result can be read at the end of the passive scan issuing the command lr1110_wifi_get_nb_results (to get the
- * number of results to read) and lr1110_wifi_read_basic_results or lr1110_wifi_read_extended_results to actually get
- * the result bytes.
+ * number of results to read) and lr1110_wifi_read_basic_complete_results or
+ * lr1110_wifi_read_basic_mac_type_channel_results to actually get the result bytes.
  *
- * Reading with lr1110_wifi_read_basic_results or
- * lr1110_wifi_read_extended_results depends on the scan_mode selected when
- * calling this method with the correspondence: <table> <tr><th> Scan mode on
- * Wi-Fi Passive Scan </th><th> Result method to use </th> <tr><td>
- * LR1110_WIFI_SCAN_MODE_BEACON </td><td> lr1110_wifi_read_basic_results </td>
- * <tr><td> LR1110_WIFI_SCAN_MODE_PACKET </td><td>
- * lr1110_wifi_read_basic_results
- * </td> <tr><td> LR1110_WIFI_SCAN_MODE_FULL_BEACON </td><td>
- * lr1110_wifi_read_extended_results
- * </td> <tr><td> LR1110_WIFI_SCAN_MODE_FULL_PACKET </td><td>
- * lr1110_wifi_read_extended_results </td>
- * </table>
- *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] signal_type The type of Wi-Fi Signal to scan for
  *
@@ -133,12 +121,14 @@ extern "C" {
  * \param [in] abort_on_timeout If true, the beacon search jumps to next configured Wi-Fi channel (or stop if there is
  * no more channel to scan) as soon as a search timeout is encountered
  *
- * \see lr1110_wifi_read_basic_results, lr1110_wifi_read_extended_results
+ * \returns Status of the driver call
+ *
+ * \see lr1110_wifi_read_basic_complete_results, lr1110_wifi_read_basic_mac_type_channel_results
  */
-void lr1110_wifi_scan( const void* radio, const lr1110_wifi_signal_type_scan_t signal_type,
-                       const lr1110_wifi_channel_mask_t channels, const lr1110_wifi_mode_t scan_mode,
-                       const uint8_t max_results, const uint8_t nb_scan_per_channel, const uint16_t timeout_in_ms,
-                       const bool abort_on_timeout );
+lr1110_status_t lr1110_wifi_scan( const void* context, const lr1110_wifi_signal_type_scan_t signal_type,
+                                  const lr1110_wifi_channel_mask_t channels, const lr1110_wifi_mode_t scan_mode,
+                                  const uint8_t max_results, const uint8_t nb_scan_per_channel,
+                                  const uint16_t timeout_in_ms, const bool abort_on_timeout );
 
 /*!
  * \brief Start a Wi-Fi passive scan for country codes extraction
@@ -148,7 +138,7 @@ void lr1110_wifi_scan( const void* radio, const lr1110_wifi_signal_type_scan_t s
  *
  * During the passive scan, the results are filtered to keep only single MAC addresses.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] channels_mask Mask of the Wi-Fi channels to scan
  *
@@ -161,10 +151,12 @@ void lr1110_wifi_scan( const void* radio, const lr1110_wifi_signal_type_scan_t s
  *
  * \param [in] abort_on_timeout If true, the beacon search jumps to next configured Wi-Fi channel (or stop if there is
  * no more channel to scan) as soon as a search timeout is encountered
+ *
+ * \returns Status of the driver call
  */
-void lr1110_wifi_search_country_code( const void* radio, const lr1110_wifi_channel_mask_t channels_mask,
-                                      const uint8_t nb_max_results, const uint8_t nb_scan_per_channel,
-                                      const uint16_t timeout_in_ms, const bool abort_on_timeout );
+lr1110_status_t lr1110_wifi_search_country_code( const void* context, const lr1110_wifi_channel_mask_t channels_mask,
+                                                 const uint8_t nb_max_results, const uint8_t nb_scan_per_channel,
+                                                 const uint16_t timeout_in_ms, const bool abort_on_timeout );
 
 /*!
  * \brief Enable/Disable usage of hardware de-barker
@@ -174,63 +166,138 @@ void lr1110_wifi_search_country_code( const void* radio, const lr1110_wifi_chann
  *
  * \warning Disabling the Hardware De-Barker makes the LR1110_WIFI_SCAN_MODE_FULL_PACKET unusable.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] enable_hardware_debarker Set to true to enable usage of hardware de-barker, false to disable
+ *
+ * \returns Status of the driver call
  */
-void lr1110_wifi_configure_hardware_debarker( const void* radio, const bool enable_hardware_debarker );
+lr1110_status_t lr1110_wifi_cfg_hardware_debarker( const void* context, const bool enable_hardware_debarker );
 
 /*!
  * \brief Returns the number of results currently available in LR1110
  *
- * It can be called before lr1110_wifi_read_basic_results or lr1110_wifi_read_extended_results to know the number of
- * results.
+ * It can be called before lr1110_wifi_read_basic_complete_results or lr1110_wifi_read_basic_mac_type_channel_results to
+ * know the number of results.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] nb_results The number of results available in the LR1110
  *
- * \see lr1110_wifi_read_basic_results, lr1110_wifi_read_extended_results
+ * \returns Status of the driver call
+ *
+ * \see lr1110_wifi_read_basic_complete_results, lr1110_wifi_read_basic_mac_type_channel_results
  */
-void lr1110_wifi_get_nb_results( const void* radio, uint8_t* nb_results );
+lr1110_status_t lr1110_wifi_get_nb_results( const void* context, uint8_t* nb_results );
 
 /*!
  * \brief Read basic complete results
+ *
+ * This function can be used to fetch all results in a row, or one after the other.
+ *
+ * An example of usage to fetch all results in a row is:
+ * \code{.cpp}
+ * uint8_t nb_results = 0;
+ * lr1110_wifi_get_nb_results(&radio, &nb_results);
+ * lr1110_wifi_basic_complete_result_t all_results[LR1110_WIFI_MAX_RESULTS] = {0};
+ * lr1110_wifi_read_basic_complete_results(&radio, 0, nb_results, all_results);
+ * \endcode
+ *
+ * On the other hand, fetching result one after the other:
+ * \code{.cpp}
+ * uint8_t nb_results = 0;
+ * lr1110_wifi_get_nb_results(&radio, &nb_results);
+ * lr1110_wifi_basic_complete_result_t single_results = {0};
+ * for(uint8_t index_result = 0; index_result < nb_results; index_result++){
+ *   lr1110_wifi_read_basic_complete_results(&radio, index_result, 1, &single_results);
+ *   // Do something with single_results
+ * }
+ * \endcode
+ *
+ * \param [in] radio Radio abstraction
+ *
+ * \param [in] start_result_index Result index from which starting to fetch the results
+ *
+ * \param [in] nb_results Number of results to fetch
+ *
+ * \param [out] results Pointer to an array of result structures to populate. It is up to the caller to ensure this
+ * array can hold at least nb_results elements.
+ *
+ * \returns Status of the driver call
  */
-void lr1110_wifi_read_basic_complete_results( const void* radio, const uint8_t start_result_index,
-                                              const uint8_t nb_results, lr1110_wifi_basic_complete_result_t* results );
+lr1110_status_t lr1110_wifi_read_basic_complete_results( const void* context, const uint8_t start_result_index,
+                                                         const uint8_t                        nb_results,
+                                                         lr1110_wifi_basic_complete_result_t* results );
 
 /*!
  * \brief Read basic MAC, Wi-Fi type and channel results
+ *
+ * This function can be used to fetch all results in a row, or one after the other.
+ *
+ * An example of usage to fetch all results in a row is:
+ * \code{.cpp}
+ * uint8_t nb_results = 0;
+ * lr1110_wifi_get_nb_results(&radio, &nb_results);
+ * lr1110_wifi_basic_mac_type_channel_result_t all_results[LR1110_WIFI_MAX_RESULTS] = {0};
+ * lr1110_wifi_read_basic_mac_type_channel_results(&radio, 0, nb_results, all_results);
+ * \endcode
+ *
+ * On the other hand, fetching result one after the other:
+ * \code{.cpp}
+ * uint8_t nb_results = 0;
+ * lr1110_wifi_get_nb_results(&radio, &nb_results);
+ * lr1110_wifi_basic_mac_type_channel_result_t single_results = {0};
+ * for(uint8_t index_result = 0; index_result < nb_results; index_result++){
+ *   lr1110_wifi_read_basic_mac_type_channel_results(&radio, index_result, 1, &single_results);
+ *   // Do something with single_results
+ * }
+ * \endcode
+ *
+ * \param [in] radio Radio abstraction
+ *
+ * \param [in] start_result_index Result index from which starting to fetch the results
+ *
+ * \param [in] nb_results Number of results to fetch
+ *
+ * \param [out] results Pointer to an array of result structures to populate. It is up to the caller to ensure this
+ * array can hold at least nb_results elements.
+ *
+ * \returns Status of the driver call
  */
-void lr1110_wifi_read_basic_mac_type_channel_results( const void* radio, const uint8_t start_result_index,
-                                                      const uint8_t                                nb_results,
-                                                      lr1110_wifi_basic_mac_type_channel_result_t* results );
+lr1110_status_t lr1110_wifi_read_basic_mac_type_channel_results( const void* context, const uint8_t start_result_index,
+                                                                 const uint8_t nb_results,
+                                                                 lr1110_wifi_basic_mac_type_channel_result_t* results );
 
 /*!
  * \brief Reset the internal counters of cumulative timing
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
+ *
+ * \returns Status of the driver call
  */
-void lr1110_wifi_reset_cumulative_timing( const void* radio );
+lr1110_status_t lr1110_wifi_reset_cumulative_timing( const void* context );
 
 /*!
  * \brief Read the internal counters of cumulative timing
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] timing A pointer to the cumulative timing structure to populate
+ *
+ * \returns Status of the driver call
  */
-void lr1110_wifi_read_cumulative_timing( const void* radio, lr1110_wifi_cumulative_timings_t* timing );
+lr1110_status_t lr1110_wifi_read_cumulative_timing( const void* context, lr1110_wifi_cumulative_timings_t* timing );
 
 /*!
  * \brief Get size of country code search results
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] nb_country_code_results Number of country results to read
+ *
+ * \returns Status of the driver call
  */
-void lr1110_wifi_get_nb_country_code_results( const void* radio, uint8_t* nb_country_code_results );
+lr1110_status_t lr1110_wifi_get_nb_country_code_results( const void* context, uint8_t* nb_country_code_results );
 
 /*!
  * \brief Read country code results
@@ -238,7 +305,7 @@ void lr1110_wifi_get_nb_country_code_results( const void* radio, uint8_t* nb_cou
  * The total number of country code results to read is obtained from a previous call to
  * lr1110_wifi_get_nb_country_code_results
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] start_result_index The result index to start reading results from
  *
@@ -247,38 +314,44 @@ void lr1110_wifi_get_nb_country_code_results( const void* radio, uint8_t* nb_cou
  * \param [out] country_code_results An array of lr1110_wifi_country_code_t to be filled. It is up to the application to
  * ensure this array is big enough to hold nb_country_results elements
  *
+ * \returns Status of the driver call
+ *
  * \see lr1110_wifi_get_nb_country_code_results, lr1110_wifi_search_country_code
  */
-void lr1110_wifi_read_country_code_results( const void* radio, const uint8_t start_result_index,
-                                            const uint8_t               nb_country_results,
-                                            lr1110_wifi_country_code_t* country_code_results );
+lr1110_status_t lr1110_wifi_read_country_code_results( const void* context, const uint8_t start_result_index,
+                                                       const uint8_t               nb_country_results,
+                                                       lr1110_wifi_country_code_t* country_code_results );
 
 /*!
  * \brief Configure the timestamp used to discriminate mobile access points from gateways.
  *
  * This filtering is based on the hypothesis that mobile access points have timestamp shorter than gateways.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] timestamp_in_s Timestamp value in second
+ *
+ * \returns Status of the driver call
  */
-void lr1110_wifi_config_timestamp_ap_phone( const void* radio, uint32_t timestamp_in_s );
+lr1110_status_t lr1110_wifi_cfg_timestamp_ap_phone( const void* context, uint32_t timestamp_in_s );
 
 /*!
  * \brief Get the internal wifi firmware version
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] wifi_version The wifi version structure populated with version numbers
+ *
+ * \returns Status of the driver call
  */
-void lr1110_wifi_read_version( const void* radio, lr1110_wifi_version_t* wifi_version );
+lr1110_status_t lr1110_wifi_read_version( const void* context, lr1110_wifi_version_t* wifi_version );
 
 /*!
  * \brief Helper function to convert a channel to its mask representation
  *
  * Several channel mask value returned by this function can be OR'd to build a proper channel mask.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] channel The channel to get the mask value
  *
@@ -309,7 +382,7 @@ lr1110_wifi_channel_mask_t lr1110_wifi_channel_to_mask( const lr1110_wifi_channe
  *
  * \param [out] mac_origin_estimation Indicates the estimation of MAC address origin by LR1110
  *
- * \see lr1110_wifi_read_basic_results, lr1110_wifi_read_extended_results
+ * \see lr1110_wifi_read_basic_complete_results, lr1110_wifi_read_basic_mac_type_channel_results
  */
 void lr1110_extract_channel_info( const lr1110_wifi_channel_info_byte_t info_byte, lr1110_wifi_channel_t* channel,
                                   bool* rssi_validity, lr1110_wifi_mac_origin_t* mac_origin_estimation );

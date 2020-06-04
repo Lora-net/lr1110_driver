@@ -32,16 +32,17 @@
 #ifndef __LR1110_RADIO_H__
 #define __LR1110_RADIO_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * -----------------------------------------------------------------------------
  * --- DEPENDENCIES ------------------------------------------------------------
  */
 
 #include "lr1110_radio_types.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "lr1110_types.h"
 
 /*
  * -----------------------------------------------------------------------------
@@ -66,9 +67,13 @@ extern "C" {
 /*!
  * \brief Reset internal statistics of the received packets
  *
- * \see lr1110_radio_get_stats_gfsk, lr1110_radio_get_stats_lora
+ * \param [in] context Chip implementation context
+ *
+ * \returns Operation status
+ *
+ * \see lr1110_radio_get_gfsk_stats, lr1110_radio_get_lora_stats
  */
-void lr1110_radio_reset_stats( const void* radio );
+lr1110_status_t lr1110_radio_reset_stats( const void* context );
 
 /*!
  * \brief Get the internal statistics of the GFSK received packets
@@ -76,13 +81,15 @@ void lr1110_radio_reset_stats( const void* radio );
  * Internal statistics are reset on Power on Reset, by entering sleep mode
  * without memory retention, or by calling \ref lr1110_radio_reset_stats.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
- * \param [out] radio_stats The statistics structure of the received packets
+ * \param [out] stats The statistics structure of the received packets
+ *
+ * \returns Operation status
  *
  * \see lr1110_radio_reset_stats
  */
-void lr1110_radio_get_stats_gfsk( const void* radio, lr1110_radio_stats_gfsk_t* radio_stats );
+lr1110_status_t lr1110_radio_get_gfsk_stats( const void* context, lr1110_radio_stats_gfsk_t* stats );
 
 /*!
  * \brief Get the internal statistics of the LoRa received packets
@@ -90,94 +97,113 @@ void lr1110_radio_get_stats_gfsk( const void* radio, lr1110_radio_stats_gfsk_t* 
  * Internal statistics are reset on Power on Reset, by entering sleep mode
  * without memory retention, or by calling \ref lr1110_radio_reset_stats.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
- * \param [out] radio_stats The statistics structure of the received packets
+ * \param [out] stats The statistics structure of the received packets
+ *
+ * \returns Operation status
  *
  * \see lr1110_radio_reset_stats
  */
-void lr1110_radio_get_stats_lora( const void* radio, lr1110_radio_stats_lora_t* radio_stats );
+lr1110_status_t lr1110_radio_get_lora_stats( const void* context, lr1110_radio_stats_lora_t* stats );
 
 /*!
  * \brief Get the packet type currently configured
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] packetType The packet type currently configured
  *
- * \see lr1110_radio_set_packet_type
+ * \returns Operation status
+ *
+ * \see lr1110_radio_set_pkt_type
  */
-void lr1110_radio_get_packet_type( const void* radio, lr1110_radio_packet_types_t* packet_type );
+lr1110_status_t lr1110_radio_get_pkt_type( const void* context, lr1110_radio_pkt_type_t* pkt_type );
 
 /*!
  * \brief Get the length of last received packet, and the offset in the RX
  * internal buffer of the first byte of the received payload
  *
+ * \param [in] context Chip implementation context
+ *
  * \param [out] rxBufferStatus The structure of RX buffer status
+ *
+ * \returns Operation status
  */
-void lr1110_radio_get_rxbuffer_status( const void* radio, lr1110_radio_rxbuffer_status_t* rxbuffer_status );
+lr1110_status_t lr1110_radio_get_rx_buffer_status( const void*                      context,
+                                                   lr1110_radio_rx_buffer_status_t* rx_buffer_status );
 
 /*!
  * \brief Get the status of last GFSK received packet
  *
  * The value depends on the received packet type
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param[out] packetStatus The last received packet status
+ *
+ * \returns Operation status
  */
-void lr1110_radio_get_packet_status_gfsk( const void* radio, lr1110_radio_packet_status_gfsk_t* packet_status );
+lr1110_status_t lr1110_radio_get_gfsk_pkt_status( const void* context, lr1110_radio_pkt_status_gfsk_t* pkt_status );
 
 /*!
  * \brief Get the status of last LoRa received packet
  *
  * The value depends on the received packet type
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param[out] packetStatus The last received packet status
+ *
+ * \returns Operation status
  */
-void lr1110_radio_get_packet_status_lora( const void* radio, lr1110_radio_packet_status_lora_t* packet_status );
+lr1110_status_t lr1110_radio_get_lora_pkt_status( const void* context, lr1110_radio_pkt_status_lora_t* pkt_status );
 
 /*!
  * \brief Get the instantaneous RSSI.
  *
  * This command can be used during reception of a packet
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] rssi Instantaneous RSSI.
+ *
+ * \returns Operation status
  */
-void lr1110_radio_get_rssi_inst( const void* radio, int8_t* rssi_in_dbm );
+lr1110_status_t lr1110_radio_get_rssi_inst( const void* context, int8_t* rssi_in_dbm );
 
 /*!
  * \brief Set the GFSK modem sync word
  *
- * This command is used to set the GFSK nodem sync word. By default, the value
- * is 0x9723522556536564
+ * This command is used to set the GFSK nodem sync word. By default, the value is 0x9723522556536564
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] gfsk_sync_word The sync word to be configured
+ *
+ * \returns Operation status
  */
-void lr1110_radio_set_gfsk_sync_word( const void* radio, const uint8_t* gfsk_sync_word );
+lr1110_status_t lr1110_radio_set_gfsk_sync_word( const void* context, const uint8_t* gfsk_sync_word );
 
 /*!
  * \brief Set the LoRa modem sync word to private / public
  *
  * This command is used to select which LoRa network is selected
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] network_type The network type to be configured
+ *
+ * \returns Operation status
  */
-void lr1110_radio_set_lora_sync_word( const void* radio, const lr1110_radio_lora_network_type_t network_type );
+lr1110_status_t lr1110_radio_set_lora_sync_word( const void*                            context,
+                                                 const lr1110_radio_lora_network_type_t network_type );
 
 /*!
  * \brief Start RX operations
  *
  * This command sets the LR1110 to RX mode. The radio must have been
- * configured before using this command with \ref lr1110_radio_set_packet_type
+ * configured before using this command with \ref lr1110_radio_set_pkt_type
  *
  * By default, the timeout parameter allows to return automatically to standby
  * RC mode if no packets have been received after a certain amount of time.
@@ -199,19 +225,21 @@ void lr1110_radio_set_lora_sync_word( const void* radio, const lr1110_radio_lora
  * packet
  * </table>
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] timeout The timeout configuration for RX operation
  *
- * \see lr1110_radio_set_packet_type, lr1110_radio_set_rx_tx_fallback_mode
+ * \returns Operation status
+ *
+ * \see lr1110_radio_set_pkt_type, lr1110_radio_set_rx_tx_fallback_mode
  */
-void lr1110_radio_set_rx( const void* radio, const uint32_t timeout );
+lr1110_status_t lr1110_radio_set_rx( const void* context, const uint32_t timeout );
 
 /*!
  * \brief Start TX operations
  *
  * This command sets the LR1110 to TX mode. The radio must have been
- * configured before using this command with \ref lr1110_radio_set_packet_type
+ * configured before using this command with \ref lr1110_radio_set_pkt_type
  *
  * By default, the timeout parameter allows to return automatically to standby
  * RC mode if the packet has not been completely transmitted after a certain
@@ -226,24 +254,28 @@ void lr1110_radio_set_rx( const void* radio, const uint32_t timeout );
  *
  * If the timeout argument is 0, then no timeout is used.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] timeout The timeout configuration for TX operation
  *
- * \see lr1110_radio_set_packet_type, lr1110_radio_set_rx_tx_fallback_mode
+ * \returns Operation status
+ *
+ * \see lr1110_radio_set_pkt_type, lr1110_radio_set_rx_tx_fallback_mode
  */
-void lr1110_radio_set_tx( const void* radio, const uint32_t timeout );
+lr1110_status_t lr1110_radio_set_tx( const void* context, const uint32_t timeout );
 
 /*!
  * \brief Set the frequency for future radio operations.
  *
  * This commands does not set frequency for Wi-Fi and GNSS scan operations.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
- * \param [in] frequency The frequency in Hz to set for radio operations
+ * \param [in] freq_in_hz The frequency in Hz to set for radio operations
+ *
+ * \returns Operation status
  */
-void lr1110_radio_set_rf_frequency( const void* radio, const uint32_t frequency );
+lr1110_status_t lr1110_radio_set_rf_freq( const void* context, const uint32_t freq_in_hz );
 
 /*!
  * \brief Configure automatic TX after RX or automatic RX after TX
@@ -264,7 +296,7 @@ void lr1110_radio_set_rf_frequency( const void* radio, const uint32_t frequency 
  *
  * To disable this behavior, use this method with delay 0xFFFFFFFF.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] delay Time to spend in Intermediary mode expressed as steps of
  * \f$\frac{1}{32.768 KHz}\f$ steps. Value 0xFFFFFF disable \ref AutoTxRx
@@ -274,92 +306,109 @@ void lr1110_radio_set_rf_frequency( const void* radio, const uint32_t frequency 
  *
  * \param [in] timeout The timeout duration of the automatic RX or TX,
  * expressed as steps of \f$ \frac{1}{32.768KHz} \f$
+ *
+ * \returns Operation status
  */
-void lr1110_radio_auto_tx_rx( const void* radio, const uint32_t delay,
-                              const lr1110_radio_intermediary_mode_t intermediary_mode, const uint32_t timeout );
+lr1110_status_t lr1110_radio_auto_tx_rx( const void* context, const uint32_t delay,
+                                         const lr1110_radio_intermediary_mode_t intermediary_mode,
+                                         const uint32_t                         timeout );
 
 /*!
  * \brief Set Channel Activity Detection configuration
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] cad_params The structure defining CAD configuration
+ *
+ * \returns Operation status
  */
-void lr1110_radio_set_cad_params( const void* radio, const lr1110_radio_cad_params_t* cad_params );
+lr1110_status_t lr1110_radio_set_cad_params( const void* context, const lr1110_radio_cad_params_t* cad_params );
 
 /*!
  * \brief Set the packet type
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
- * \param [in] packet_type Packet type to set
+ * \param [in] pkt_type Packet type to set
  *
- * \see lr1110_radio_get_packet_type
+ * \returns Operation status
+ *
+ * \see lr1110_radio_get_pkt_type
  */
-void lr1110_radio_set_packet_type( const void* radio, const lr1110_radio_packet_types_t packet_type );
+lr1110_status_t lr1110_radio_set_pkt_type( const void* context, const lr1110_radio_pkt_type_t pkt_type );
 
 /*!
  * \brief Set the modulation parameters for GFSK packets
  *
- * The command \ref lr1110_radio_set_packet_type must be called prior this one.
+ * The command \ref lr1110_radio_set_pkt_type must be called prior this one.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
- * \param [in] modulation_params The structure of modulation configuration
+ * \param [in] mod_params The structure of modulation configuration
  *
- * \see lr1110_radio_set_packet_type
+ * \returns Operation status
+ *
+ * \see lr1110_radio_set_pkt_type
  */
-void lr1110_radio_set_modulation_param_gfsk( const void*                                 radio,
-                                             const lr1110_radio_modulation_param_gfsk_t* modulation_params );
+lr1110_status_t lr1110_radio_set_gfsk_mod_params( const void*                           context,
+                                                  const lr1110_radio_mod_params_gfsk_t* mod_params );
 
 /*!
  * \brief Set the modulation parameters for LoRa packets
  *
- * The command \ref lr1110_radio_set_packet_type must be called prior this one.
+ * The command \ref lr1110_radio_set_pkt_type must be called prior this one.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
- * \param [in] modulation_params The structure of modulation configuration
+ * \param [in] mod_params The structure of modulation configuration
  *
- * \see lr1110_radio_set_packet_type
+ * \returns Operation status
+ *
+ * \see lr1110_radio_set_pkt_type
  */
-void lr1110_radio_set_modulation_param_lora( const void*                                 radio,
-                                             const lr1110_radio_modulation_param_lora_t* modulation_params );
+lr1110_status_t lr1110_radio_set_lora_mod_params( const void*                           context,
+                                                  const lr1110_radio_mod_params_lora_t* mod_params );
 
 /*!
  * \brief Set the packet parameters for GFSK packets
  *
- * The command \ref lr1110_radio_set_packet_type must be called prior this one.
+ * The command \ref lr1110_radio_set_pkt_type must be called prior this one.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
- * \param [in] packet_params The structure of packet configuration
+ * \param [in] pkt_params The structure of packet configuration
  *
- * \see lr1110_radio_set_packet_type, lr1110_radio_set_modulation_param_gfsk
+ * \returns Operation status
+ *
+ * \see lr1110_radio_set_pkt_type, lr1110_radio_set_gfsk_mod_params
  */
-void lr1110_radio_set_packet_param_gfsk( const void* radio, const lr1110_radio_packet_param_gfsk_t* packet_params );
+lr1110_status_t lr1110_radio_set_gfsk_pkt_params( const void*                           context,
+                                                  const lr1110_radio_pkt_params_gfsk_t* pkt_params );
 
 /*!
  * \brief Set the packet parameters for LoRa packets
  *
- * The command \ref lr1110_radio_set_packet_type must be called prior this one.
+ * The command \ref lr1110_radio_set_pkt_type must be called prior this one.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] packetParam The structure of packet configuration
  *
- * \see lr1110_radio_set_packet_type, lr1110_radio_set_modulation_param_lora
+ * \returns Operation status
+ *
+ * \see lr1110_radio_set_pkt_type, lr1110_radio_set_lora_mod_params
  */
-void lr1110_radio_set_packet_param_lora( const void* radio, const lr1110_radio_packet_param_lora_t* packet_params );
+lr1110_status_t lr1110_radio_set_lora_pkt_params( const void*                           context,
+                                                  const lr1110_radio_pkt_params_lora_t* pkt_params );
 
 /*!
  * \brief Set the parameters for TX power and power amplifier ramp time
  *
- * The command \ref lr1110_radio_set_pa_config must be called prior calling
+ * The command \ref lr1110_radio_set_pa_cfg must be called prior calling
  * lr1110_radio_set_tx_params.
  *
  * The range of possible TX output power values depends on PA selected with
- * \ref lr1110_radio_set_pa_config :
+ * \ref lr1110_radio_set_pa_cfg :
  *   - for LPA: power value goes from -17dBm to +14dBm (ie. from 0xEF to
  * 0x0E)
  *   - for HPA: power value goes from -9dBm to +22dBm (ie. from 0xF7 to
@@ -367,43 +416,48 @@ void lr1110_radio_set_packet_param_lora( const void* radio, const lr1110_radio_p
  *
  * Moreover, to use TX output power value higher than +10dBm, the
  * \ref REGPASUPPLY_VBAT supply must have been selected with \ref
- * lr1110_radio_set_pa_config.
+ * lr1110_radio_set_pa_cfg.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] power The TX output power in dBm
  *
  * \param [in] rampTime The ramping time configuration for the PA
+ *
+ * \returns Operation status
  */
-void lr1110_radio_set_tx_params( const void* radio, const int8_t power, const lr1110_radio_ramp_time_t ramp_time );
+lr1110_status_t lr1110_radio_set_tx_params( const void* context, const int8_t pwr_in_dbm,
+                                            const lr1110_radio_ramp_time_t ramp_time );
 
 /*!
  * \brief Sets the Node and Broadcast address used for GFSK
  *
  * This setting is used only when filtering is enabled.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] nodeAddress The address used as filter
  *
  * \param [in] broadcastAddress The address used as filter
+ *
+ * \returns Operation status
  */
-void lr1110_radio_set_packet_address( const void* radio, const uint8_t node_address, const uint8_t broadcast_address );
+lr1110_status_t lr1110_radio_set_packet_address( const void* context, const uint8_t node_address,
+                                                 const uint8_t broadcast_address );
 
 /*!
- * \brief Alter the chip mode after successfull transmission or reception
- * operation
+ * \brief Alter the chip mode after successfull transmission or reception operation
  *
  * This setting is not used during Rx Duty Cycle mode or Auto Tx Rx.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
- * \param [in] fallback_mode The chip mode to enter after transmission or
- * reception.
+ * \param [in] fallback_mode The chip mode to enter after successfull transmission or reception.
  *
- * \TODO: Is it only for successfull Tx/Rx (CER-641)
+ * \returns Operation status
  */
-void lr1110_radio_set_rx_tx_fallback_mode( const void* radio, const lr1110_radio_rx_tx_fallback_mode_t fallback_mode );
+lr1110_status_t lr1110_radio_set_rx_tx_fallback_mode( const void*                         context,
+                                                      const lr1110_radio_fallback_modes_t fallback_mode );
 
 /*!
  * \brief Configure and start a Rx Duty Cycle operation
@@ -419,10 +473,10 @@ void lr1110_radio_set_rx_tx_fallback_mode( const void* radio, const lr1110_radio
  * sleep_period
  *     3. On wake-up, the LR1110 restarts the process with the reception state.
  *
- * \note If mode is configured to \ref LR1110_RADIO_RX_DUTY_CYCLE_MODE_CAD, then the CAD configuration used in step 1. is the
- * one set from the last call to \ref lr1110_radio_set_cad_params.
+ * \note If mode is configured to \ref LR1110_RADIO_RX_DUTY_CYCLE_MODE_CAD, then the CAD configuration used in step 1.
+ * is the one set from the last call to \ref lr1110_radio_set_cad_params.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] rx_period The length of Rx period
  *
@@ -430,21 +484,26 @@ void lr1110_radio_set_rx_tx_fallback_mode( const void* radio, const lr1110_radio
  *
  * \param [in] mode The operation mode during Rx phase
  *
+ * \returns Operation status
+ *
  * \see lr1110_radio_set_cad_params
  */
-void lr1110_radio_set_rx_dutycycle( const void* radio, const uint32_t rx_period, const uint32_t sleep_period,
-                                    const lr1110_radio_rx_duty_cycle_mode_t mode );
+lr1110_status_t lr1110_radio_set_rx_duty_cycle( const void* context, const uint32_t rx_period,
+                                                const uint32_t                          sleep_period,
+                                                const lr1110_radio_rx_duty_cycle_mode_t mode );
 
 /*!
  * \brief Set the Power Amplifier configuration
  *
  * It must be called prior using \ref lr1110_radio_set_tx_params.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
- * \param [in] pa_config The structure for PA configuration
+ * \param [in] pa_cfg The structure for PA configuration
+ *
+ * \returns Operation status
  */
-void lr1110_radio_set_pa_config( const void* radio, const lr1110_radio_pa_config_t* pa_config );
+lr1110_status_t lr1110_radio_set_pa_cfg( const void* context, const lr1110_radio_pa_cfg_t* pa_cfg );
 
 /*!
  * \brief Define on which event the Rx timeout shall be stopped
@@ -453,12 +512,13 @@ void lr1110_radio_set_pa_config( const void* radio, const lr1110_radio_pa_config
  *   - Syncword / Header detection
  *   - Preamble detection
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
- * \param [in] stop_timeout_on_preamble The choice of the event to be taken into
- * account
+ * \param [in] stop_timeout_on_preamble The choice of the event to be taken into account
+ *
+ * \returns Operation status
  */
-void lr1110_radio_stop_timeout_on_preamble( const void* radio, const bool stop_timeout_on_preamble );
+lr1110_status_t lr1110_radio_stop_timeout_on_preamble( const void* context, const bool stop_timeout_on_preamble );
 
 /*!
  * \brief Start the CAD mode
@@ -466,79 +526,150 @@ void lr1110_radio_stop_timeout_on_preamble( const void* radio, const bool stop_t
  * The LoRa packet type shall be selected before this function is called. The
  * fallback mode is configured with lr1110_radio_set_cad_params.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
- * \see lr1110_radio_set_cad_params, lr1110_radio_set_packet_type
+ * \returns Operation status
+ *
+ * \see lr1110_radio_set_cad_params, lr1110_radio_set_pkt_type
  */
-void lr1110_radio_set_cad( const void* radio );
+lr1110_status_t lr1110_radio_set_cad( const void* context );
 
 /*!
  * \brief Set the device into Tx continuous wave (RF tone).
  *
  * A packet type shall be selected before this function is called.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
- * \see lr1110_radio_set_packet_type
+ * \returns Operation status
+ *
+ * \see lr1110_radio_set_pkt_type
  */
-void lr1110_radio_set_tx_cw( const void* radio );
+lr1110_status_t lr1110_radio_set_tx_cw( const void* context );
 
 /*!
  * \brief Set the device into Tx continuous preamble (modulated signal).
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
+ *
+ * \returns Operation status
  */
-void lr1110_radio_set_tx_infinite_preamble( const void* radio );
+lr1110_status_t lr1110_radio_set_tx_infinite_preamble( const void* context );
 
 /*!
  * \brief Configure the LoRa modem to issue a RX timeout after an exact number
  * of symbols given in parameter if no LoRa modulation is detected
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] nb_symbol number of symbols to compute the timeout
+ *
+ * \returns Operation status
  */
-void lr1110_radio_set_lora_sync_timeout( const void* radio, const uint8_t nb_symbol );
+lr1110_status_t lr1110_radio_set_lora_sync_timeout( const void* context, const uint8_t nb_symbol );
 
 /*!
  * \brief Configure the seed and the polynomial used to compute CRC in GFSK
  * packet
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] seed Seed used to compute the CRC value
  *
  * \param [in] polynomial Polynomial used to compute the CRC value
+ *
+ * \returns Operation status
  */
-void lr1110_radio_set_gfsk_crc_params( const void* radio, const uint32_t seed, const uint32_t polynomial );
+lr1110_status_t lr1110_radio_set_gfsk_crc_params( const void* context, const uint32_t seed, const uint32_t polynomial );
 
 /*!
  * \brief Configure the whitening seed used in GFSK packet
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] whitening Whitening value
+ *
+ * \returns Operation status
  */
-void lr1110_radio_set_gfsk_whitening_params( const void* radio, const uint16_t whitening );
+lr1110_status_t lr1110_radio_set_gfsk_whitening_seed( const void* context, const uint16_t seed );
 
 /*!
  * \brief Configure the boost mode in reception
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] enable_boost_mode Boost mode activation
+ *
+ * \returns Operation status
  */
-void lr1110_radio_set_rx_boosted( const void* radio, const bool enable_boost_mode );
+lr1110_status_t lr1110_radio_cfg_rx_boosted( const void* context, const bool enable_boost_mode );
 
 /*!
- * \brief Gets the radio bandwidth parameter related to a given bandwith in Hz
+ * \brief Gets the radio bw parameter for a given bandwidth in Hz
  *
  * \param [in] bw_in_hz Requested GFSK Rx bandwidth
  *
- * \param [out] bw_parameter Radio parameter immediately above requested
- * bw_in_hz
+ * \param [out] bw_parameter Radio parameter immediately above requested bw_in_hz
+ *
+ * \returns Operation status
  */
-void lr1110_radio_get_gfsk_rx_bandwidth( uint32_t bw_in_hz, lr1110_radio_gfsk_rx_bw_t* bw_parameter );
+lr1110_status_t lr1110_radio_get_gfsk_rx_bandwidth( uint32_t bw_in_hz, lr1110_radio_gfsk_bw_t* bw_parameter );
+
+/**
+ * @brief Compute the numerator for LoRa time-on-air computation.
+ *
+ * @remark To get the actual time-on-air in seconds, this value has to be divided by the LoRa bandwidth in Hertz.
+ *
+ * @param [in] pkt_p Pointer to the structure holding the LoRa packet parameters
+ * @param [in] mod_p Pointer to the structure holding the LoRa modulation parameters
+ *
+ * @returns LoRa time-on-air numerator
+ */
+uint32_t lr1110_radio_get_lora_time_on_air_numerator( const lr1110_radio_pkt_params_lora_t* pkt_p,
+                                                      const lr1110_radio_mod_params_lora_t* mod_p );
+
+/**
+ * @brief Get the actual value in Hertz of a given LoRa bandwidth
+ *
+ * @param [in] bw LoRa bandwidth parameter
+ *
+ * @returns Actual LoRa bandwidth in Hertz
+ */
+uint32_t lr1110_radio_get_lora_bw_in_hz( lr1110_radio_lora_bw_t bw );
+
+/*!
+ * \brief Get the time on air in ms for LoRa transmission
+ *
+ * \param [in] pkt_p Pointer to a structure holding the LoRa packet parameters
+ * \param [in] mod_p Pointer to a structure holding the LoRa modulation parameters
+ *
+ * \returns Time-on-air value in ms for LoRa transmission
+ */
+uint32_t lr1110_radio_get_lora_time_on_air_in_ms( const lr1110_radio_pkt_params_lora_t* pkt_p,
+                                                  const lr1110_radio_mod_params_lora_t* mod_p );
+
+/**
+ * @brief Compute the numerator for GFSK time-on-air computation.
+ *
+ * @remark To get the actual time-on-air in seconds, this value has to be divided by the GFSK bitrate in bits per
+ * second.
+ *
+ * @param [in] pkt_p Pointer to the structure holding the GFSK packet parameters
+ *
+ * @returns GFSK time-on-air numerator
+ */
+uint32_t lr1110_radio_get_gfsk_time_on_air_numerator( const lr1110_radio_pkt_params_gfsk_t* pkt_p );
+
+/**
+ * @brief Get the time on air in ms for GFSK transmission
+ *
+ * @param [in] pkt_p Pointer to a structure holding the GFSK packet parameters
+ * @param [in] mod_p Pointer to a structure holding the GFSK modulation parameters
+ *
+ * @returns Time-on-air value in ms for GFSK transmission
+ */
+uint32_t lr1110_radio_get_gfsk_time_on_air_in_ms( const lr1110_radio_pkt_params_gfsk_t* pkt_p,
+                                                  const lr1110_radio_mod_params_gfsk_t* mod_p );
 
 #ifdef __cplusplus
 }

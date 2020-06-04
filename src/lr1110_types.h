@@ -1,7 +1,7 @@
 /*!
- * \file      lr1110_driver_version.h
+ * \file      lr1110_types.h
  *
- * \brief     Placeholder to keep the version of LR1110 driver.
+ * \brief      definition for LR1110
  *
  * Revised BSD License
  * Copyright Semtech Corporation 2020. All rights reserved.
@@ -29,24 +29,40 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __LR1110_DRIVER_VERSION_H__
-#define __LR1110_DRIVER_VERSION_H__
+#ifndef __LR1110_TYPES_H__
+#define __LR1110_TYPES_H__
 
-#define LR1110_DRIVER_VERSION_MAJOR 2
-#define LR1110_DRIVER_VERSION_MINOR 0
-#define LR1110_DRIVER_VERSION_PATCH 0
-
-/*!
- * \brief Compare version information with current ones
- *
- * This macro expands to true boolean value if the version information provided in argument is compatible or
- * retro-compatible with the version of this code base
+/*
+ * -----------------------------------------------------------------------------
+ * --- DEPENDENCIES ------------------------------------------------------------
  */
-#define LR1110_DRIVER_VERSION_CHECK( x, y, z ) \
-    ( x == LR1110_DRIVER_VERSION_MAJOR &&      \
-      ( y < LR1110_DRIVER_VERSION_MINOR ||     \
-        ( y == LR1110_DRIVER_VERSION_MINOR && z <= LR1110_DRIVER_VERSION_PATCH ) ) )
 
-const char* lr1110_driver_version_get_version_string( void );
+/*
+ * -----------------------------------------------------------------------------
+ * --- PUBLIC MACROS -----------------------------------------------------------
+ */
 
-#endif
+/*
+ * -----------------------------------------------------------------------------
+ * --- PUBLIC CONSTANTS --------------------------------------------------------
+ */
+
+/*
+ * -----------------------------------------------------------------------------
+ * --- PUBLIC TYPES ------------------------------------------------------------
+ */
+
+typedef enum lr1110_status_e
+{
+    LR1110_STATUS_OK    = 0,
+    LR1110_STATUS_ERROR = 3,
+} lr1110_status_t;
+
+/*
+ * -----------------------------------------------------------------------------
+ * --- PUBLIC FUNCTIONS PROTOTYPES ---------------------------------------------
+ */
+
+#endif  // __LR1110_TYPES_H__
+
+/* --- EOF ------------------------------------------------------------------ */

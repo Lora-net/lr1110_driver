@@ -69,17 +69,17 @@ extern "C" {
  * By default, the internal crypto engine is selected. It is not needed to
  * call this command if one plans to use the internal crypto engine.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [in] element The type of crypto element to use
  *
  */
-void lr1110_crypto_select( const void* radio, const lr1110_crypto_element_t element );
+void lr1110_crypto_select( const void* context, const lr1110_crypto_element_t element );
 
 /*!
  * \brief Set a key in the previously selected crypto element.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] status The status returned by the execution of this
  * cryptographic function
@@ -88,35 +88,36 @@ void lr1110_crypto_select( const void* radio, const lr1110_crypto_element_t elem
  *
  * \param [in] key The key to be set
  *
- * \see lr1110_crypto_derive_and_store_key
+ * \see lr1110_crypto_derive_key
  */
-void lr1110_crypto_set_key( const void* radio, lr1110_crypto_status_t* status, const uint8_t key_id,
+void lr1110_crypto_set_key( const void* context, lr1110_crypto_status_t* status, const uint8_t key_id,
                             const lr1110_crypto_key_t key );
 
 /*!
- * \brief Derive a key previously set and store it.
+ * \brief Derive a key previously set.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] status The status returned by the execution of this
  * cryptographic function
  *
  * \param [in] src_key_id The identifier of the key to be derived
  *
- * \param [in] dest_key_id The identifier to store the derived key
+ * \param [in] dest_key_id The identifier where the derived key will be stored after call to \ref
+ * lr1110_crypto_store_to_flash
  *
  * \param [in] nonce The nonce to be used to perform the derivation
  *
  * \see lr1110_crypto_set_key
  */
-void lr1110_crypto_derive_and_store_key( const void* radio, lr1110_crypto_status_t* status, const uint8_t src_key_id,
-                                         const uint8_t dest_key_id, const lr1110_crypto_nonce_t nonce );
+void lr1110_crypto_derive_key( const void* context, lr1110_crypto_status_t* status, const uint8_t src_key_id,
+                               const uint8_t dest_key_id, const lr1110_crypto_nonce_t nonce );
 
 /*!
  * \brief Perform the needed operations to extract the payload from a join
  * accept message.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] status The status returned by the execution of this
  * cryptographic function
@@ -136,7 +137,7 @@ void lr1110_crypto_derive_and_store_key( const void* radio, lr1110_crypto_status
  * \param [out] data_out Placeholder for the decrypted data
  *
  */
-void lr1110_crypto_process_join_accept( const void* radio, lr1110_crypto_status_t* status, const uint8_t dec_key_id,
+void lr1110_crypto_process_join_accept( const void* context, lr1110_crypto_status_t* status, const uint8_t dec_key_id,
                                         const uint8_t ver_key_id, const lr1110_crypto_lorawan_version_t lorawan_version,
                                         const uint8_t* header, const uint8_t* data, const uint8_t length,
                                         uint8_t* data_out );
@@ -144,7 +145,7 @@ void lr1110_crypto_process_join_accept( const void* radio, lr1110_crypto_status_
 /*!
  * \brief Compute an AES CMAC.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] status The status returned by the execution of this
  * cryptographic function
@@ -159,14 +160,14 @@ void lr1110_crypto_process_join_accept( const void* radio, lr1110_crypto_status_
  *
  * \see lr1110_crypto_verify_aes_cmac
  */
-void lr1110_crypto_compute_aes_cmac( const void* radio, lr1110_crypto_status_t* status, const uint8_t key_id,
+void lr1110_crypto_compute_aes_cmac( const void* context, lr1110_crypto_status_t* status, const uint8_t key_id,
                                      const uint8_t* data, const uint16_t length, lr1110_crypto_mic_t mic );
 
 /*!
  * \brief Compute an AES CMAC and make a comparison with a value given as
  * parameter.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] status The status returned by the execution of this
  * cryptographic function
@@ -182,13 +183,13 @@ void lr1110_crypto_compute_aes_cmac( const void* radio, lr1110_crypto_status_t* 
  *
  * \see lr1110_crypto_compute_aes_cmac
  */
-void lr1110_crypto_verify_aes_cmac( const void* radio, lr1110_crypto_status_t* status, const uint8_t key_id,
+void lr1110_crypto_verify_aes_cmac( const void* context, lr1110_crypto_status_t* status, const uint8_t key_id,
                                     const uint8_t* data, const uint16_t length, const lr1110_crypto_mic_t mic );
 
 /*!
  * \brief Compute an AES encryption with a key ID specified in parameter.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] status The status returned by the execution of this
  * cryptographic function
@@ -205,15 +206,15 @@ void lr1110_crypto_verify_aes_cmac( const void* radio, lr1110_crypto_status_t* s
  * the encrypted data. Values of this buffer are meaningful if and only if
  * the return status is LR1110_CRYPTO_STATUS_SUCCESS
  *
- * \see lr1110_crypto_set_key, lr1110_crypto_derive_and_store_key
+ * \see lr1110_crypto_set_key, lr1110_crypto_derive_key
  */
-void lr1110_crypto_aes_encrypt_01( const void* radio, lr1110_crypto_status_t* status, const uint8_t key_id,
+void lr1110_crypto_aes_encrypt_01( const void* context, lr1110_crypto_status_t* status, const uint8_t key_id,
                                    const uint8_t* data, const uint16_t length, uint8_t* result );
 
 /*!
  * \brief Compute an AES encryption with a key ID specified in parameter.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] status The status returned by the execution of this
  * cryptographic function
@@ -230,15 +231,15 @@ void lr1110_crypto_aes_encrypt_01( const void* radio, lr1110_crypto_status_t* st
  * the encrypted data. Values of this buffer are meaningful if and only if
  * the return status is LR1110_CRYPTO_STATUS_SUCCESS
  *
- * \see lr1110_crypto_set_key, lr1110_crypto_derive_and_store_key
+ * \see lr1110_crypto_set_key, lr1110_crypto_derive_key
  */
-void lr1110_crypto_aes_encrypt( const void* radio, lr1110_crypto_status_t* status, const uint8_t key_id,
+void lr1110_crypto_aes_encrypt( const void* context, lr1110_crypto_status_t* status, const uint8_t key_id,
                                 const uint8_t* data, const uint16_t length, uint8_t* result );
 
 /*!
  * \brief Compute an AES decryption with a key ID specified in parameter.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] status The status returned by the execution of this
  * cryptographic function
@@ -255,36 +256,36 @@ void lr1110_crypto_aes_encrypt( const void* radio, lr1110_crypto_status_t* statu
  * the decrypted data. Values of this buffer are meaningful if and only if
  * the return status is LR1110_CRYPTO_STATUS_SUCCESS
  *
- * \see lr1110_crypto_set_key, lr1110_crypto_derive_and_store_key
+ * \see lr1110_crypto_set_key, lr1110_crypto_derive_key
  */
-void lr1110_crypto_aes_decrypt( const void* radio, lr1110_crypto_status_t* status, const uint8_t key_id,
+void lr1110_crypto_aes_decrypt( const void* context, lr1110_crypto_status_t* status, const uint8_t key_id,
                                 const uint8_t* data, const uint16_t length, uint8_t* result );
 
 /*!
  * \brief Store the crypto data (keys, parameters) from RAM into the flash
  * memory.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] status The status returned by the execution of this
  * cryptographic function
  *
  * \see lr1110_crypto_restore_from_flash
  */
-void lr1110_crypto_store_to_flash( const void* radio, lr1110_crypto_status_t* status );
+void lr1110_crypto_store_to_flash( const void* context, lr1110_crypto_status_t* status );
 
 /*!
  * \brief Restore the crypto data (keys, parameters) from flash memory into
  * RAM.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] status The status returned by the execution of this
  * cryptographic function
  *
  * \see lr1110_crypto_store_to_flash
  */
-void lr1110_crypto_restore_from_flash( const void* radio, lr1110_crypto_status_t* status );
+void lr1110_crypto_restore_from_flash( const void* context, lr1110_crypto_status_t* status );
 
 /*!
  * \brief Set a specific parameter identified by param_id in the crypto RAM.
@@ -293,7 +294,7 @@ void lr1110_crypto_restore_from_flash( const void* radio, lr1110_crypto_status_t
  * parameters shall be stored after using \ref lr1110_crypto_store_to_flash
  * command.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] status The status returned by the execution of this
  * cryptographic function
@@ -304,7 +305,7 @@ void lr1110_crypto_restore_from_flash( const void* radio, lr1110_crypto_status_t
  *
  * \see lr1110_crypto_get_parameter
  */
-void lr1110_crypto_set_parameter( const void* radio, lr1110_crypto_status_t* status, const uint8_t param_id,
+void lr1110_crypto_set_parameter( const void* context, lr1110_crypto_status_t* status, const uint8_t param_id,
                                   const lr1110_crypto_param_t parameter );
 
 /*!
@@ -315,7 +316,7 @@ void lr1110_crypto_set_parameter( const void* radio, lr1110_crypto_status_t* sta
  * parameters shall be restored before using \ref
  * lr1110_crypto_restore_from_flash command.
  *
- * \param [in] radio Radio abstraction
+ * \param [in] context Chip implementation context
  *
  * \param [out] status The status returned by the execution of this
  * cryptographic function
@@ -326,7 +327,7 @@ void lr1110_crypto_set_parameter( const void* radio, lr1110_crypto_status_t* sta
  *
  * \see lr1110_crypto_set_parameter
  */
-void lr1110_crypto_get_parameter( const void* radio, lr1110_crypto_status_t* status, const uint8_t param_id,
+void lr1110_crypto_get_parameter( const void* context, lr1110_crypto_status_t* status, const uint8_t param_id,
                                   lr1110_crypto_param_t parameter );
 
 #ifdef __cplusplus

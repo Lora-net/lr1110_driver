@@ -75,7 +75,7 @@ typedef uint8_t lr1110_wifi_frame_type_info_byte_t;
 
 typedef uint8_t lr1110_wifi_frame_sub_type_t;
 
-typedef struct
+typedef struct lr1110_wifi_fcs_info_byte_s
 {
     bool is_fcs_ok;       //!< True if the LR1110 has checked the FCS and the check
                           //!< succeeded
@@ -217,7 +217,7 @@ typedef enum
  * This structure is representing the cumulative time spent in the different
  * modes of Wi-Fi passive scanning procedure. Timing provided in [us].
  * */
-typedef struct
+typedef struct lr1110_wifi_cumulative_timings_s
 {
     uint32_t rx_detection_us;    //!< Cumulative time spent during NFE or TOA
     uint32_t rx_correlation_us;  //!< Cumulative time spent during preamble detection
@@ -231,7 +231,7 @@ typedef struct
  *
  * The beacon period is expressed in TU (Time Unit). 1 TU is 1024 microseconds.
  */
-typedef struct
+typedef struct lr1110_wifi_basic_complete_result_s
 {
     lr1110_wifi_datarate_info_byte_t   data_rate_info_byte;
     lr1110_wifi_channel_info_byte_t    channel_info_byte;
@@ -247,7 +247,7 @@ typedef struct
 /*!
  * \brief Basic MAC, type, channel result structure
  */
-typedef struct
+typedef struct lr1110_wifi_basic_mac_type_channel_result_s
 {
     lr1110_wifi_datarate_info_byte_t data_rate_info_byte;
     lr1110_wifi_channel_info_byte_t  channel_info_byte;
@@ -261,7 +261,7 @@ typedef enum
     LR1110_WIFI_RESULT_FORMAT_BASIC_MAC_TYPE_CHANNEL,
 } lr1110_wifi_result_format_t;
 
-typedef struct
+typedef struct lr1110_wifi_country_code_s
 {
     uint8_t                         country_code[LR1110_WIFI_STR_COUNTRY_CODE_SIZE];
     uint8_t                         io_regulation;  //!< Input Output Regulation
@@ -269,7 +269,7 @@ typedef struct
     lr1110_wifi_mac_address_t       mac_address;
 } lr1110_wifi_country_code_t;
 
-typedef struct
+typedef struct lr1110_wifi_version_s
 {
     uint8_t major;
     uint8_t minor;
