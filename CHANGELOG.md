@@ -1,5 +1,11 @@
 # LR1110 driver
 
+## [v2.0.1] 2020-05-04
+
+### Fixed
+
+* [version] Enable c linkage driver version related functions
+
 ## [v2.0.0] 2020-04-27
 
 ### Added
