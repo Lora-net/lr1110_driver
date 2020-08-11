@@ -147,7 +147,7 @@ lr1110_status_t lr1110_system_get_status( const void* context, lr1110_system_sta
         stat1->command_status      = ( lr1110_system_command_status_t )( cbuffer[0] >> 1 );
 
         stat2->is_running_from_flash = ( ( cbuffer[1] & 0x01 ) != 0 ) ? true : false;
-        stat2->chip_mode             = ( lr1110_system_chip_modes_t )( cbuffer[1] >> 1 );
+        stat2->chip_mode             = ( lr1110_system_chip_modes_t )( ( cbuffer[1] & 0x0F ) >> 1 );
 
         *irq_status =
             ( ( lr1110_system_irq_mask_t ) cbuffer[2] << 24 ) + ( ( lr1110_system_irq_mask_t ) cbuffer[3] << 16 ) +
