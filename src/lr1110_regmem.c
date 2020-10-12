@@ -1,7 +1,7 @@
 /*!
- * \file      lr1110_regmem.c
+ * @file      lr1110_regmem.c
  *
- * \brief     Register/memory driver implementation for LR1110
+ * @brief     Register/memory driver implementation for LR1110
  *
  * Revised BSD License
  * Copyright Semtech Corporation 2020. All rights reserved.
@@ -20,8 +20,8 @@
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH S.A. BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -92,51 +92,51 @@ enum
  */
 
 /*!
- * \brief Helper function that fill both cbuffer with opcode and memory address
+ * @brief Helper function that fill both cbuffer with opcode and memory address
  *
  * It is typically used in read/write auxreg32 and regmem32 functions.
  *
- * \warning It is up to the caller to ensure cbuffer is big enough to contain opcode and address!
+ * @warning It is up to the caller to ensure cbuffer is big enough to contain opcode and address!
  */
 static void lr1110_regmem_fill_cbuffer_opcode_address( uint8_t* cbuffer, uint16_t opcode, uint32_t address );
 
 /*!
- * \brief Helper function that fill both cbuffer with opcode memory address, and data length to read
+ * @brief Helper function that fill both cbuffer with opcode memory address, and data length to read
  *
  * It is typically used in read functions.
  *
- * \warning It is up to the caller to ensure cbuffer is big enough to contain opcode and address!
+ * @warning It is up to the caller to ensure cbuffer is big enough to contain opcode and address!
  */
 static void lr1110_regmem_fill_cbuffer_opcode_address_length( uint8_t* cbuffer, uint16_t opcode, uint32_t address,
                                                               uint8_t length );
 
 /*!
- * \brief Helper function that fill both cbuffer with data
+ * @brief Helper function that fill both cbuffer with data
  *
  * It is typically used in write auxreg32 and write regmem32 functions.
  *
- * \warning It is up to the caller to ensure cdata is big enough to contain all data!
+ * @warning It is up to the caller to ensure cdata is big enough to contain all data!
  */
 static void lr1110_regmem_fill_cdata( uint8_t* cdata, const uint32_t* data, uint8_t data_length );
 
 /*!
- * \brief Helper function that fill both cbuffer and cdata buffers with opcode, memory address and data
+ * @brief Helper function that fill both cbuffer and cdata buffers with opcode, memory address and data
  *
  * It is typically used to factorize write auxreg32 and write regmem32 operations. Behind the scene it calls the other
  * helpers lr1110_regmem_fill_cbuffer_opcode_address and lr1110_regmem_fill_cdata.
  *
- * \warning It is up to the caller to ensure cbuffer and cdata are big enough to contain their respective information!
+ * @warning It is up to the caller to ensure cbuffer and cdata are big enough to contain their respective information!
  */
 static void lr1110_regmem_fill_cbuffer_cdata_opcode_address_data( uint8_t* cbuffer, uint8_t* cdata, uint16_t opcode,
                                                                   uint32_t address, const uint32_t* data,
                                                                   uint8_t data_length );
 
 /*!
- * \brief Helper function that convert an array of uint8_t into an array of uint32_t
+ * @brief Helper function that convert an array of uint8_t into an array of uint32_t
  *
  * Typically used in the read function returning uint32_t array.
  *
- * \warning It is up to the caller to ensure the raw_buffer is of length at least "out_buffer_length *
+ * @warning It is up to the caller to ensure the raw_buffer is of length at least "out_buffer_length *
  * sizeof(uint32_t)"!
  */
 static void lr1110_regmem_fill_out_buffer_from_raw_buffer( uint32_t* out_buffer, const uint8_t* raw_buffer,

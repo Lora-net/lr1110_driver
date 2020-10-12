@@ -1,7 +1,7 @@
 /*!
- * \file      lr1110_gnss_types.h
+ * @file      lr1110_gnss_types.h
  *
- * \brief     GNSS scan driver types for LR1110
+ * @brief     GNSS scan driver types for LR1110
  *
  * Revised BSD License
  * Copyright Semtech Corporation 2020. All rights reserved.
@@ -20,8 +20,8 @@
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH S.A. BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -29,8 +29,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __LR1110_GNSS_TYPES_H__
-#define __LR1110_GNSS_TYPES_H__
+#ifndef LR1110_GNSS_TYPES_H
+#define LR1110_GNSS_TYPES_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * -----------------------------------------------------------------------------
@@ -39,10 +43,6 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*
  * -----------------------------------------------------------------------------
@@ -55,24 +55,29 @@ extern "C" {
  */
 
 /*!
- * \brief Maximal buffer size
+ * @brief Maximal buffer size
  */
 #define LR1110_GNSS_MAX_SIZE_ARRAY 2820  //!< (128sv * 22bytes + 4bytes for CRC)
 
 /*!
- * \brief Number of almanacs in full update payload
+ * @brief Number of almanacs in full update payload
  */
 #define LR1110_GNSS_FULL_UPDATE_N_ALMANACS ( 128 )
 
 /*!
- * \brief Size of the almanac of a single satellite when reading
+ * @brief Size of the almanac of a single satellite when reading
  */
 #define LR1110_GNSS_SINGLE_ALMANAC_READ_SIZE ( 22 )
 
 /*!
- * \brief Size of the almanac of a single satellite when writing
+ * @brief Size of the almanac of a single satellite when writing
  */
 #define LR1110_GNSS_SINGLE_ALMANAC_WRITE_SIZE ( 20 )
+
+/*!
+ * @brief Size of the almanac of the GNSS context status buffer
+ */
+#define LR1110_GNSS_CONTEXT_STATUS_LENGTH ( 7 )
 
 #define LR1110_GNSS_FULL_ALMANAC_WRITE_BUFFER_SIZE \
     ( ( LR1110_GNSS_FULL_UPDATE_N_ALMANACS * LR1110_GNSS_SINGLE_ALMANAC_WRITE_SIZE ) + 20 )
@@ -80,28 +85,38 @@ extern "C" {
 #define LR1110_GNSS_FULL_ALMANAC_READ_BUFFER_SIZE \
     ( ( LR1110_GNSS_FULL_UPDATE_N_ALMANACS * LR1110_GNSS_SINGLE_ALMANAC_READ_SIZE ) + 4 )
 
+#define LR1110_GNSS_DMC_ALMANAC_UPDATE_POS ( 1U )
+#define LR1110_GNSS_DMC_ALMANAC_UPDATE_GPS_MASK ( 0x01UL << LR1110_GNSS_DMC_ALMANAC_UPDATE_POS )
+#define LR1110_GNSS_DMC_ALMANAC_UPDATE_BEIDOU_MASK ( 0x02UL << LR1110_GNSS_DMC_ALMANAC_UPDATE_POS )
+
+#define LR1110_GNSS_DMC_FREQUENCY_SEARCH_SPACE_MSB_POS ( 0U )
+#define LR1110_GNSS_DMC_FREQUENCY_SEARCH_SPACE_MSB_MASK ( 0x01UL << LR1110_GNSS_DMC_FREQUENCY_SEARCH_SPACE_MSB_POS )
+
+#define LR1110_GNSS_DMC_FREQUENCY_SEARCH_SPACE_LSB_POS ( 7U )
+#define LR1110_GNSS_DMC_FREQUENCY_SEARCH_SPACE_LSB_MASK ( 0x01UL << LR1110_GNSS_DMC_FREQUENCY_SEARCH_SPACE_LSB_POS )
+
 /*
  * -----------------------------------------------------------------------------
  * --- PUBLIC TYPES ------------------------------------------------------------
  */
 
 /*!
- * \brief Satellite ID type
+ * @brief Satellite ID type
  */
 typedef uint8_t lr1110_gnss_satellite_id_t;
 
 /*!
- * \brief bit mask indicating which information is added in the output payload
+ * @brief bit mask indicating which information is added in the output payload
  */
-enum lr1110_gnss_input_paramaters_e
+enum lr1110_gnss_input_parameters_e
 {
-    LR1110_GNSS_BIT_CHANGE_MASK       = ( 1 << 0 ),
+    LR1110_GNSS_IRQ_PSEUDO_RANGE_MASK = ( 1 << 0 ),
     LR1110_GNSS_DOPPLER_MASK          = ( 1 << 1 ),
-    LR1110_GNSS_IRQ_PSEUDO_RANGE_MASK = ( 1 << 2 ),
+    LR1110_GNSS_BIT_CHANGE_MASK       = ( 1 << 2 ),
 };
 
 /*!
- * \brief Constellation identifiers
+ * @brief Constellation identifiers
  */
 typedef enum
 {
@@ -110,14 +125,14 @@ typedef enum
 } lr1110_gnss_constellation_t;
 
 /*!
- * \brief Bit mask of constellation configurations
+ * @brief Bit mask of constellation configurations
  *
- * \see lr1110_gnss_constellation_t
+ * @see lr1110_gnss_constellation_t
  */
 typedef uint8_t lr1110_gnss_constellation_mask_t;
 
 /*!
- * \brief Search mode for GNSS scan
+ * @brief Search mode for GNSS scan
  */
 typedef enum
 {
@@ -126,7 +141,7 @@ typedef enum
 } lr1110_gnss_search_mode_t;
 
 /*!
- * \brief GNSS response type indicates the destination: Host MCU, GNSS solver or
+ * @brief GNSS response type indicates the destination: Host MCU, GNSS solver or
  * GNSS DMC
  */
 typedef enum
@@ -137,7 +152,7 @@ typedef enum
 } lr1110_gnss_destination_t;
 
 /*!
- * \brief Message to host indicating the status of the message
+ * @brief Message to host indicating the status of the message
  */
 typedef enum
 {
@@ -156,7 +171,7 @@ typedef enum
 } lr1110_gnss_message_host_status_t;
 
 /*!
- * \brief GNSS single or double scan mode
+ * @brief GNSS single or double scan mode
  */
 typedef enum
 {
@@ -165,7 +180,30 @@ typedef enum
 } lr1110_gnss_scan_mode_t;
 
 /*!
- * \brief Representation of absolute time for GNSS operations
+ * @brief GNSS error codes
+ */
+typedef enum lr1110_gnss_error_code_e
+{
+    LR1110_GNSS_NO_ERROR                                  = 0,
+    LR1110_GNSS_ERROR_ALMANAC_TOO_OLD                     = 1,
+    LR1110_GNSS_ERROR_UPDATE_CRC_MISMATCH                 = 2,
+    LR1110_GNSS_ERROR_UPDATE_FLASH_MEMORY_INTEGRITY       = 3,
+    LR1110_GNSS_ERROR_UPDATE_TIME_DIFFERENCE_OVER_1_MONTH = 4,
+} lr1110_gnss_error_code_t;
+
+/*!
+ * @brief GNSS frequency search space
+ */
+typedef enum lr1110_gnss_freq_search_space_e
+{
+    LR1110_GNSS_FREQUENCY_SEARCH_SPACE_250_HZ = 0,
+    LR1110_GNSS_FREQUENCY_SEARCH_SPACE_500_HZ = 1,
+    LR1110_GNSS_FREQUENCY_SEARCH_SPACE_1_KHZ  = 2,
+    LR1110_GNSS_FREQUENCY_SEARCH_SPACE_2_KHZ  = 3,
+} lr1110_gnss_freq_search_space_t;
+
+/*!
+ * @brief Representation of absolute time for GNSS operations
  *
  * The GNSS absolute time is represented as a 32 bits word that is the number of
  * seconds elapsed since January 6th 1980, 00:00:00
@@ -176,19 +214,27 @@ typedef enum
 typedef uint32_t lr1110_gnss_date_t;
 
 /*!
- * \brief Buffer that holds data for one satellite almanac update
+ * @brief Buffer that holds data for one satellite almanac update
  */
 typedef uint8_t lr1110_gnss_almanac_single_satellite_update_bytestram_t[LR1110_GNSS_SINGLE_ALMANAC_WRITE_SIZE];
 
 /*!
- * \brief Buffer that holds data for all almanacs full update
+ * @brief Buffer that holds data for all almanacs full update - when writing
  */
 typedef uint8_t lr1110_gnss_almanac_full_update_bytestream_t[LR1110_GNSS_FULL_ALMANAC_WRITE_BUFFER_SIZE];
 
+/*!
+ * @brief Buffer that holds data for all almanacs full update - when reading
+ */
 typedef uint8_t lr1110_gnss_almanac_full_read_bytestream_t[LR1110_GNSS_FULL_ALMANAC_READ_BUFFER_SIZE];
 
 /*!
- * \brief Assistance position.
+ * @brief Buffer that holds data for context status
+ */
+typedef uint8_t lr1110_gnss_context_status_bytestream_t[LR1110_GNSS_CONTEXT_STATUS_LENGTH];
+
+/*!
+ * @brief Assistance position.
  */
 typedef struct lr1110_gnss_solver_assistance_position_s
 {
@@ -199,7 +245,7 @@ typedef struct lr1110_gnss_solver_assistance_position_s
 } lr1110_gnss_solver_assistance_position_t;
 
 /*!
- * \brief Detected satellite structure
+ * @brief Detected satellite structure
  */
 typedef struct lr1110_gnss_detected_satellite_s
 {
@@ -208,7 +254,7 @@ typedef struct lr1110_gnss_detected_satellite_s
 } lr1110_gnss_detected_satellite_t;
 
 /*!
- * \brief GNSS timings of the LR1110
+ * @brief GNSS timings of the LR1110
  */
 typedef struct lr1110_gnss_timings_s
 {
@@ -217,13 +263,26 @@ typedef struct lr1110_gnss_timings_s
 } lr1110_gnss_timings_t;
 
 /*!
- * \brief Version structure of the LR1110 GNSS firmware
+ * @brief Version structure of the LR1110 GNSS firmware
  */
 typedef struct lr1110_gnss_version_s
 {
     uint8_t gnss_firmware;  //!< Version of the firmware
     uint8_t gnss_almanac;   //!< Version of the almanac format
 } lr1110_gnss_version_t;
+
+/*!
+ * @brief Structure for GNSS context status
+ */
+typedef struct lr1110_gnss_context_status_s
+{
+    uint8_t                         firmware_version;
+    uint32_t                        global_almanac_crc;
+    lr1110_gnss_error_code_t        error_code;
+    bool                            almanac_update_gps;
+    bool                            almanac_update_beidou;
+    lr1110_gnss_freq_search_space_t freq_search_space;
+} lr1110_gnss_context_status_t;
 
 /*
  * -----------------------------------------------------------------------------
@@ -234,6 +293,6 @@ typedef struct lr1110_gnss_version_s
 }
 #endif
 
-#endif  //__LR1110_GNSS_TYPES_H__
+#endif  // LR1110_GNSS_TYPES_H
 
 /* --- EOF ------------------------------------------------------------------ */

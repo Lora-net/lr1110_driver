@@ -1,7 +1,7 @@
 /*!
- * \file      lr1110_radio_types.h
+ * @file      lr1110_radio_types.h
  *
- * \brief     Radio driver types for LR1110
+ * @brief     Radio driver types for LR1110
  *
  * Revised BSD License
  * Copyright Semtech Corporation 2020. All rights reserved.
@@ -20,8 +20,8 @@
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH S.A. BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -29,8 +29,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __LR1110_RADIO_TYPES_H__
-#define __LR1110_RADIO_TYPES_H__
+#ifndef LR1110_RADIO_TYPES_H
+#define LR1110_RADIO_TYPES_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * -----------------------------------------------------------------------------
@@ -39,10 +43,6 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*
  * -----------------------------------------------------------------------------
@@ -60,7 +60,7 @@ extern "C" {
  */
 
 /*!
- * \brief Power Amplifier Selection values
+ * @brief Power Amplifier Selection values
  *
  * - Low-power Power Amplifier can reach up to 14dBm
  * - High-power Power Amplifier can reach up to 22 dBm
@@ -73,10 +73,10 @@ typedef enum
 } lr1110_radio_pa_selection_t;
 
 /*!
- * \brief GFSK Address Filtering configurations
+ * @brief GFSK Address Filtering configurations
  *
- * If Address Filtering is enabled but a wrong address is received, therefore
- * the reception is aborted and the address error flag of packet status is set.
+ * If Address Filtering is enabled but a wrong address is received, therefore the reception is aborted and the address
+ * error flag of packet status is set.
  */
 typedef enum
 {
@@ -87,7 +87,7 @@ typedef enum
 } lr1110_radio_gfsk_address_filtering_t;
 
 /*!
- * \brief Chip mode after successfull transmission or reception
+ * @brief Chip mode after successfull transmission or reception
  *
  * Unused for RX duty cycle and AutoTxRx operations
  */
@@ -99,25 +99,32 @@ typedef enum
 } lr1110_radio_fallback_modes_t;
 
 /*!
- * \brief Ramping time for PA
+ * @brief Ramping time for PA
  *
- * This parameter is the ramping time of the PA. A high value improves spectral
- * quality.
+ * This parameter is the ramping time of the PA. A high value improves spectral quality.
  */
 typedef enum
 {
-    LR1110_RADIO_RAMP_10_US   = 0x00,  //!< 10 us Ramp Time
-    LR1110_RADIO_RAMP_20_US   = 0x01,  //!< 20 us Ramp Time
-    LR1110_RADIO_RAMP_40_US   = 0x02,  //!< 40 us Ramp Time (Default)
-    LR1110_RADIO_RAMP_80_US   = 0x03,  //!< 80 us Ramp Time
-    LR1110_RADIO_RAMP_200_US  = 0x04,  //!< 200 us Ramp Time
-    LR1110_RADIO_RAMP_800_US  = 0x05,  //!< 800 us Ramp Time
-    LR1110_RADIO_RAMP_1700_US = 0x06,  //!< 1700 us Ramp Time
-    LR1110_RADIO_RAMP_3400_US = 0x07,  //!< 3400 us Ramp Time
+    LR1110_RADIO_RAMP_16_US  = 0x00,  //!< 16 us Ramp Time
+    LR1110_RADIO_RAMP_32_US  = 0x01,  //!< 32 us Ramp Time
+    LR1110_RADIO_RAMP_48_US  = 0x02,  //!< 48 us Ramp Time (Default)
+    LR1110_RADIO_RAMP_64_US  = 0x03,  //!< 64 us Ramp Time
+    LR1110_RADIO_RAMP_80_US  = 0x04,  //!< 80 us Ramp Time
+    LR1110_RADIO_RAMP_96_US  = 0x05,  //!< 96 us Ramp Time
+    LR1110_RADIO_RAMP_112_US = 0x06,  //!< 112 us Ramp Time
+    LR1110_RADIO_RAMP_128_US = 0x07,  //!< 128 us Ramp Time
+    LR1110_RADIO_RAMP_144_US = 0x08,  //!< 144 us Ramp Time
+    LR1110_RADIO_RAMP_160_US = 0x09,  //!< 160 us Ramp Time
+    LR1110_RADIO_RAMP_176_US = 0x0A,  //!< 176 us Ramp Time
+    LR1110_RADIO_RAMP_192_US = 0x0B,  //!< 192 us Ramp Time
+    LR1110_RADIO_RAMP_208_US = 0x0C,  //!< 208 us Ramp Time
+    LR1110_RADIO_RAMP_240_US = 0x0D,  //!< 240 us Ramp Time
+    LR1110_RADIO_RAMP_272_US = 0x0E,  //!< 272 us Ramp Time
+    LR1110_RADIO_RAMP_304_US = 0x0F,  //!< 304 us Ramp Time
 } lr1110_radio_ramp_time_t;
 
 /*!
- * \brief LoRa network type configuration
+ * @brief LoRa network type configuration
  */
 typedef enum
 {
@@ -126,7 +133,7 @@ typedef enum
 } lr1110_radio_lora_network_type_t;
 
 /*!
- * \brief LoRa Spreading Factor configurations
+ * @brief LoRa Spreading Factor configurations
  */
 typedef enum
 {
@@ -141,7 +148,7 @@ typedef enum
 } lr1110_radio_lora_sf_t;
 
 /*!
- * \brief LoRa Bandwidth configurations
+ * @brief LoRa Bandwidth configurations
  */
 typedef enum
 {
@@ -157,7 +164,7 @@ typedef enum
 } lr1110_radio_lora_bw_t;
 
 /*!
- * \brief LoRa Coding Rate configurations
+ * @brief LoRa Coding Rate configurations
  */
 typedef enum
 {
@@ -172,7 +179,7 @@ typedef enum
 } lr1110_radio_lora_cr_t;
 
 /*!
- * \brief Values for intermediary mode
+ * @brief Values for intermediary mode
  */
 typedef enum
 {
@@ -183,11 +190,10 @@ typedef enum
 } lr1110_radio_intermediary_mode_t;
 
 /*!
- * \brief GFSK Cyclic Redundancy Check configurations
+ * @brief GFSK Cyclic Redundancy Check configurations
  *
- * If this value is set to something other than CRC_OFF, a CRC is automatically
- * computed and added after the end of the payload on transmitter side. On
- * receiver side, the CRC check is automatically processed.
+ * If this value is set to something other than CRC_OFF, a CRC is automatically computed and added after the end of the
+ * payload on transmitter side. On receiver side, the CRC check is automatically processed.
  */
 typedef enum
 {
@@ -199,7 +205,7 @@ typedef enum
 } lr1110_radio_gfsk_crc_type_t;
 
 /*!
- * \brief GFSK Scrambling configurations
+ * @brief GFSK Scrambling configurations
  */
 typedef enum
 {
@@ -208,17 +214,14 @@ typedef enum
 } lr1110_radio_gfsk_dc_free_t;
 
 /*!
- * \brief GFSK Header Type configurations
+ * @brief GFSK Header Type configurations
  *
- * This parameter indicates whether or not the payload length is sent and read
- * over the air.
+ * This parameter indicates whether or not the payload length is sent and read over the air.
  *
- * If the payload length is known beforehand by both transmitter and receiver,
- * therefore there is no need to send it over the air. Otherwise, setting this
- * parameter to LR1110_RADIO_GFSK_PKT_VAR_LEN will make the modem to
- * automatically prepand a byte containing the payload length to the the payload
- * on transmitter side. On receiver side, this first byte is read to set the
- * payload length to read.
+ * If the payload length is known beforehand by both transmitter and receiver, therefore there is no need to send it
+ * over the air. Otherwise, setting this parameter to LR1110_RADIO_GFSK_PKT_VAR_LEN will make the modem to automatically
+ * prepand a byte containing the payload length to the the payload on transmitter side. On receiver side, this first
+ * byte is read to set the payload length to read.
  *
  * This configuration is only available for GFSK packet types.
  */
@@ -229,12 +232,10 @@ typedef enum
 } lr1110_radio_gfsk_pkt_len_modes_t;
 
 /*!
- * \brief GFSK Preamble Detector Length configurations
+ * @brief GFSK Preamble Detector Length configurations
  *
- * This parameter sets the minimum length of preamble bits to be received to
- * continue reception of incoming packet. If a packet with preamble length lower
- * than this value is being received, the reception stops without generating
- * IRQ.
+ * This parameter sets the minimum length of preamble bits to be received to continue reception of incoming packet. If a
+ * packet with preamble length lower than this value is being received, the reception stops without generating IRQ.
  *
  * This parameter has no impact on TX operations.
  */
@@ -248,7 +249,7 @@ typedef enum
 } lr1110_radio_gfsk_preamble_detector_t;
 
 /*!
- * \brief LoRa Cyclic Redundancy Check configurations
+ * @brief LoRa Cyclic Redundancy Check configurations
  */
 typedef enum
 {
@@ -257,7 +258,7 @@ typedef enum
 } lr1110_radio_lora_crc_t;
 
 /*!
- * \brief LoRa Header type configurations
+ * @brief LoRa Header type configurations
  */
 typedef enum
 {
@@ -266,10 +267,10 @@ typedef enum
 } lr1110_radio_lora_pkt_len_modes_t;
 
 /*!
- * \brief LoRa IQ mode configurations
+ * @brief LoRa IQ mode configurations
  *
- * LoRa IQ modes are mutually exclusives: a physical packet sent with standard
- * IQ will not be received by a receiver configured with inverted IQ.
+ * LoRa IQ modes are mutually exclusives: a physical packet sent with standard IQ will not be received by a receiver
+ * configured with inverted IQ.
  */
 typedef enum
 {
@@ -278,27 +279,27 @@ typedef enum
 } lr1110_radio_lora_iq_t;
 
 /*!
- * \brief Packet type values
+ * @brief Packet type values
  */
 typedef enum
 {
-    LR1110_RADIO_PACKET_NONE = 0x00,    //!< State after cold start, Wi-Fi or GNSS capture, as the device
-                                        //!< has to be reconfigured
+    LR1110_RADIO_PKT_NONE =
+        0x00,  //!< State after cold start, Wi-Fi or GNSS capture, as the device has to be reconfigured
     LR1110_RADIO_PKT_TYPE_GFSK = 0x01,  //!< GFSK modulation
     LR1110_RADIO_PKT_TYPE_LORA = 0x02,  //!< LoRa modulation
 } lr1110_radio_pkt_type_t;
 
 /*!
- * \brief Select power amplifier supply source
+ * @brief Select power amplifier supply source
  */
 typedef enum
 {
-    LR1110_RADIO_PA_REG_SUPPLY_DCDC = 0x00,  //!< DCDC
-    LR1110_RADIO_PA_REG_SUPPLY_VBAT = 0x01   //!< VBAT. For output power > +14dBm
-} lr1110_radio_pa_regulator_supply_t;
+    LR1110_RADIO_PA_REG_SUPPLY_VREG = 0x00,  //!< Power amplifier supplied by the main regulator
+    LR1110_RADIO_PA_REG_SUPPLY_VBAT = 0x01   //!< Power amplifier supplied by the battery
+} lr1110_radio_pa_reg_supply_t;
 
 /*!
- * \brief RX Duty Cycle Modes
+ * @brief RX Duty Cycle Modes
  */
 typedef enum
 {
@@ -307,7 +308,7 @@ typedef enum
 } lr1110_radio_rx_duty_cycle_mode_t;
 
 /*!
- * \brief GFSK Bandwidth configurations
+ * @brief GFSK Bandwidth configurations
  */
 typedef enum
 {
@@ -335,19 +336,17 @@ typedef enum
 } lr1110_radio_gfsk_bw_t;
 
 /*!
- * \brief Possible automatic actions when Channel Activity Detection operations
- * terminate
+ * @brief Possible automatic actions when Channel Activity Detection operations terminate
  *
- * For RADIO_EXIT_MODE_CAD_RX, LR1110 enters RX mode on activity detected.
- * The timeout value for this RX operation is defined as:
+ * For RADIO_EXIT_MODE_CAD_RX, LR1110 enters RX mode on activity detected. The timeout value for this RX operation is
+ * defined as:
  *
  * \f$ 31.25us \times timeout \f$
  *
  * With \f$ timeout \f$ defined in RadioCadParams_t::timeout
  *
- * If the CAD operation is negative with RADIO_CAD_EXIT_MODE_RX or if CAD
- * operation is positive with RADIO_CAD_EXIT_MODE_TX, therefore the LR1110
- * enters Standby RC mode.
+ * If the CAD operation is negative with RADIO_CAD_EXIT_MODE_RX or if CAD operation is positive with
+ * RADIO_CAD_EXIT_MODE_TX, therefore the LR1110 enters Standby RC mode.
  */
 typedef enum
 {
@@ -357,7 +356,7 @@ typedef enum
 } lr1110_radio_cad_exit_mode_t;
 
 /*!
- * \brief Pulse shape configurations
+ * @brief Pulse shape configurations
  */
 typedef enum
 {
@@ -369,20 +368,16 @@ typedef enum
 } lr1110_radio_gfsk_pulse_shape_t;
 
 /*!
- * \brief Channel Activity Detection parameters
+ * @brief Channel Activity Detection parameters
  *
- * Parameters detPeak and detMin are to be used for tuning the sensitivity of
- * Channel Activity Detection. It depends on Spreading Factor, Bandwidth and
- * symbolNum.
+ * Parameters detPeak and detMin are to be used for tuning the sensitivity of Channel Activity Detection. It depends on
+ * Spreading Factor, Bandwidth and symbolNum.
  *
- * For detPeak, the 5 MSBits are encoding the integer part, the 3 LSBits are
- * encoding 1/8 of the decimal part. For instance, \f$detPeak = 50\f$ (= 0x32)
- * leads to a ratio being \f$6 + 2 * 1/8 = 6.25\f$.
+ * For detPeak, the 5 MSBits are encoding the integer part, the 3 LSBits are encoding 1/8 of the decimal part. For
+ * instance, \f$detPeak = 50\f$ (= 0x32) leads to a ratio being \f$6 + 2 * 1/8 = 6.25\f$.
  *
- * detMin is unit free and represents the ratio between the minimal power of a
- * correlation peak and measurement gain that can be considered as a peak
- * detection. It helps to avoid detection on noise. Authorized values a from 0
- * to 181.
+ * detMin is unit free and represents the ratio between the minimal power of a correlation peak and measurement gain
+ * that can be considered as a peak detection. It helps to avoid detection on noise. Authorized values a from 0 to 181.
  */
 typedef struct lr1110_radio_cad_params_s
 {
@@ -396,43 +391,35 @@ typedef struct lr1110_radio_cad_params_s
 } lr1110_radio_cad_params_t;
 
 /*!
- * \brief Status of GFSK received packet
+ * @brief Status of GFSK received packet
  */
 typedef struct lr1110_radio_pkt_status_gfsk_s
 {
-    int8_t rssi_sync_in_dbm;  //!< RSSI value latched on detection of the last
-                              //!< received packet Sync Address
-    int8_t rssi_avg_in_dbm;   //!< RSSI averaged over the payload of the last
-                              //!< received packet
-    uint8_t rx_len_in_bytes;  //!< Length of the last received packet [Bytes]
-    bool    is_addr_err;      //!< Address filtering status. Asserted if
-                              //!< received packet address does not match node
-                              //!< address nor broadcast address
-    bool is_crc_err;          //!< CRC status of the current packet (applicable
-                              //!< only in RX, with CRC enabled)
-    bool is_len_err;          //!< Asserted when the length of last received packet
-                              //!< is greater than the maximal length (applicable
-                              //!< only in RX with variable length packet)
-    bool is_abort_err;        //!< Asserted when the current packet has been
-                              //!< aborted (applicable in RX and TX)
-    bool is_received;         //!< Asserted when packet reception is done
-                              //!< (applicable in RX)
-    bool is_sent;             //!< Asserted when packet transmission is done
-                              //!< (applicable in TX)
+    int8_t  rssi_sync_in_dbm;  //!< RSSI value latched on detection of the last received packet Sync Address
+    int8_t  rssi_avg_in_dbm;   //!< RSSI averaged over the payload of the last received packet
+    uint8_t rx_len_in_bytes;   //!< Length of the last received packet [Bytes]
+    bool    is_addr_err;  //!< Address filtering status. Asserted if received packet address does not match node address
+                          //!< nor broadcast address
+    bool is_crc_err;      //!< CRC status of the current packet (applicable only in RX, with CRC enabled)
+    bool is_len_err;      //!< Asserted when the length of last received packet is greater than the maximal length
+                          //!< (applicable only in RX with variable length packet)
+    bool is_abort_err;    //!< Asserted when the current packet has been aborted (applicable in RX and TX)
+    bool is_received;     //!< Asserted when packet reception is done (applicable in RX)
+    bool is_sent;         //!< Asserted when packet transmission is done (applicable in TX)
 } lr1110_radio_pkt_status_gfsk_t;
 
 /*!
- * \brief Status of received packet
+ * @brief Status of received packet
  */
 typedef struct lr1110_radio_pkt_status_lora_s
 {
-    int8_t rssi_packet_in_dbm;         //!< Average RSSI over last received packet.
-    int8_t snr_packet_in_db;           //!< SNR estimated on last received packet.
-    int8_t signal_rssi_packet_in_dbm;  //!< RSSI of last packet latched after
+    int8_t rssi_pkt_in_dbm;         //!< Average RSSI over last received packet.
+    int8_t snr_pkt_in_db;           //!< SNR estimated on last received packet.
+    int8_t signal_rssi_pkt_in_dbm;  //!< RSSI of last packet latched after
 } lr1110_radio_pkt_status_lora_t;
 
 /*!
- * \brief Length and offset of received packet
+ * @brief Length and offset of received packet
  */
 typedef struct lr1110_radio_rx_buffer_status_s
 {
@@ -442,32 +429,28 @@ typedef struct lr1110_radio_rx_buffer_status_s
 } lr1110_radio_rx_buffer_status_t;
 
 /*!
- * \brief GFSK packet statistic structure
+ * @brief GFSK packet statistic structure
  */
 typedef struct lr1110_radio_stats_gfsk_s
 {
     uint16_t nb_pkt_received;   //!< Total number of received packets
-    uint16_t nb_pkt_crc_error;  //!< Total number of received packets
-                                //!< with CRC error
-    uint16_t nb_pkt_len_error;  //!< Total number of received packets
-                                //!< with a length error
+    uint16_t nb_pkt_crc_error;  //!< Total number of received packets with CRC error
+    uint16_t nb_pkt_len_error;  //!< Total number of received packets with a length error
 } lr1110_radio_stats_gfsk_t;
 
 /*!
- * \brief LoRa packet statistic structure
+ * @brief LoRa packet statistic structure
  */
 typedef struct lr1110_radio_stats_lora_s
 {
     uint16_t nb_pkt_received;      //!< Total number of received packets
-    uint16_t nb_pkt_crc_error;     //!< Total number of received packets with
-                                   //!< CRC error
-    uint16_t nb_pkt_header_error;  //!< Total number of packets with
-                                   //!< header error
-    uint16_t nb_packet_falsesync;  //!< Total number of false sync
+    uint16_t nb_pkt_crc_error;     //!< Total number of received packets with CRC error
+    uint16_t nb_pkt_header_error;  //!< Total number of packets with header error
+    uint16_t nb_pkt_falsesync;     //!< Total number of false sync
 } lr1110_radio_stats_lora_t;
 
 /*!
- * \brief Modulation configuration for GFSK packet
+ * @brief Modulation configuration for GFSK packet
  */
 typedef struct lr1110_radio_mod_params_gfsk_s
 {
@@ -478,7 +461,7 @@ typedef struct lr1110_radio_mod_params_gfsk_s
 } lr1110_radio_mod_params_gfsk_t;
 
 /*!
- * \brief Modulation configuration for LoRa packet
+ * @brief Modulation configuration for LoRa packet
  */
 typedef struct lr1110_radio_mod_params_lora_s
 {
@@ -489,7 +472,7 @@ typedef struct lr1110_radio_mod_params_lora_s
 } lr1110_radio_mod_params_lora_t;
 
 /*!
- * \brief Packet parameter configuration for GFSK packets
+ * @brief Packet parameter configuration for GFSK packets
  */
 typedef struct lr1110_radio_pkt_params_gfsk_s
 {
@@ -504,7 +487,7 @@ typedef struct lr1110_radio_pkt_params_gfsk_s
 } lr1110_radio_pkt_params_gfsk_t;
 
 /*!
- * \brief Packet parameter configuration for LoRa packets
+ * @brief Packet parameter configuration for LoRa packets
  */
 typedef struct lr1110_radio_pkt_params_lora_s
 {
@@ -516,32 +499,26 @@ typedef struct lr1110_radio_pkt_params_lora_s
 } lr1110_radio_pkt_params_lora_t;
 
 /*!
- * \brief Configuration of Power Amplifier
+ * @brief Configuration of Power Amplifier
  *
- * \ref paDutyCycle controls the duty cycle of Power Amplifier according to:
- * \f$ dutycycle = 0.2 + 0.04 \times paDutyCycle \f$
- * It can be used to adapt the TX multi-band operation using a
- * single-matching network.
+ * @ref pa_duty_cycle controls the duty cycle of Power Amplifier according to:
+ * \f$ dutycycle = 0.2 + 0.04 \times pa_duty_cycle \f$
+ * It can be used to adapt the TX multi-band operation using a single-matching network.
  *
- * The allowed duty cycle values for LPA are from 0.2 to 0.48 (by step
- * of 0.04). Therefore possible values for paDutyCycle go from 0 to 7.
+ * The allowed duty cycle values for LPA are from 0.2 to 0.48 (by step of 0.04). Therefore possible values for
+ * pa_duty_cycle go from 0 to 7.
  *
- * The allowed duty cycle values for HPA go from 0.2 to 0.36 (by step
- * of 0.04). Therefore in this case, the possible values for paDutyCycle go
- * from 0 to 4.
+ * The allowed duty cycle values for HPA go from 0.2 to 0.36 (by step of 0.04). Therefore in this case, the possible
+ * values for pa_duty_cycle go from 0 to 4.
  *
- * \ref paHpSel controls the number of slices for HPA according to:
- * \f$ \#slices = paHpSel + 1 \f$
- *
- * In order to use output power higher than 10dBm, regPaSupply must be set
- * to value REGPASUPPLY_VBAT.
+ * @ref pa_hp_sel controls the number of slices for HPA according to: \f$ \#slices = pa_hp_sel + 1 \f$
  */
 typedef struct lr1110_radio_pa_cfg_s
 {
-    lr1110_radio_pa_selection_t        pa_sel;         //!< Power Amplifier selection
-    lr1110_radio_pa_regulator_supply_t pa_reg_supply;  //!< Power Amplifier regulator
-    uint8_t                            pa_duty_cycle;  //!< Power Amplifier duty cycle (Default 0x04)
-    uint8_t                            pa_hp_sel;      //!< Number of slices for HPA (Default 0x07)
+    lr1110_radio_pa_selection_t  pa_sel;         //!< Power Amplifier selection
+    lr1110_radio_pa_reg_supply_t pa_reg_supply;  //!< Power Amplifier regulator supply source
+    uint8_t                      pa_duty_cycle;  //!< Power Amplifier duty cycle (Default 0x04)
+    uint8_t                      pa_hp_sel;      //!< Number of slices for HPA (Default 0x07)
 } lr1110_radio_pa_cfg_t;
 
 /*
@@ -553,6 +530,6 @@ typedef struct lr1110_radio_pa_cfg_s
 }
 #endif
 
-#endif  // __LR1110_RADIO_TYPES_H__
+#endif  // LR1110_RADIO_TYPES_H
 
 /* --- EOF ------------------------------------------------------------------ */

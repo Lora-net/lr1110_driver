@@ -1,7 +1,7 @@
 /*!
- * \file      lr1110_gnss.c
+ * @file      lr1110_gnss.c
  *
- * \brief     GNSS scan driver implementation for LR1110
+ * @brief     GNSS scan driver implementation for LR1110
  *
  * Revised BSD License
  * Copyright Semtech Corporation 2020. All rights reserved.
@@ -20,8 +20,8 @@
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH S.A. BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -72,12 +72,14 @@
 #define LR1110_GNSS_READ_XTAL_ERROR_CMD_LENGTH ( 2 )
 #define LR1110_GNSS_PUSH_SOLVER_MSG_CMD_LENGTH ( 2 )
 #define LR1110_GNSS_PUSH_DM_MSG_CMD_LENGTH ( 2 )
+#define LR1110_GNSS_GET_CONTEXT_STATUS_CMD_LENGTH ( 2 )
 #define LR1110_GNSS_SCAN_GET_TIMINGS_CMD_LENGTH ( 2 )
 #define LR1110_GNSS_GET_NB_SV_SATELLITES_CMD_LENGTH ( 2 )
 #define LR1110_GNSS_GET_SV_SATELLITES_CMD_LENGTH ( 2 )
 
 #define LR1110_GNSS_ALMANAC_REAC_RBUFFER_LENGTH ( 6 )
-#define LR1110_GNSS_FULL_ALMANAC_UPDATE_PACKET_LENGTH ( 1000 )
+#define LR1110_GNSS_ALMANAC_DATE_LENGTH ( 2 )
+#define LR1110_GNSS_FULL_ALMANAC_UPDATE_PKT_LENGTH ( 1000 )
 #define LR1110_GNSS_READ_ALMANAC_TEMPBUFFER_SIZE_BYTE ( 47 )
 #define LR1110_GNSS_SCAN_GET_TIMINGS_RBUFFER_LENGTH ( 8 )
 #define LR1110_GNSS_MAX_DETECTED_SV ( 32 )
@@ -119,6 +121,7 @@ enum
     LR1110_GNSS_READ_XTAL_ERROR_OC              = 0x0413,  //!< read the xtal accuracy
     LR1110_GNSS_PUSH_SOLVER_MSG_OC              = 0x0414,  //!<
     LR1110_GNSS_PUSH_DM_MSG_OC                  = 0x0415,  //!<
+    LR1110_GNSS_GET_CONTEXT_STATUS_OC           = 0x0416,
     LR1110_GNSS_GET_NB_SATELLITES_OC            = 0x0417,
     LR1110_GNSS_GET_SATELLITES_OC               = 0x0418,
     LR1110_GNSS_GET_TIMINGS_OC                  = 0x0419,
@@ -130,12 +133,12 @@ enum
  */
 
 /*!
- * \brief Raw Payload update from the GNSS DMC
+ * @brief Raw Payload update from the GNSS DMC
  */
 uint8_t lr1110_gnss_update_payload_from_dmc_raw_buffer[LR1110_GNSS_MAX_SIZE_ARRAY];  // define size
 
 /*!
- * \brief almanac date
+ * @brief almanac date
  */
 uint16_t almanac_date;  //!< update : when almanac update
 
@@ -145,9 +148,9 @@ uint16_t almanac_date;  //!< update : when almanac update
  */
 
 /*!
- * \brief Helper function that convert an array of uint8_t into a uint32_t single value
+ * @brief Helper function that convert an array of uint8_t into a uint32_t single value
  *
- * \warning It is up to the caller to ensuer that value points to an array of at least sizeof(uint32_t) elements.
+ * @warning It is up to the caller to ensuer that value points to an array of at least sizeof(uint32_t) elements.
  */
 static uint32_t lr1110_gnss_uint8_to_uint32( uint8_t* value );
 
@@ -220,7 +223,7 @@ lr1110_status_t lr1110_gnss_almanac_full_update( const void*                    
     while( remaining_almanac_to_write > 0 )
     {
         const uint16_t almanac_size_to_write =
-            MIN( remaining_almanac_to_write, LR1110_GNSS_FULL_ALMANAC_UPDATE_PACKET_LENGTH );
+            MIN( remaining_almanac_to_write, LR1110_GNSS_FULL_ALMANAC_UPDATE_PKT_LENGTH );
 
         const uint8_t* almanac_to_write =
             almanac_bytestream + ( LR1110_GNSS_FULL_ALMANAC_WRITE_BUFFER_SIZE - remaining_almanac_to_write );
@@ -285,20 +288,23 @@ lr1110_status_t lr1110_gnss_get_almanac_age_for_satellite( const void* context, 
     uint16_t              almanac_size         = 0;
     const lr1110_status_t status_get_almanac_address_size =
         lr1110_gnss_get_almanac_address_size( context, &almanac_base_address, &almanac_size );
-    if( status_get_almanac_address_size != LR1110_HAL_STATUS_OK )
+
+    if( status_get_almanac_address_size != LR1110_STATUS_OK )
     {
         return status_get_almanac_address_size;
     }
 
-    const uint16_t offset_almanac = sv_id * LR1110_GNSS_SINGLE_ALMANAC_READ_SIZE;
+    const uint16_t offset_almanac_date                               = sv_id * LR1110_GNSS_SINGLE_ALMANAC_READ_SIZE + 1;
+    uint8_t        raw_almanac_date[LR1110_GNSS_ALMANAC_DATE_LENGTH] = { 0 };
 
-    uint32_t              begining_almanac_single_satellite = 0;
-    const lr1110_status_t status_read_mem = lr1110_regmem_read_regmem32( context, almanac_base_address + offset_almanac,
-                                                                         &begining_almanac_single_satellite, 1 );
+    const lr1110_status_t status_read_mem = lr1110_regmem_read_mem8(
+        context, almanac_base_address + offset_almanac_date, raw_almanac_date, LR1110_GNSS_ALMANAC_DATE_LENGTH );
     if( status_read_mem == LR1110_STATUS_OK )
     {
-        ( *almanac_age ) = ( ( ( begining_almanac_single_satellite & 0x00FF0000 ) >> 16 ) << 8 ) +
-                           ( ( begining_almanac_single_satellite & 0x0000FF00 ) >> 8 );
+        // Note: the memory on LR1110 is LSB first. As the 2-byte wide almanac age is obtained by calling the _mem8, the
+        // conversion to uint16_t here is done LSB first
+        ( *almanac_age ) =
+            ( ( ( uint16_t ) raw_almanac_date[1] ) << 8 ) + ( ( ( uint16_t ) raw_almanac_date[0] ) << 0 );
     }
     return status_read_mem;
 }
@@ -309,7 +315,8 @@ lr1110_status_t lr1110_gnss_get_almanac_crc( const void* context, uint32_t* alma
     uint16_t              almanac_size         = 0;
     const lr1110_status_t status_get_almanac_address_size =
         lr1110_gnss_get_almanac_address_size( context, &almanac_base_address, &almanac_size );
-    if( status_get_almanac_address_size != LR1110_HAL_STATUS_OK )
+
+    if( status_get_almanac_address_size != LR1110_STATUS_OK )
     {
         return status_get_almanac_address_size;
     }
@@ -443,7 +450,8 @@ lr1110_status_t lr1110_gnss_set_scan_mode( const void* context, const lr1110_gns
 }
 
 lr1110_status_t lr1110_gnss_scan_autonomous( const void* context, const lr1110_gnss_date_t date,
-                                             const uint8_t gnss_input_paramaters, const uint8_t nb_sat )
+                                             const lr1110_gnss_search_mode_t effort_mode,
+                                             const uint8_t gnss_input_parameters, const uint8_t nb_sat )
 {
     uint8_t cbuffer[LR1110_GNSS_SCAN_AUTONOMOUS_CMD_LENGTH];
 
@@ -454,8 +462,8 @@ lr1110_status_t lr1110_gnss_scan_autonomous( const void* context, const lr1110_g
     cbuffer[3] = ( uint8_t )( date >> 16 );
     cbuffer[4] = ( uint8_t )( date >> 8 );
     cbuffer[5] = ( uint8_t )( date >> 0 );
-    cbuffer[6] = 0x00;
-    cbuffer[7] = gnss_input_paramaters;
+    cbuffer[6] = ( uint8_t ) effort_mode;
+    cbuffer[7] = gnss_input_parameters;
     cbuffer[8] = nb_sat;
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_GNSS_SCAN_AUTONOMOUS_CMD_LENGTH, 0, 0 );
@@ -463,7 +471,7 @@ lr1110_status_t lr1110_gnss_scan_autonomous( const void* context, const lr1110_g
 
 lr1110_status_t lr1110_gnss_scan_assisted( const void* context, const lr1110_gnss_date_t date,
                                            const lr1110_gnss_search_mode_t effort_mode,
-                                           const uint8_t gnss_input_paramaters, const uint8_t nb_sat )
+                                           const uint8_t gnss_input_parameters, const uint8_t nb_sat )
 {
     uint8_t cbuffer[LR1110_GNSS_SCAN_ASSISTED_CMD_LENGTH];
 
@@ -475,7 +483,7 @@ lr1110_status_t lr1110_gnss_scan_assisted( const void* context, const lr1110_gns
     cbuffer[4] = ( uint8_t )( date >> 8 );
     cbuffer[5] = ( uint8_t )( date >> 0 );
     cbuffer[6] = ( uint8_t ) effort_mode;
-    cbuffer[7] = gnss_input_paramaters;
+    cbuffer[7] = gnss_input_parameters;
     cbuffer[8] = nb_sat;
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_GNSS_SCAN_ASSISTED_CMD_LENGTH, 0, 0 );
@@ -580,6 +588,19 @@ lr1110_status_t lr1110_gnss_push_dmc_msg( const void* context, uint8_t* dmc_msg,
                                                  dmc_msg_len );
 }
 
+lr1110_status_t lr1110_gnss_get_context_status( const void*                             context,
+                                                lr1110_gnss_context_status_bytestream_t context_status )
+{
+    uint8_t         cbuffer[LR1110_GNSS_GET_CONTEXT_STATUS_CMD_LENGTH];
+    lr1110_status_t status = LR1110_STATUS_ERROR;
+
+    cbuffer[0] = ( uint8_t )( LR1110_GNSS_GET_CONTEXT_STATUS_OC >> 8 );
+    cbuffer[1] = ( uint8_t )( LR1110_GNSS_GET_CONTEXT_STATUS_OC >> 0 );
+
+    return ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_GNSS_GET_CONTEXT_STATUS_CMD_LENGTH,
+                                                context_status, LR1110_GNSS_CONTEXT_STATUS_LENGTH );
+}
+
 lr1110_status_t lr1110_gnss_get_nb_detected_satellites( const void* context, uint8_t* nb_detected_satellites )
 {
     uint8_t cbuffer[LR1110_GNSS_GET_NB_SV_SATELLITES_CMD_LENGTH] = { 0 };
@@ -618,6 +639,31 @@ lr1110_status_t lr1110_gnss_get_detected_satellites( const void* context, const 
         }
     }
     return ( lr1110_status_t ) hal_status;
+}
+
+void lr1110_gnss_parse_context_status_buffer( const lr1110_gnss_context_status_bytestream_t constext_status_bytestream,
+                                              lr1110_gnss_context_status_t*                 context_status )
+{
+    context_status->firmware_version = constext_status_bytestream[0];
+
+    context_status->global_almanac_crc =
+        ( ( uint32_t ) constext_status_bytestream[1] << 24 ) + ( ( uint32_t ) constext_status_bytestream[2] << 16 ) +
+        ( ( uint32_t ) constext_status_bytestream[3] << 8 ) + ( ( uint32_t ) constext_status_bytestream[4] << 0 );
+
+    context_status->error_code = ( lr1110_gnss_error_code_t )( constext_status_bytestream[5] >> 4 );
+
+    context_status->almanac_update_gps =
+        ( ( constext_status_bytestream[5] & LR1110_GNSS_DMC_ALMANAC_UPDATE_GPS_MASK ) != 0 ) ? true : false;
+
+    context_status->almanac_update_beidou =
+        ( ( constext_status_bytestream[5] & LR1110_GNSS_DMC_ALMANAC_UPDATE_BEIDOU_MASK ) != 0 ) ? true : false;
+
+    context_status->freq_search_space = ( lr1110_gnss_freq_search_space_t )(
+        ( ( ( constext_status_bytestream[5] & LR1110_GNSS_DMC_FREQUENCY_SEARCH_SPACE_MSB_MASK ) >>
+            LR1110_GNSS_DMC_FREQUENCY_SEARCH_SPACE_MSB_POS )
+          << 1 ) +
+        ( ( constext_status_bytestream[6] & LR1110_GNSS_DMC_FREQUENCY_SEARCH_SPACE_LSB_MASK ) >>
+          LR1110_GNSS_DMC_FREQUENCY_SEARCH_SPACE_LSB_POS ) );
 }
 
 /*

@@ -1,4 +1,71 @@
-# LR1110 driver
+# LR1110 driver changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [v3.0.0] 2020-10-12
+
+### Added
+
+* [bootloader] `lr1110_bootloader_read_chip_eui` function
+* [bootloader] `lr1110_bootloader_read_join_eui` function
+* [bootloader] `LR1110_BL_CHIP_EUI_LENGTH` constant
+* [bootloader] `LR1110_BL_JOIN_EUI_LENGTH` constant
+* [bootloader] `lr1110_bootloader_chip_eui_t` type definition
+* [bootloader] `lr1110_bootloader_join_eui_t` type definition
+* [GNSS] `lr1110_gnss_get_context_status` function
+* [GNSS] `lr1110_gnss_parse_context_status_buffer` function
+* [GNSS] `LR1110_GNSS_CONTEXT_STATUS_LENGTH` constant
+* [GNSS] `lr1110_gnss_error_code_t` type definition
+* [GNSS] `lr1110_gnss_freq_search_space_t` type definition
+* [GNSS] `lr1110_gnss_context_status_bytestream_t` type definition
+* [GNSS] `lr1110_gnss_context_status_t` type definition
+* [radio] `lr1110_radio_set_rx_with_timeout_in_rtc_step` and `lr1110_radio_set_tx_with_timeout_in_rtc_step` functions
+* [radio] `lr1110_radio_set_rx_duty_cycle_with_timings_in_rtc_step` function
+* [radio] `lr1110_radio_convert_time_in_ms_to_rtc_step` function
+* [system] `lr1110_system_wakeup` function
+* [system] `lr1110_system_read_pin_custom_eui` function
+* [system] `reset_status` field to `lr1110_system_stat2_t`
+* [Wi-Fi] `lr1110_wifi_scan_time_limit` function
+* [Wi-Fi] `lr1110_wifi_search_country_code_time_limit` function
+* [Wi-Fi] `lr1110_wifi_read_extended_full_results` function
+* [Wi-Fi] `LR1110_WIFI_CHANNEL_*_POS` and `LR1110_WIFI_CHANNEL_*_MASK` constants
+* [Wi-Fi] `LR1110_WIFI_SCAN_MODE_FULL_BEACON` entry in `lr1110_wifi_mode_t`
+* [Wi-Fi] `lr1110_wifi_extended_full_result_t` type definition
+* [Wi-Fi] `LR1110_WIFI_RESULT_FORMAT_EXTENDED_FULL` entry in `lr1110_wifi_result_format_t`
+
+### Changed
+
+* [crypto] `LR1110_CRYPTO_COMPUTE_AES_CMAC_CMD_LENGTH` is now equal to ( 2 + 1 + 272 )
+* [GNSS] `LR1110_GNSS_FULL_ALMANAC_UPDATE_PACKET_LENGTH` is renamed `LR1110_GNSS_FULL_ALMANAC_UPDATE_PKT_LENGTH`
+* [GNSS] `lr1110_gnss_scan_autonomous` takes also `effort_mode` as input parameter
+* [radio] Implementation of time-on-air computation for LoRa modulation
+* [radio] `lr1110_radio_set_lora_sync_word` takes a sync word as parameter instead of a network type
+* [radio] `lr1110_radio_set_rx` and `lr1110_radio_set_tx` take a timeout parameter in millisecond instead of RTC step
+* [radio] `lr1110_radio_set_rx_duty_cycle` takes a timeout parameter in millisecond instead of RTC step
+* [radio] `LR1110_RADIO_PACKET_NONE` is renamed `LR1110_RADIO_PKT_NONE`
+* [radio] `LR1110_RADIO_PA_REG_SUPPLY_DCDC` is renamed `LR1110_RADIO_PA_REG_SUPPLY_VREG`
+* [radio] `lr1110_radio_pa_regulator_supply_t` is renamed `lr1110_radio_pa_reg_supply_t`
+* [radio] `*_packet_*` is renamed `*_pkt_*` in `lr1110_radio_pkt_status_lora_t`
+* [radio] `nb_packet_falsesync` is renamed `nb_pkt_falsesync` in `lr1110_radio_stats_lora_t`
+* [Wi-Fi] `lr1110_extract_channel_info` is renamed `lr1110_wifi_parse_channel_info`
+* [Wi-Fi] `lr1110_extract_channel_from_info_byte` is renamed `lr1110_wifi_extract_channel_from_info_byte`
+* [Wi-Fi] `lr1110_extract_frame_type_info` is renamed `lr1110_wifi_parse_frame_type_info`
+* [Wi-Fi] `lr1110_extract_data_rate_info` is renamed `lr1110_wifi_parse_data_rate_info`
+* [Wi-Fi] `lr1110_wifi_n_results_max_per_chunk` is renamed `lr1110_wifi_get_nb_results_max_per_chunk`
+* [Wi-Fi] `lr1110_extract_signal_type_from_data_rate_info` is renamed `lr1110_wifi_extract_signal_type_from_data_rate_info`
+* [Wi-Fi] `LR1110_WIFI_ORIGIN_PACKET` is renamed `LR1110_WIFI_ORIGIN_UNKNWON`
+* [Wi-Fi] `LR1110_WIFI_SCAN_MODE_BEACON_AND_PACKET` is renamed `LR1110_WIFI_SCAN_MODE_BEACON_AND_PKT`
+
+### Fixed
+
+* [all] Harmonized doxygen markups
+* [all] Harmonized license header
+* [all] Removed extraneous underscore in constants used for multiple inclusion protection
+* [GNSS] Inversion of `LR1110_GNSS_BIT_CHANGE_MASK` and `LR1110_GNSS_IRQ_PSEUDO_RANGE_MASK` definitions
+* [radio] Power amplifier ramp time values in lr1110_radio_ramp_time_t
+* [system] `chip_mode` read from `stat2` value
 
 ## [v2.0.1] 2020-05-04
 
@@ -144,4 +211,4 @@
 
 ### Added
 
-* [all] First public release
+* [all] Initial version

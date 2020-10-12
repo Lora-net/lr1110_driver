@@ -1,7 +1,7 @@
 /*!
- * \file      lr1110_bootloader_types.h
+ * @file      lr1110_bootloader_types.h
  *
- * \brief     Bootloader driver types for LR1110
+ * @brief     Bootloader driver types for LR1110
  *
  * Revised BSD License
  * Copyright Semtech Corporation 2020. All rights reserved.
@@ -20,8 +20,8 @@
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH S.A. BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -29,8 +29,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __LR1110_BOOTLOADER_TYPES_H__
-#define __LR1110_BOOTLOADER_TYPES_H__
+#ifndef LR1110_BOOTLOADER_TYPES_H
+#define LR1110_BOOTLOADER_TYPES_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * -----------------------------------------------------------------------------
@@ -39,10 +43,6 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*
  * -----------------------------------------------------------------------------
@@ -55,19 +55,29 @@ extern "C" {
  */
 
 /*!
- * \brief Length in byte of the LR1110 version blob
+ * @brief Length in byte of the LR1110 version blob
  */
 #define LR1110_BL_VERSION_LENGTH ( 4 )
 
 /*!
- * \brief Length in bytes of a hash value
+ * @brief Length in bytes of a hash value
  */
 #define LR1110_BL_HASH_LENGTH 0x10
 
 /*!
- * \brief Length in bytes of a PIN
+ * @brief Length in bytes of a PIN
  */
 #define LR1110_BL_PIN_LENGTH 0x04
+
+/*!
+ * @brief Length in bytes of a chip EUI
+ */
+#define LR1110_BL_CHIP_EUI_LENGTH ( 8 )
+
+/*!
+ * @brief Length in bytes of a join EUI
+ */
+#define LR1110_BL_JOIN_EUI_LENGTH ( 8 )
 
 /*
  * -----------------------------------------------------------------------------
@@ -76,6 +86,8 @@ extern "C" {
 
 typedef uint8_t lr1110_bootloader_hash_t[LR1110_BL_HASH_LENGTH];
 typedef uint8_t lr1110_bootloader_pin_t[LR1110_BL_PIN_LENGTH];
+typedef uint8_t lr1110_bootloader_chip_eui_t[LR1110_BL_CHIP_EUI_LENGTH];
+typedef uint8_t lr1110_bootloader_join_eui_t[LR1110_BL_JOIN_EUI_LENGTH];
 
 typedef struct lr1110_bootloader_version_s
 {
@@ -93,6 +105,6 @@ typedef struct lr1110_bootloader_version_s
 }
 #endif
 
-#endif  // __LR1110_BOOTLOADER_TYPES_H__
+#endif  // LR1110_BOOTLOADER_TYPES_H
 
 /* --- EOF ------------------------------------------------------------------ */

@@ -1,7 +1,7 @@
 /*!
- * \file      lr1110_crypto_engine_types.h
+ * @file      lr1110_crypto_engine_types.h
  *
- * \brief     Cryptographic engine driver types for LR1110
+ * @brief     Cryptographic engine driver types for LR1110
  *
  * Revised BSD License
  * Copyright Semtech Corporation 2020. All rights reserved.
@@ -20,8 +20,8 @@
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH S.A. BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -29,8 +29,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __LR1110_CRYPTO_ENGINE_TYPES_H__
-#define __LR1110_CRYPTO_ENGINE_TYPES_H__
+#ifndef LR1110_CRYPTO_ENGINE_TYPES_H
+#define LR1110_CRYPTO_ENGINE_TYPES_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * -----------------------------------------------------------------------------
@@ -38,10 +42,6 @@
  */
 
 #include <stdint.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*
  * -----------------------------------------------------------------------------
@@ -54,37 +54,37 @@ extern "C" {
  */
 
 /*!
- * \brief Length in bytes of a MIC
+ * @brief Length in bytes of a MIC
  */
 #define LR1110_CRYPTO_MIC_LENGTH 0x04
 
 /*!
- * \brief Length in bytes of a AES CMAC
+ * @brief Length in bytes of a AES CMAC
  */
 #define LR1110_CRYPTO_AES_CMAC_LENGTH 0x10
 
 /*!
- * \brief Maximum length in bytes of data to be encrypted / decrypted
+ * @brief Maximum length in bytes of data to be encrypted / decrypted
  */
 #define LR1110_CRYPTO_DATA_MAX_LENGTH 0x0100
 
 /*!
- * \brief Length in bytes of a key for AES computation
+ * @brief Length in bytes of a key for AES computation
  */
 #define LR1110_CRYPTO_KEY_LENGTH 0x10
 
 /*!
- * \brief Length in bytes of a nonce
+ * @brief Length in bytes of a nonce
  */
 #define LR1110_CRYPTO_NONCE_LENGTH 0x10
 
 /*!
- * \brief Length in bytes of a crypto parameter
+ * @brief Length in bytes of a crypto parameter
  */
 #define LR1110_CRYPTO_PARAMETER_LENGTH 0x04
 
 /*!
- * \brief Length in bytes of the status returned by an API
+ * @brief Length in bytes of the status returned by an API
  */
 #define LR1110_CRYPTO_STATUS_LENGTH 0x01
 
@@ -94,32 +94,32 @@ extern "C" {
  */
 
 /*!
- * \brief Fixed-length array to store an AES CMAC
+ * @brief Fixed-length array to store an AES CMAC
  */
 typedef uint8_t lr1110_crypto_mic_t[LR1110_CRYPTO_MIC_LENGTH];
 
 /*!
- * \brief Fixed-length array to store an AES CMAC
+ * @brief Fixed-length array to store an AES CMAC
  */
 typedef uint8_t lr1110_crypto_aes_cmac_t[LR1110_CRYPTO_AES_CMAC_LENGTH];
 
 /*!
- * \brief Fixed-length array to store a crypto key
+ * @brief Fixed-length array to store a crypto key
  */
 typedef uint8_t lr1110_crypto_key_t[LR1110_CRYPTO_KEY_LENGTH];
 
 /*!
- * \brief Fixed-length array to store a crypto nonce
+ * @brief Fixed-length array to store a crypto nonce
  */
 typedef uint8_t lr1110_crypto_nonce_t[LR1110_CRYPTO_NONCE_LENGTH];
 
 /*!
- * \brief Fixed-length array to store a crypto parameter
+ * @brief Fixed-length array to store a crypto parameter
  */
 typedef uint8_t lr1110_crypto_param_t[LR1110_CRYPTO_PARAMETER_LENGTH];
 
 /*!
- * \brief The supported crypto elements
+ * @brief The supported crypto elements
  */
 typedef enum
 {
@@ -128,7 +128,7 @@ typedef enum
 } lr1110_crypto_element_t;
 
 /*!
- * \brief The status returned by the crypto API
+ * @brief The status returned by the crypto API
  */
 typedef enum
 {
@@ -139,6 +139,9 @@ typedef enum
     LR1110_CRYPTO_STATUS_ERROR                = 0x06,  //!< Other error
 } lr1110_crypto_status_t;
 
+/*!
+ * @brief The supported LoRaWAN versions
+ */
 typedef enum
 {
     LR1110_CRYPTO_LORAWAN_VERSION_1_0_X = 0x00,
@@ -146,7 +149,7 @@ typedef enum
 } lr1110_crypto_lorawan_version_t;
 
 /*!
- * Crypto keys table index definition.
+ * @brief Crypto keys table index definition.
  */
 typedef enum lr1110_crypto_keys_idx_e
 {
@@ -188,6 +191,6 @@ typedef enum lr1110_crypto_keys_idx_e
 }
 #endif
 
-#endif  //__LR1110_CRYPTO_ENGINE_TYPES_H__
+#endif  // LR1110_CRYPTO_ENGINE_TYPES_H
 
 /* --- EOF ------------------------------------------------------------------ */

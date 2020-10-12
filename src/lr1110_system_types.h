@@ -1,7 +1,7 @@
 /*!
- * \file      lr1110_system_types.h
+ * @file      lr1110_system_types.h
  *
- * \brief     System driver types for LR1110
+ * @brief     System driver types for LR1110
  *
  * Revised BSD License
  * Copyright Semtech Corporation 2020. All rights reserved.
@@ -20,8 +20,8 @@
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH S.A. BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -29,8 +29,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __LR1110_SYSTEM_TYPES_H__
-#define __LR1110_SYSTEM_TYPES_H__
+#ifndef LR1110_SYSTEM_TYPES_H
+#define LR1110_SYSTEM_TYPES_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,12 +55,12 @@ extern "C" {
  */
 
 /*!
- * \brief Length in byte of the LR1110 version blob
+ * @brief Length in byte of the LR1110 version blob
  */
 #define LR1110_SYSTEM_VERSION_LENGTH ( 4 )
 
 /*!
- * \brief Length of the LR1110 Unique Identifier in bytes
+ * @brief Length of the LR1110 Unique Identifier in bytes
  *
  * The LR1110 Unique Identifiers is an 8 byte long buffer
  */
@@ -144,6 +144,17 @@ typedef enum
 
 typedef enum
 {
+    LR1110_SYSTEM_RESET_STATUS_CLEARED      = 0x00,
+    LR1110_SYSTEM_RESET_STATUS_ANALOG       = 0x01,
+    LR1110_SYSTEM_RESET_STATUS_EXTERNAL     = 0x02,
+    LR1110_SYSTEM_RESET_STATUS_SYSTEM       = 0x03,
+    LR1110_SYSTEM_RESET_STATUS_WATCHDOG     = 0x04,
+    LR1110_SYSTEM_RESET_STATUS_IOCD_RESTART = 0x05,
+    LR1110_SYSTEM_RESET_STATUS_RTC_RESTART  = 0x06,
+} lr1110_system_reset_status_t;
+
+typedef enum
+{
     LR1110_SYSTEM_CMD_STATUS_FAIL = 0x00,
     LR1110_SYSTEM_CMD_STATUS_PERR = 0x01,
     LR1110_SYSTEM_CMD_STATUS_OK   = 0x02,
@@ -164,7 +175,7 @@ typedef enum
 } lr1110_system_reg_mode_t;
 
 /*!
- * \brief Info page ID
+ * @brief Info page ID
  */
 typedef enum
 {
@@ -194,7 +205,7 @@ typedef struct lr1110_system_rfswitch_cfg_s
 } lr1110_system_rfswitch_cfg_t;
 
 /*!
- * \brief Stand by configuration values
+ * @brief Stand by configuration values
  */
 typedef enum
 {
@@ -203,7 +214,7 @@ typedef enum
 } lr1110_system_standby_cfg_t;
 
 /*!
- * \brief TCXO supply voltage values
+ * @brief TCXO supply voltage values
  */
 typedef enum
 {
@@ -225,8 +236,9 @@ typedef struct lr1110_system_stat1_s
 
 typedef struct lr1110_system_stat2_s
 {
-    lr1110_system_chip_modes_t chip_mode;
-    bool                       is_running_from_flash;
+    lr1110_system_reset_status_t reset_status;
+    lr1110_system_chip_modes_t   chip_mode;
+    bool                         is_running_from_flash;
 } lr1110_system_stat2_t;
 
 typedef struct lr1110_system_version_s
@@ -251,6 +263,6 @@ typedef struct lr1110_system_sleep_cfg_s
 }
 #endif
 
-#endif  // __LR1110_SYSTEM_TYPES_H__
+#endif  // LR1110_SYSTEM_TYPES_H
 
 /* --- EOF ------------------------------------------------------------------ */

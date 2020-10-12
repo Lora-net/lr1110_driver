@@ -1,7 +1,7 @@
 /*!
- * \file      lr1110_crypto_engine.c
+ * @file      lr1110_crypto_engine.c
  *
- * \brief     Cryptographic engine driver implementation for LR1110
+ * @brief     Cryptographic engine driver implementation for LR1110
  *
  * Revised BSD License
  * Copyright Semtech Corporation 2020. All rights reserved.
@@ -20,8 +20,8 @@
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH S.A. BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -51,7 +51,7 @@
 #define LR1110_CRYPTO_SET_KEY_CMD_LENGTH ( 2 + 17 )
 #define LR1110_CRYPTO_DERIVE_KEY_CMD_LENGTH ( 2 + 18 )
 #define LR1110_CRYPTO_PROCESS_JOIN_ACCEPT_CMD_LENGTH ( 2 + 3 + 12 + 32 )
-#define LR1110_CRYPTO_COMPUTE_AES_CMAC_CMD_LENGTH ( 2 + 1 + 256 )
+#define LR1110_CRYPTO_COMPUTE_AES_CMAC_CMD_LENGTH ( 2 + 1 + 272 )
 #define LR1110_CRYPTO_VERIFY_AES_CMAC_CMD_LENGTH ( 2 + 1 + 4 + 256 )
 #define LR1110_CRYPTO_AES_ENCRYPT_CMD_LENGTH ( 2 + 1 + 256 )
 #define LR1110_CRYPTO_AES_DECRYPT_CMD_LENGTH ( 2 + 1 + 256 )
@@ -93,10 +93,16 @@ enum
  */
 
 /*!
- * \brief Helper function that fill the cbuffer provided in first argument with the command opcode, the key id
+ * @brief Helper function that fill the cbuffer provided in first argument with the command opcode, the key id
  * and the data to encrypt/decrypt/compute aes cmac
  *
- * \warning The caller MUST ensure cbuffer is array is big enough to contain opcode, key_id, and data!
+ * @param [out] cbuffer Buffer used to build the frame
+ * @param [in] opcode Opcode to be added to the frame
+ * @param [in] key_id Key ID to be added to the frame
+ * @param [in] data Data to be added to the frame
+ * @param [in] length Number of bytes from data to be added to the frame
+ *
+ * @warning The caller MUST ensure cbuffer is array is big enough to contain opcode, key_id, and data!
  */
 static void lr1110_crypto_fill_cbuffer_opcode_key_data( uint8_t* cbuffer, uint16_t opcode, uint8_t key_id,
                                                         const uint8_t* data, uint16_t length );
