@@ -218,6 +218,9 @@ lr1110_status_t lr1110_regmem_clear_rxbuffer( const void* context );
  * @brief Read-modify-write data at given register/memory address
  *
  * @param [in] context Chip implementation context
+ * @param [in] address The register memory address to be modified
+ * @param [in] mask The mask to be applied on read data
+ * @param [in] data The data to be written
  *
  * @returns Operation status
  */

@@ -77,11 +77,17 @@ extern "C" {
 /*!
  * @brief Size of the almanac of the GNSS context status buffer
  */
-#define LR1110_GNSS_CONTEXT_STATUS_LENGTH ( 7 )
+#define LR1110_GNSS_CONTEXT_STATUS_LENGTH ( 9 )
 
+/*!
+ * @brief Size of the whole almanac when writing
+ */
 #define LR1110_GNSS_FULL_ALMANAC_WRITE_BUFFER_SIZE \
     ( ( LR1110_GNSS_FULL_UPDATE_N_ALMANACS * LR1110_GNSS_SINGLE_ALMANAC_WRITE_SIZE ) + 20 )
 
+/*!
+ * @brief Size of the whole almanac when reading
+ */
 #define LR1110_GNSS_FULL_ALMANAC_READ_BUFFER_SIZE \
     ( ( LR1110_GNSS_FULL_UPDATE_N_ALMANACS * LR1110_GNSS_SINGLE_ALMANAC_READ_SIZE ) + 4 )
 
@@ -216,7 +222,7 @@ typedef uint32_t lr1110_gnss_date_t;
 /*!
  * @brief Buffer that holds data for one satellite almanac update
  */
-typedef uint8_t lr1110_gnss_almanac_single_satellite_update_bytestram_t[LR1110_GNSS_SINGLE_ALMANAC_WRITE_SIZE];
+typedef uint8_t lr1110_gnss_almanac_single_satellite_update_bytestream_t[LR1110_GNSS_SINGLE_ALMANAC_WRITE_SIZE];
 
 /*!
  * @brief Buffer that holds data for all almanacs full update - when writing

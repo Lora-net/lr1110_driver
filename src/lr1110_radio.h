@@ -135,7 +135,7 @@ lr1110_status_t lr1110_radio_get_rx_buffer_status( const void*                  
  * The value depends on the received packet type
  *
  * @param [in] context Chip implementation context
- * @param[out] pkt_status The last received packet status
+ * @param [out] pkt_status The last received packet status
  *
  * @returns Operation status
  */
@@ -147,7 +147,7 @@ lr1110_status_t lr1110_radio_get_gfsk_pkt_status( const void* context, lr1110_ra
  * The value depends on the received packet type
  *
  * @param [in] context Chip implementation context
- * @param[out] pkt_status The last received packet status
+ * @param [out] pkt_status The last received packet status
  *
  * @returns Operation status
  */

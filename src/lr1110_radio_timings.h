@@ -1,10 +1,10 @@
-/*!
- * @file      lr1110_types.h
+/**
+ * @file      lr1110_radio_timings.h
  *
- * @brief     Type definitions for LR1110
+ * @brief     LR1110 timing helper functions definition
  *
  * Revised BSD License
- * Copyright Semtech Corporation 2020. All rights reserved.
+ * Copyright Semtech Corporation 2021. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -29,13 +29,19 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LR1110_TYPES_H
-#define LR1110_TYPES_H
+#ifndef LR1110_RADIO_TIMINGS_H
+#define LR1110_RADIO_TIMINGS_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * -----------------------------------------------------------------------------
  * --- DEPENDENCIES ------------------------------------------------------------
  */
+
+#include "lr1110_radio_types.h"
 
 /*
  * -----------------------------------------------------------------------------
@@ -52,20 +58,35 @@
  * --- PUBLIC TYPES ------------------------------------------------------------
  */
 
-/**
- * @brief LR1110 status
- */
-typedef enum lr1110_status_e
-{
-    LR1110_STATUS_OK    = 0,
-    LR1110_STATUS_ERROR = 3,
-} lr1110_status_t;
-
 /*
  * -----------------------------------------------------------------------------
  * --- PUBLIC FUNCTIONS PROTOTYPES ---------------------------------------------
  */
 
-#endif  // LR1110_TYPES_H
+/**
+ * @brief Get the time between the last bit sent (on Tx side) and the Rx done event (on Rx side)
+ *
+ * @param [in] mod_params Pointer to a structure holding the LoRa modulation parameters used for the computation
+ *
+ * @returns Delay in microsecond
+ */
+uint32_t lr1110_radio_timings_get_delay_between_last_bit_sent_and_rx_done_in_us(
+    const lr1110_radio_mod_params_lora_t* mod_params );
+
+/**
+ * @brief Get the time between the last bit sent and the Tx done event
+ *
+ * @param [in] ramp_time Power amplifier ramp time
+ *
+ * @returns Delay in microsecond
+ */
+uint32_t lr1110_radio_timings_get_delay_between_last_bit_sent_and_tx_done_in_us(
+    const lr1110_radio_ramp_time_t ramp_time );
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif  // LR1110_RADIO_TIMINGS_H
 
 /* --- EOF ------------------------------------------------------------------ */

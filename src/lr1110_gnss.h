@@ -82,13 +82,12 @@ lr1110_status_t lr1110_gnss_get_result_size( const void* context, uint16_t* resu
  * The GNSS results are pushed into a buffer directly. This buffer is provided by the application using the driver. It
  * MUST be long enough to contains at least result_buffer_size bytes.
  *
- * @warning No check is done on result_buffer size. If this application provided buffer is too low, there will be a
+ * @warning No check is done on result_buffer size. If this application provided buffer is too small, there will be a
  * buffer overflow bug!
  *
  * @param [in] context Chip implementation context
  * @param [out] result_buffer Application provided buffer to be filled with result
- * @param [in] result_buffer_size The number of bytes to read from the LR1110. result_buffer must at least contains
- * result_buffer_size bytes.
+ * @param [in] result_buffer_size The number of bytes to read from the LR1110
  *
  * @returns Operation status
  */
@@ -96,7 +95,7 @@ lr1110_status_t lr1110_gnss_read_results( const void* context, uint8_t* result_b
                                           const uint16_t result_buffer_size );
 
 /*!
- * @brief Get the time spent in signal acquisition and signal analyzis
+ * @brief Get the time spent in signal acquisition and signal analysis
  *
  * These timings allow to compute the current consumption of the last GNSS scan.
  *
@@ -123,7 +122,7 @@ lr1110_status_t lr1110_gnss_get_timings( const void* context, lr1110_gnss_timing
  * @returns Operation status
  */
 lr1110_status_t lr1110_gnss_one_satellite_almanac_update(
-    const void* context, const lr1110_gnss_almanac_single_satellite_update_bytestram_t bytestream );
+    const void* context, const lr1110_gnss_almanac_single_satellite_update_bytestream_t bytestream );
 
 /*!
  * @brief Update full almanac for all satellites
@@ -344,20 +343,20 @@ lr1110_status_t lr1110_gnss_read_assistance_position( const void*               
                                                       lr1110_gnss_solver_assistance_position_t* assistance_position );
 
 /*!
- * @brief Function to set the Xtal error.
+ * @brief Function to set the crystal error.
  *
  * @param [in] context Chip implementation context
- * @param [in] xtal_error, value in +/-40ppm
+ * @param [in] xtal_error_in_ppm value in +/-40ppm
  *
  * @returns Operation status
  */
 lr1110_status_t lr1110_gnss_set_xtal_error( const void* context, const float xtal_error_in_ppm );
 
 /*!
- * @brief Function to read the Xtal error.
+ * @brief Function to read the crystal error.
  *
  * @param [in] context Chip implementation context
- * @param [in] xtal_error, value returned between +/-30ppm
+ * @param [out] xtal_error_in_ppm value returned between +/-30ppm
  *
  * @returns Operation status
  */
@@ -368,7 +367,7 @@ lr1110_status_t lr1110_gnss_read_xtal_error( const void* context, float* xtal_er
  *
  * @param [in] context Chip implementation context
  * @param [in] dmc_msg buffer containing the update the network
- * @param [in] dmc_msg_len len of this buffer
+ * @param [in] dmc_msg_len length of this buffer
  *
  * @returns Operation status
  */
@@ -402,8 +401,7 @@ lr1110_status_t lr1110_gnss_get_context_status( const void*                     
 lr1110_status_t lr1110_gnss_get_nb_detected_satellites( const void* context, uint8_t* nb_detected_satellites );
 
 /*!
- * @brief Get the satellites detected on last scan with their IDs and C/N (aka.
- * CNR)
+ * @brief Get the satellites detected on last scan with their IDs and C/N (aka CNR)
  *
  * @param [in] context Chip implementation context
  * @param [in] nb_detected_satellites Number of detected satellites on last scan (obtained by calling

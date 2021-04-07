@@ -4,6 +4,37 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v4.0.0] 2021-04-06
+
+### Added
+
+* [bootloader] `lr1110_bootloader_get_status` function
+* [bootloader] `lr1110_bootloader_irq_mask_t` type definition
+* [bootloader] `lr1110_bootloader_chip_modes_t` type definition
+* [bootloader] `lr1110_bootloader_reset_status_t` type definition
+* [bootloader] `lr1110_bootloader_command_status_t` type definition
+* [bootloader] `lr1110_bootloader_stat1_t` type definition
+* [bootloader] `lr1110_bootloader_stat2_t` type definition
+* [timings] Add the functions to compute the radio timings
+* [system] Add function `lr1110_system_enable_spi_crc` to enable or disable the CRC on SPI communication
+* [HAL] Add the CRC calculation for SPI
+
+### Fixed
+
+* [GNSS] Fix typo: `lr1110_gnss_almanac_single_satellite_update_bytestram_t` to `lr1110_gnss_almanac_single_satellite_update_bytestream_t`
+* [GNSS] Fix size of context status
+
+### Changed
+
+* [Wi-Fi] Added field `current_channel` to `lr1110_wifi_extended_full_result_t`
+
+### Removed
+
+* [bootloader] `lr1110_bootloader_get_hash` function
+* [bootloader] `lr1110_bootloader_write_flash` function
+* [bootloader] `lr1110_bootloader_write_flash_full` function
+* [bootloader] `lr1110_bootloader_erase_page` function
+
 ## [v3.0.0] 2020-10-12
 
 ### Added

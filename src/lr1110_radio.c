@@ -90,6 +90,9 @@
  * --- PRIVATE TYPES -----------------------------------------------------------
  */
 
+/*!
+ * @brief Operating codes for radio-related operations
+ */
 enum
 {
     LR1110_RADIO_RESET_STATS_OC               = 0x0200,
@@ -862,20 +865,20 @@ uint32_t lr1110_radio_get_lora_time_on_air_numerator( const lr1110_radio_pkt_par
     const int32_t sf               = mod_p->sf;
     const bool    pld_is_fix       = pkt_p->header_type == LR1110_RADIO_LORA_PKT_IMPLICIT;
 
-    uint32_t fine_synch        = ( sf <= 6 ) ? 1 : 0;
-    bool     long_interleaving = ( mod_p->cr > 4 );
+    int32_t fine_synch        = ( sf <= 6 ) ? 1 : 0;
+    bool    long_interleaving = ( mod_p->cr > 4 );
 
-    uint32_t total_bytes_nb = pld_len_in_bytes + ( ( pkt_p->crc == LR1110_RADIO_LORA_CRC_ON ) ? 2 : 0 );
-    uint32_t tx_bits_symbol = sf - 2 * ( mod_p->ldro != 0 ? 1 : 0 );
+    int32_t total_bytes_nb = pld_len_in_bytes + ( ( pkt_p->crc == LR1110_RADIO_LORA_CRC_ON ) ? 2 : 0 );
+    int32_t tx_bits_symbol = sf - 2 * ( mod_p->ldro != 0 ? 1 : 0 );
 
     int32_t ceil_numerator;
     int32_t ceil_denominator;
 
     uint32_t intermed;
 
-    uint32_t symbols_nb_data;
-    int32_t  tx_infobits_header;
-    int32_t  tx_infobits_payload;
+    int32_t symbols_nb_data;
+    int32_t tx_infobits_header;
+    int32_t tx_infobits_payload;
 
     if( long_interleaving )
     {

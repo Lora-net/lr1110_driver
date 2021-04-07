@@ -49,6 +49,9 @@ extern "C" {
  * --- PUBLIC MACROS -----------------------------------------------------------
  */
 
+/*!
+ * @brief LR1110 HAL status
+ */
 typedef enum lr1110_hal_status_e
 {
     LR1110_HAL_STATUS_OK    = 0,
@@ -62,7 +65,7 @@ typedef enum lr1110_hal_status_e
  */
 
 /*!
- * Radio data transfer - write
+ * @brief Radio data transfer - write
  *
  * @remark Must be implemented by the upper layer
  *
@@ -78,7 +81,7 @@ lr1110_hal_status_t lr1110_hal_write( const void* context, const uint8_t* comman
                                       const uint8_t* data, const uint16_t data_length );
 
 /*!
- * Radio data transfer - read
+ * @brief Radio data transfer - read
  *
  * @remark Must be implemented by the upper layer
  *
@@ -110,7 +113,7 @@ lr1110_hal_status_t lr1110_hal_write_read( const void* context, const uint8_t* c
                                            const uint16_t data_length );
 
 /*!
- * Reset the radio
+ * @brief Reset the radio
  *
  * @remark Must be implemented by the upper layer
  *
@@ -121,7 +124,7 @@ lr1110_hal_status_t lr1110_hal_write_read( const void* context, const uint8_t* c
 lr1110_hal_status_t lr1110_hal_reset( const void* context );
 
 /*!
- * Wake the radio up.
+ * @brief Wake the radio up.
  *
  * @remark Must be implemented by the upper layer
  *
@@ -130,6 +133,41 @@ lr1110_hal_status_t lr1110_hal_reset( const void* context );
  * @returns Operation status
  */
 lr1110_hal_status_t lr1110_hal_wakeup( const void* context );
+
+/*!
+ * @brief Return the computed CRC
+ *
+ * @param [in] initial_value initial value of the CRC
+ * @param [in] buffer Buffer containing data used to compute the CRC
+ * @param [in] length Length of buffer
+ *
+ * @returns CRC value
+ */
+inline static uint8_t lr1110_hal_compute_crc( const uint8_t initial_value, const uint8_t* buffer, uint16_t length )
+{
+    uint8_t crc = initial_value;
+
+    for( uint16_t i = 0; i < length; i++ )
+    {
+        uint8_t extract = buffer[i];
+        uint8_t sum;
+
+        for( uint8_t j = 8; j > 0; j-- )
+        {
+            sum = ( crc ^ extract ) & 0x01;
+            crc >>= 1;
+
+            if( sum != 0 )
+            {
+                crc ^= 0x65;
+            }
+
+            extract >>= 1;
+        }
+    }
+
+    return crc;
+}
 
 #ifdef __cplusplus
 }

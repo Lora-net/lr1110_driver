@@ -99,6 +99,9 @@
 
 static lr1110_status_t lr1110_gnss_get_almanac_address_size( const void* context, uint32_t* memory, uint16_t* size );
 
+/*!
+ * @brief Operating codes for GNSS-related operations
+ */
 enum
 {
     LR1110_GNSS_SET_CONSTALLATION_OC            = 0x0400,  //!< set the constellation to use
@@ -132,16 +135,6 @@ enum
  * --- PRIVATE VARIABLES -------------------------------------------------------
  */
 
-/*!
- * @brief Raw Payload update from the GNSS DMC
- */
-uint8_t lr1110_gnss_update_payload_from_dmc_raw_buffer[LR1110_GNSS_MAX_SIZE_ARRAY];  // define size
-
-/*!
- * @brief almanac date
- */
-uint16_t almanac_date;  //!< update : when almanac update
-
 /*
  * -----------------------------------------------------------------------------
  * --- PRIVATE FUNCTIONS DECLARATION -------------------------------------------
@@ -150,9 +143,13 @@ uint16_t almanac_date;  //!< update : when almanac update
 /*!
  * @brief Helper function that convert an array of uint8_t into a uint32_t single value
  *
- * @warning It is up to the caller to ensuer that value points to an array of at least sizeof(uint32_t) elements.
+ * @warning It is up to the caller to ensure that value points to an array of at least sizeof(uint32_t) elements.
+ *
+ * @param [in] value Array of uint8_t to be translated into a uint32_t
+ *
+ * @returns 32-bit value
  */
-static uint32_t lr1110_gnss_uint8_to_uint32( uint8_t* value );
+static uint32_t lr1110_gnss_uint8_to_uint32( uint8_t value[4] );
 
 /*
  * -----------------------------------------------------------------------------
@@ -200,7 +197,7 @@ lr1110_status_t lr1110_gnss_get_timings( const void* context, lr1110_gnss_timing
 }
 
 lr1110_status_t lr1110_gnss_one_satellite_almanac_update(
-    const void* context, const lr1110_gnss_almanac_single_satellite_update_bytestram_t bytestream )
+    const void* context, const lr1110_gnss_almanac_single_satellite_update_bytestream_t bytestream )
 {
     uint8_t cbuffer[LR1110_GNSS_ALMANAC_FULL_UPDATE_CMD_LENGTH] = {
         ( uint8_t )( LR1110_GNSS_ALMANAC_FULL_UPDATE_OC >> 8 ), ( uint8_t )( LR1110_GNSS_ALMANAC_FULL_UPDATE_OC >> 0 )
@@ -502,18 +499,17 @@ lr1110_status_t lr1110_gnss_scan_continuous( const void* context )
 lr1110_status_t lr1110_gnss_set_assistance_position(
     const void* context, const lr1110_gnss_solver_assistance_position_t* assistance_position )
 {
-    int16_t latitude, longitude;
+    const int16_t latitude  = ( ( assistance_position->latitude * 2048 ) / LR1110_GNSS_SCALING_LATITUDE );
+    const int16_t longitude = ( ( assistance_position->longitude * 2048 ) / LR1110_GNSS_SCALING_LONGITUDE );
 
     uint8_t cbuffer[LR1110_GNSS_SET_ASSISTANCE_POSITION_CMD_LENGTH];
 
     cbuffer[0] = ( uint8_t )( LR1110_GNSS_SET_ASSISTANCE_POSITION_OC >> 8 );
     cbuffer[1] = ( uint8_t )( LR1110_GNSS_SET_ASSISTANCE_POSITION_OC >> 0 );
 
-    latitude   = ( ( assistance_position->latitude * 2048 ) / LR1110_GNSS_SCALING_LATITUDE );
     cbuffer[2] = ( uint8_t )( latitude >> 8 );
     cbuffer[3] = ( uint8_t )( latitude );
 
-    longitude  = ( ( assistance_position->longitude * 2048 ) / LR1110_GNSS_SCALING_LONGITUDE );
     cbuffer[4] = ( uint8_t )( longitude >> 8 );
     cbuffer[5] = ( uint8_t )( longitude );
 
@@ -591,8 +587,7 @@ lr1110_status_t lr1110_gnss_push_dmc_msg( const void* context, uint8_t* dmc_msg,
 lr1110_status_t lr1110_gnss_get_context_status( const void*                             context,
                                                 lr1110_gnss_context_status_bytestream_t context_status )
 {
-    uint8_t         cbuffer[LR1110_GNSS_GET_CONTEXT_STATUS_CMD_LENGTH];
-    lr1110_status_t status = LR1110_STATUS_ERROR;
+    uint8_t cbuffer[LR1110_GNSS_GET_CONTEXT_STATUS_CMD_LENGTH];
 
     cbuffer[0] = ( uint8_t )( LR1110_GNSS_GET_CONTEXT_STATUS_OC >> 8 );
     cbuffer[1] = ( uint8_t )( LR1110_GNSS_GET_CONTEXT_STATUS_OC >> 0 );
@@ -676,4 +671,5 @@ uint32_t lr1110_gnss_uint8_to_uint32( uint8_t* value )
     return ( ( ( uint32_t ) value[0] ) << 24 ) + ( ( ( uint32_t ) value[1] ) << 16 ) +
            ( ( ( uint32_t ) value[2] ) << 8 ) + ( ( ( uint32_t ) value[3] ) << 0 );
 }
+
 /* --- EOF ------------------------------------------------------------------ */

@@ -64,7 +64,7 @@
 #define LR1110_WIFI_VERSION_SIZE ( 2 )
 #define LR1110_WIFI_READ_RESULT_LIMIT ( 1020 )
 #define LR1110_WIFI_COUNTRY_RESULT_LENGTH_SIZE ( 1 )
-#define LR1110_WIFI_EXTENDED_COMPLETE_RESULT_SIZE ( 78 )
+#define LR1110_WIFI_EXTENDED_COMPLETE_RESULT_SIZE ( 79 )
 #define LR1110_WIFI_SCAN_SINGLE_COUNTRY_CODE_RESULT_SIZE ( 10 )
 #define LR1110_WIFI_MAX_COUNTRY_CODE_RESULT_SIZE \
     ( LR1110_WIFI_MAX_COUNTRY_CODE * LR1110_WIFI_SCAN_SINGLE_COUNTRY_CODE_RESULT_SIZE )
@@ -89,6 +89,9 @@
  * --- PRIVATE TYPES -----------------------------------------------------------
  */
 
+/*!
+ * @brief Operating codes for Wi-Fi-related operations
+ */
 typedef enum
 {
     LR1110_WIFI_SCAN_OC                         = 0x0300,
@@ -753,11 +756,12 @@ void interpret_extended_full_result_from_buffer( const uint8_t nb_results, const
         {
             local_wifi_result->ssid_bytes[ssid_index] = buffer[local_index_start + ssid_index + 40];
         }
-        local_wifi_result->country_code                  = uint16_from_array( buffer, local_index_start + 72 );
-        local_wifi_result->io_regulation                 = buffer[local_index_start + 74];
-        local_wifi_result->fcs_check_byte.is_fcs_checked = ( ( buffer[local_index_start + 75] & 0x01 ) == 0x01 );
-        local_wifi_result->fcs_check_byte.is_fcs_ok      = ( ( buffer[local_index_start + 75] & 0x02 ) == 0x02 );
-        local_wifi_result->phi_offset                    = uint16_from_array( buffer, local_index_start + 76 );
+        local_wifi_result->current_channel               = buffer[local_index_start + 72];
+        local_wifi_result->country_code                  = uint16_from_array( buffer, local_index_start + 73 );
+        local_wifi_result->io_regulation                 = buffer[local_index_start + 75];
+        local_wifi_result->fcs_check_byte.is_fcs_checked = ( ( buffer[local_index_start + 76] & 0x01 ) == 0x01 );
+        local_wifi_result->fcs_check_byte.is_fcs_ok      = ( ( buffer[local_index_start + 76] & 0x02 ) == 0x02 );
+        local_wifi_result->phi_offset                    = uint16_from_array( buffer, local_index_start + 77 );
     }
 }
 

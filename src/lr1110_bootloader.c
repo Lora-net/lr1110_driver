@@ -47,16 +47,14 @@
  * --- PRIVATE CONSTANTS -------------------------------------------------------
  */
 
-#define LR1110_FLASH_DATA_UINT32_MAX ( 64 )
-#define LR1110_FLASH_DATA_UINT8_MAX ( LR1110_FLASH_DATA_UINT32_MAX * 4 )
+#define LR1110_FLASH_DATA_MAX_LENGTH_UINT32 ( 64 )
+#define LR1110_FLASH_DATA_MAX_LENGTH_UINT8 ( LR1110_FLASH_DATA_MAX_LENGTH_UINT32 * 4 )
 
 #define LR1110_BL_CMD_NO_PARAM_LENGTH 2
+#define LR1110_BL_GET_STATUS_CMD_LENGTH ( 2 + 4 )
 #define LR1110_BL_VERSION_CMD_LENGTH LR1110_BL_CMD_NO_PARAM_LENGTH
 #define LR1110_BL_ERASE_FLASH_CMD_LENGTH LR1110_BL_CMD_NO_PARAM_LENGTH
-#define LR1110_BL_ERASE_PAGE_CMD_LENGTH ( LR1110_BL_CMD_NO_PARAM_LENGTH + 1 )
-#define LR1110_BL_WRITE_FLASH_CMD_LENGTH ( LR1110_BL_CMD_NO_PARAM_LENGTH + 4 )
 #define LR1110_BL_WRITE_FLASH_ENCRYPTED_CMD_LENGTH ( LR1110_BL_CMD_NO_PARAM_LENGTH + 4 )
-#define LR1110_BL_GET_HASH_CMD_LENGTH ( LR1110_BL_CMD_NO_PARAM_LENGTH )
 #define LR1110_BL_REBOOT_CMD_LENGTH ( LR1110_BL_CMD_NO_PARAM_LENGTH + 1 )
 #define LR1110_BL_GET_PIN_CMD_LENGTH ( LR1110_BL_CMD_NO_PARAM_LENGTH )
 #define LR1110_BL_READ_CHIP_EUI_CMD_LENGTH ( LR1110_BL_CMD_NO_PARAM_LENGTH )
@@ -67,15 +65,15 @@
  * --- PRIVATE TYPES -----------------------------------------------------------
  */
 
+/*!
+ * @brief Operating codes for bootloader-related operations
+ */
 enum
 {
     LR1110_BL_GET_STATUS_OC            = 0x0100,
     LR1110_BL_GET_VERSION_OC           = 0x0101,
     LR1110_BL_ERASE_FLASH_OC           = 0x8000,
-    LR1110_BL_ERASE_PAGE_OC            = 0x8001,
-    LR1110_BL_WRITE_FLASH_OC           = 0x8002,
     LR1110_BL_WRITE_FLASH_ENCRYPTED_OC = 0x8003,
-    LR1110_BL_GET_HASH_OC              = 0x8004,
     LR1110_BL_REBOOT_OC                = 0x8005,
     LR1110_BL_GET_PIN_OC               = 0x800B,
     LR1110_BL_READ_CHIP_EUI_OC         = 0x800C,
@@ -92,6 +90,14 @@ enum
  * --- PRIVATE FUNCTIONS DECLARATION -------------------------------------------
  */
 
+/*!
+ * @brief Return the minimum of the 2 operands given as parameter
+ *
+ * @param [in] a First operand
+ * @param [in] b Second operand
+ *
+ * @returns Minimum of a and b
+ */
 uint32_t min( uint32_t a, uint32_t b )
 {
     uint32_t min = a;
@@ -139,6 +145,36 @@ static void lr1110_bootloader_fill_cbuffer_cdata_flash( uint8_t* cbuffer, uint8_
  * --- PUBLIC FUNCTIONS DEFINITION ---------------------------------------------
  */
 
+lr1110_status_t lr1110_bootloader_get_status( const void* context, lr1110_bootloader_stat1_t* stat1,
+                                              lr1110_bootloader_stat2_t*    stat2,
+                                              lr1110_bootloader_irq_mask_t* irq_status )
+{
+    uint8_t         cbuffer[LR1110_BL_GET_STATUS_CMD_LENGTH] = { 0x00 };
+    lr1110_status_t status                                   = LR1110_STATUS_ERROR;
+
+    cbuffer[0] = ( uint8_t )( LR1110_BL_GET_STATUS_OC >> 8 );
+    cbuffer[1] = ( uint8_t )( LR1110_BL_GET_STATUS_OC >> 0 );
+
+    status = ( lr1110_status_t ) lr1110_hal_write_read( context, cbuffer, cbuffer, LR1110_BL_GET_STATUS_CMD_LENGTH );
+
+    if( status == LR1110_STATUS_OK )
+    {
+        stat1->is_interrupt_active = ( ( cbuffer[0] & 0x01 ) != 0 ) ? true : false;
+        stat1->command_status      = ( lr1110_bootloader_command_status_t )( cbuffer[0] >> 1 );
+
+        stat2->is_running_from_flash = ( ( cbuffer[1] & 0x01 ) != 0 ) ? true : false;
+        stat2->chip_mode             = ( lr1110_bootloader_chip_modes_t )( ( cbuffer[1] & 0x0F ) >> 1 );
+        stat2->reset_status          = ( lr1110_bootloader_reset_status_t )( ( cbuffer[1] & 0xF0 ) >> 4 );
+
+        *irq_status = ( ( lr1110_bootloader_irq_mask_t ) cbuffer[2] << 24 ) +
+                      ( ( lr1110_bootloader_irq_mask_t ) cbuffer[3] << 16 ) +
+                      ( ( lr1110_bootloader_irq_mask_t ) cbuffer[4] << 8 ) +
+                      ( ( lr1110_bootloader_irq_mask_t ) cbuffer[5] << 0 );
+    }
+
+    return status;
+}
+
 lr1110_status_t lr1110_bootloader_get_version( const void* context, lr1110_bootloader_version_t* version )
 {
     uint8_t         cbuffer[LR1110_BL_VERSION_CMD_LENGTH];
@@ -171,52 +207,6 @@ lr1110_status_t lr1110_bootloader_erase_flash( const void* context )
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_BL_ERASE_FLASH_CMD_LENGTH, 0, 0 );
 }
 
-lr1110_status_t lr1110_bootloader_erase_page( const void* context, const uint8_t page_number )
-{
-    uint8_t cbuffer[LR1110_BL_ERASE_PAGE_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_BL_ERASE_PAGE_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_BL_ERASE_PAGE_OC >> 0 );
-
-    cbuffer[2] = page_number;
-
-    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_BL_ERASE_PAGE_CMD_LENGTH, 0, 0 );
-}
-
-lr1110_status_t lr1110_bootloader_write_flash( const void* context, const uint32_t offset, const uint32_t* data,
-                                               uint8_t length )
-{
-    uint8_t cbuffer[LR1110_BL_WRITE_FLASH_CMD_LENGTH];
-    uint8_t cdata[256];
-
-    lr1110_bootloader_fill_cbuffer_cdata_flash( cbuffer, cdata, LR1110_BL_WRITE_FLASH_OC, offset, data, length );
-
-    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_BL_WRITE_FLASH_CMD_LENGTH, cdata,
-                                                 length * sizeof( uint32_t ) );
-}
-
-lr1110_status_t lr1110_bootloader_write_flash_full( const void* context, const uint32_t offset, const uint32_t* buffer,
-                                                    const uint32_t length )
-{
-    lr1110_status_t status           = LR1110_STATUS_OK;
-    uint32_t        remaining_length = length;
-    uint32_t        local_offset     = offset;
-    uint32_t        loop             = 0;
-
-    while( ( remaining_length != 0 ) && ( status == LR1110_STATUS_OK ) )
-    {
-        status = ( lr1110_status_t ) lr1110_bootloader_write_flash( context, local_offset, buffer + loop * 64,
-                                                                    min( remaining_length, 64 ) );
-
-        local_offset += LR1110_FLASH_DATA_UINT8_MAX;
-        remaining_length = ( remaining_length < 64 ) ? 0 : ( remaining_length - 64 );
-
-        loop++;
-    }
-
-    return status;
-}
-
 lr1110_status_t lr1110_bootloader_write_flash_encrypted( const void* context, const uint32_t offset,
                                                          const uint32_t* data, uint8_t length )
 {
@@ -243,24 +233,13 @@ lr1110_status_t lr1110_bootloader_write_flash_encrypted_full( const void* contex
         status = ( lr1110_status_t ) lr1110_bootloader_write_flash_encrypted( context, local_offset, buffer + loop * 64,
                                                                               min( remaining_length, 64 ) );
 
-        local_offset += LR1110_FLASH_DATA_UINT8_MAX;
+        local_offset += LR1110_FLASH_DATA_MAX_LENGTH_UINT8;
         remaining_length = ( remaining_length < 64 ) ? 0 : ( remaining_length - 64 );
 
         loop++;
     }
 
     return status;
-}
-
-lr1110_status_t lr1110_bootloader_get_hash( const void* context, lr1110_bootloader_hash_t hash )
-{
-    uint8_t cbuffer[LR1110_BL_GET_HASH_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_BL_GET_HASH_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_BL_GET_HASH_OC >> 0 );
-
-    return ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_BL_GET_HASH_CMD_LENGTH, hash,
-                                                LR1110_BL_HASH_LENGTH );
 }
 
 lr1110_status_t lr1110_bootloader_reboot( const void* context, const bool stay_in_bootloader )

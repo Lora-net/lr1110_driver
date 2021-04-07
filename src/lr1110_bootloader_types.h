@@ -60,14 +60,9 @@ extern "C" {
 #define LR1110_BL_VERSION_LENGTH ( 4 )
 
 /*!
- * @brief Length in bytes of a hash value
- */
-#define LR1110_BL_HASH_LENGTH 0x10
-
-/*!
  * @brief Length in bytes of a PIN
  */
-#define LR1110_BL_PIN_LENGTH 0x04
+#define LR1110_BL_PIN_LENGTH ( 4 )
 
 /*!
  * @brief Length in bytes of a chip EUI
@@ -84,11 +79,82 @@ extern "C" {
  * --- PUBLIC TYPES ------------------------------------------------------------
  */
 
-typedef uint8_t lr1110_bootloader_hash_t[LR1110_BL_HASH_LENGTH];
+/*!
+ * @brief Fixed-length array to store a PIN
+ */
 typedef uint8_t lr1110_bootloader_pin_t[LR1110_BL_PIN_LENGTH];
+
+/*!
+ * @brief Fixed-length array to store a chipEUI
+ */
 typedef uint8_t lr1110_bootloader_chip_eui_t[LR1110_BL_CHIP_EUI_LENGTH];
+
+/*!
+ * @brief Fixed-length array to store a joinEUI
+ */
 typedef uint8_t lr1110_bootloader_join_eui_t[LR1110_BL_JOIN_EUI_LENGTH];
 
+/*!
+ * @brief Chip modes
+ */
+typedef enum lr1110_bootloader_chip_modes_e
+{
+    LR1110_BOOTLOADER_CHIP_MODE_SLEEP     = 0x00,
+    LR1110_BOOTLOADER_CHIP_MODE_STBY_RC   = 0x01,
+    LR1110_BOOTLOADER_CHIP_MODE_STBY_XOSC = 0x02,
+    LR1110_BOOTLOADER_CHIP_MODE_FS        = 0x03,
+    LR1110_BOOTLOADER_CHIP_MODE_RX        = 0x04,
+    LR1110_BOOTLOADER_CHIP_MODE_TX        = 0x05,
+    LR1110_BOOTLOADER_CHIP_MODE_LOC       = 0x06,
+} lr1110_bootloader_chip_modes_t;
+
+/*!
+ * @brief Reset status
+ */
+typedef enum lr1110_bootloader_reset_status_e
+{
+    LR1110_BOOTLOADER_RESET_STATUS_CLEARED      = 0x00,
+    LR1110_BOOTLOADER_RESET_STATUS_ANALOG       = 0x01,
+    LR1110_BOOTLOADER_RESET_STATUS_EXTERNAL     = 0x02,
+    LR1110_BOOTLOADER_RESET_STATUS_SYSTEM       = 0x03,
+    LR1110_BOOTLOADER_RESET_STATUS_WATCHDOG     = 0x04,
+    LR1110_BOOTLOADER_RESET_STATUS_IOCD_RESTART = 0x05,
+    LR1110_BOOTLOADER_RESET_STATUS_RTC_RESTART  = 0x06,
+} lr1110_bootloader_reset_status_t;
+
+/*!
+ * @brief Command status
+ */
+typedef enum lr1110_bootloader_command_status_e
+{
+    LR1110_BOOTLOADER_CMD_STATUS_FAIL = 0x00,
+    LR1110_BOOTLOADER_CMD_STATUS_PERR = 0x01,
+    LR1110_BOOTLOADER_CMD_STATUS_OK   = 0x02,
+    LR1110_BOOTLOADER_CMD_STATUS_DATA = 0x03,
+} lr1110_bootloader_command_status_t;
+
+/*!
+ * @brief Status register 1 structure definition
+ */
+typedef struct lr1110_bootloader_stat1_s
+{
+    lr1110_bootloader_command_status_t command_status;
+    bool                               is_interrupt_active;
+} lr1110_bootloader_stat1_t;
+
+/*!
+ * @brief Status register 2 structure definition
+ */
+typedef struct lr1110_bootloader_stat2_s
+{
+    lr1110_bootloader_reset_status_t reset_status;
+    lr1110_bootloader_chip_modes_t   chip_mode;
+    bool                             is_running_from_flash;
+} lr1110_bootloader_stat2_t;
+
+/*!
+ * @brief Bootloader version structure definition
+ */
 typedef struct lr1110_bootloader_version_s
 {
     uint8_t  hw;

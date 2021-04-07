@@ -73,10 +73,24 @@ extern "C" {
  * --- PUBLIC TYPES ------------------------------------------------------------
  */
 
+/**
+ * @brief Fixed-length array to store a UID
+ */
 typedef uint8_t lr1110_system_uid_t[LR1110_SYSTEM_UID_LENGTH];
+
+/**
+ * @brief Fixed-length array to store a joinEUI
+ */
 typedef uint8_t lr1110_system_join_eui_t[LR1110_SYSTEM_JOIN_EUI_LENGTH];
+
+/**
+ * @brief Fixed-length array to store a PIN
+ */
 typedef uint8_t lr1110_system_pin_t[LR1110_SYSTEM_PIN_LENGTH];
 
+/**
+ * @brief Interrupt flags
+ */
 enum lr1110_system_irq_e
 {
     LR1110_SYSTEM_IRQ_NONE                   = ( 0 << 0 ),
@@ -105,6 +119,9 @@ enum lr1110_system_irq_e
         LR1110_SYSTEM_IRQ_FSK_ADDR_ERROR,
 };
 
+/**
+ * @brief Calibration flags
+ */
 enum lr1110_system_calibration_e
 {
     LR1110_SYSTEM_CALIB_LF_RC_MASK  = ( 1 << 0 ),
@@ -117,6 +134,9 @@ enum lr1110_system_calibration_e
 
 typedef uint8_t lr1110_system_cal_mask_t;
 
+/**
+ * @brief Error flags
+ */
 enum lr1110_system_errors_e
 {
     LR1110_SYSTEM_ERRORS_LF_RC_CALIB_MASK   = ( 1 << 0 ),
@@ -131,6 +151,9 @@ enum lr1110_system_errors_e
 
 typedef uint16_t lr1110_system_errors_t;
 
+/**
+ * @brief Chip modes
+ */
 typedef enum
 {
     LR1110_SYSTEM_CHIP_MODE_SLEEP     = 0x00,
@@ -142,6 +165,9 @@ typedef enum
     LR1110_SYSTEM_CHIP_MODE_LOC       = 0x06,
 } lr1110_system_chip_modes_t;
 
+/**
+ * @brief Reset status
+ */
 typedef enum
 {
     LR1110_SYSTEM_RESET_STATUS_CLEARED      = 0x00,
@@ -153,6 +179,9 @@ typedef enum
     LR1110_SYSTEM_RESET_STATUS_RTC_RESTART  = 0x06,
 } lr1110_system_reset_status_t;
 
+/**
+ * @brief Command status
+ */
 typedef enum
 {
     LR1110_SYSTEM_CMD_STATUS_FAIL = 0x00,
@@ -161,6 +190,9 @@ typedef enum
     LR1110_SYSTEM_CMD_STATUS_DATA = 0x03,
 } lr1110_system_command_status_t;
 
+/**
+ * @brief Low-frequency clock modes
+ */
 typedef enum
 {
     LR1110_SYSTEM_LFCLK_RC   = 0x00,  //!<  (Default)
@@ -168,13 +200,16 @@ typedef enum
     LR1110_SYSTEM_LFCLK_EXT  = 0x02
 } lr1110_system_lfclk_cfg_t;
 
+/**
+ * @brief Regulator modes
+ */
 typedef enum
 {
     LR1110_SYSTEM_REG_MODE_LDO  = 0x00,  //!< (Default)
     LR1110_SYSTEM_REG_MODE_DCDC = 0x01,
 } lr1110_system_reg_mode_t;
 
-/*!
+/**
  * @brief Info page ID
  */
 typedef enum
@@ -183,6 +218,9 @@ typedef enum
     LR1110_SYSTEM_INFOPAGE_1 = 0x01,  //!< Info page #1
 } lr1110_system_infopage_id_t;
 
+/**
+ * @brief RF switch configuration pin
+ */
 enum lr1110_system_rfswitch_cfg_pin_e
 {
     LR1110_SYSTEM_RFSW0_HIGH = ( 1 << 0 ),
@@ -192,6 +230,9 @@ enum lr1110_system_rfswitch_cfg_pin_e
     LR1110_SYSTEM_RFSW4_HIGH = ( 1 << 4 ),
 };
 
+/**
+ * @brief RF switch configuration structure definition
+ */
 typedef struct lr1110_system_rfswitch_cfg_s
 {
     uint8_t enable;
@@ -204,7 +245,7 @@ typedef struct lr1110_system_rfswitch_cfg_s
     uint8_t wifi;
 } lr1110_system_rfswitch_cfg_t;
 
-/*!
+/**
  * @brief Stand by configuration values
  */
 typedef enum
@@ -213,7 +254,7 @@ typedef enum
     LR1110_SYSTEM_STANDBY_CFG_XOSC = 0x01
 } lr1110_system_standby_cfg_t;
 
-/*!
+/**
  * @brief TCXO supply voltage values
  */
 typedef enum
@@ -228,12 +269,18 @@ typedef enum
     LR1110_SYSTEM_TCXO_CTRL_3_3V = 0x07,  //!< Supply voltage = 3.3v
 } lr1110_system_tcxo_supply_voltage_t;
 
+/**
+ * @brief Status register 1 structure definition
+ */
 typedef struct lr1110_system_stat1_s
 {
     lr1110_system_command_status_t command_status;
     bool                           is_interrupt_active;
 } lr1110_system_stat1_t;
 
+/**
+ * @brief Status register 2 structure definition
+ */
 typedef struct lr1110_system_stat2_s
 {
     lr1110_system_reset_status_t reset_status;
@@ -241,6 +288,9 @@ typedef struct lr1110_system_stat2_s
     bool                         is_running_from_flash;
 } lr1110_system_stat2_t;
 
+/**
+ * @brief Version structure definition
+ */
 typedef struct lr1110_system_version_s
 {
     uint8_t  hw;
@@ -248,6 +298,9 @@ typedef struct lr1110_system_version_s
     uint16_t fw;
 } lr1110_system_version_t;
 
+/**
+ * @brief Sleep configuration structure definition
+ */
 typedef struct lr1110_system_sleep_cfg_s
 {
     bool is_warm_start;

@@ -59,6 +59,8 @@ extern "C" {
  * --- PUBLIC TYPES ------------------------------------------------------------
  */
 
+typedef uint32_t lr1110_bootloader_irq_mask_t;
+
 /*
  * -----------------------------------------------------------------------------
  * --- PUBLIC FUNCTIONS PROTOTYPES ---------------------------------------------
@@ -68,16 +70,20 @@ extern "C" {
  * @brief Return the status register
  *
  * @param [in] context Chip implementation context
+ * @param [out] stat1 Content of status register 1
+ * @param [out] stat2 Content of status register 2
+ * @param [out] irq_status Interrupt flags
  *
- * @param [out] status Pointer to a structure holding the status register
+ * @returns Operation status
  */
-void lr1110_bootloader_get_status( const void* context );
+lr1110_status_t lr1110_bootloader_get_status( const void* context, lr1110_bootloader_stat1_t* stat1,
+                                              lr1110_bootloader_stat2_t*    stat2,
+                                              lr1110_bootloader_irq_mask_t* irq_status );
 
 /*!
  * @brief Return the version of the system (hardware and software)
  *
  * @param [in] context Chip implementation context
- *
  * @param [out] version Pointer to the structure holding the system version
  *
  * @returns Operation status
@@ -96,69 +102,14 @@ lr1110_status_t lr1110_bootloader_get_version( const void* context, lr1110_bootl
 lr1110_status_t lr1110_bootloader_erase_flash( const void* context );
 
 /*!
- * @brief Erase the specified page in the flash memory
- *
- * @param [in] context Chip implementation context
- *
- * @param [in] page_number The index of the page to erase
- *
- * @returns Operation status
- */
-lr1110_status_t lr1110_bootloader_erase_page( const void* context, const uint8_t page_number );
-
-/*!
- * @brief Write data in program flash memory of the chip
- *
- * This function shall be used when updating the flash content of the LR1110.
- * The flash payload to transfer shall be represented as an array of words (ie 4 bytes values).
- *
- * @param [in] context Chip implementation context
- *
- * @param [in] offset The offset from start register of flash
- *
- * @param [in] buffer A pointer to the buffer holding the content of flash to transfert. Its size in words must be at
- * least length
- *
- * @param [in] length Number of words (i.e. 4 bytes) in the buffer to transfer
- *
- * @returns Operation status
- */
-lr1110_status_t lr1110_bootloader_write_flash( const void* context, const uint32_t offset, const uint32_t* buffer,
-                                               const uint8_t length );
-
-/*!
- * @brief Write data in program flash memory of the chip
- *
- * This function shall be used when updating the flash content of the LR1110.
- * The flash payload to transfer shall be represented as an array of words (i.e. 4 bytes values).
- *
- * @param [in] context Chip implementation context
- *
- * @param [in] offset The offset from start register of flash
- *
- * @param [in] buffer A pointer to the buffer holding the content of flash to transfert. Its size in words must be at
- * least length
- *
- * @param [in] length Number of words (i.e. 4 bytes) in the buffer to transfer
- *
- * @returns Operation status
- */
-lr1110_status_t lr1110_bootloader_write_flash_full( const void* context, const uint32_t offset, const uint32_t* buffer,
-                                                    const uint32_t length );
-
-/*!
  * @brief Write encrypted data in program flash memory of the chip
  *
  * This function shall be used when updating the encrypted flash content of the LR1110.
  * The encrypted flash payload to transfer shall be represented as an array of words (i.e. 4 bytes values).
  *
  * @param [in] context Chip implementation context
- *
  * @param [in] offset The offset from start register of flash
- *
- * @param [in] buffer A pointer to the buffer holding the encrypted content of
- * flash to transfert. Its size in words must be at least length
- *
+ * @param [in] buffer Buffer holding the encrypted content. Its size in words must be at least length
  * @param [in] length Number of words (i.e. 4 bytes) in the buffer to transfer
  *
  * @returns Operation status
@@ -173,31 +124,14 @@ lr1110_status_t lr1110_bootloader_write_flash_encrypted( const void* context, co
  * The encrypted flash payload to transfer shall be represented as an array of words (ie 4 * bytes values).
  *
  * @param [in] context Chip implementation context
- *
  * @param [in] offset The offset from start register of flash
- *
- * @param [in] buffer A pointer to the buffer holding the encrypted content of
- * flash to transfert. Its size in words must be at least length
- *
+ * @param [in] buffer Buffer holding the encrypted content. Its size in words must be at least length
  * @param [in] length Number of words (i.e. 4 bytes) in the buffer to transfer
  *
  * @returns Operation status
  */
 lr1110_status_t lr1110_bootloader_write_flash_encrypted_full( const void* context, const uint32_t offset,
                                                               const uint32_t* buffer, const uint32_t length );
-
-/*!
- * @brief Get calculated hash of flash content.
- *
- * This method should be used to get the hash of flash content.
- *
- * @param [in] context Chip implementation context
- *
- * @param [out] hash Pointer to the hash array to be populated with hash value
- *
- * @returns Operation status
- */
-lr1110_status_t lr1110_bootloader_get_hash( const void* context, lr1110_bootloader_hash_t hash );
 
 /*!
  * @brief Software reset of the chip.
@@ -207,7 +141,6 @@ lr1110_status_t lr1110_bootloader_get_hash( const void* context, lr1110_bootload
  * performed by the bootloader before executing the first instruction in flash is OK).
  *
  * @param [in] context Chip implementation context
- *
  * @param [in] stay_in_bootloader Selector to stay in bootloader or execute flash code after reboot. If true, the
  * bootloader will not execute the flash code but activate SPI interface to allow firmware upgrade
  *
@@ -216,11 +149,9 @@ lr1110_status_t lr1110_bootloader_get_hash( const void* context, lr1110_bootload
 lr1110_status_t lr1110_bootloader_reboot( const void* context, const bool stay_in_bootloader );
 
 /*!
- * @brief Returns the 4-byte PIN which can be used to register a device on cloud
- * services.
+ * @brief Returns the 4-byte PIN which can be used to claim a device on cloud services.
  *
  * @param [in] context Chip implementation context
- *
  * @param [out] pin Pointer to the array to be populated with the PIN
  *
  * @returns Operation status
@@ -231,9 +162,8 @@ lr1110_status_t lr1110_bootloader_read_pin( const void* context, lr1110_bootload
  * @brief Read and return the Chip EUI
  *
  * @param [in] context Chip implementation context
- *
  * @param [out] chip_eui The buffer to be filled with chip EUI of the LR1110. It is up to the application to ensure
- * join_eui is long enough to hold the chip EUI
+ * chip_eui is long enough to hold the chip EUI
  *
  * @returns Operation status
  */
@@ -243,7 +173,6 @@ lr1110_status_t lr1110_bootloader_read_chip_eui( const void* context, lr1110_boo
  * @brief Read and return the Join EUI
  *
  * @param [in] context Chip implementation context
- *
  * @param [out] join_eui The buffer to be filled with Join EUI of the LR1110. It is up to the application to ensure
  * join_eui is long enough to hold the join EUI
  *

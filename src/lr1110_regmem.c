@@ -65,6 +65,9 @@
  * --- PRIVATE TYPES -----------------------------------------------------------
  */
 
+/*!
+ * @brief Operating codes for register and memory related operations
+ */
 enum
 {
     LR1110_REGMEM_NO_OP                  = 0x0000,

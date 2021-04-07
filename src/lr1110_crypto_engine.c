@@ -65,6 +65,9 @@
  * --- PRIVATE TYPES -----------------------------------------------------------
  */
 
+/*!
+ * @brief Operating codes for crypto-related operations
+ */
 enum
 {
     LR1110_CRYPTO_SELECT_OC              = 0x0500,

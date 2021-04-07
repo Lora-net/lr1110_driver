@@ -114,7 +114,6 @@ void lr1110_crypto_derive_key( const void* context, lr1110_crypto_status_t* stat
  * @param [in] header The header to compute (length linked to lorawan_version)
  * @param [in] data The data to compute
  * @param [in] length The length in bytes of the data to compute
- *
  * @param [out] data_out Placeholder for the decrypted data
  *
  */
@@ -124,14 +123,14 @@ void lr1110_crypto_process_join_accept( const void* context, lr1110_crypto_statu
                                         uint8_t* data_out );
 
 /*!
- * @brief Compute an AES CMAC.
+ * @brief Compute an AES-CMAC.
  *
  * @param [in] context Chip implementation context
  * @param [out] status The status returned by the execution of this cryptographic function
  * @param [in] key_id The identifier of the keyused for the computation
  * @param [in] data The data to compute
  * @param [in] length The length in bytes of the data to compute
- * @param [out] mic Placeholder for the computed MIC (first 4 bytes of the CMAC)
+ * @param [out] mic Placeholder for the computed MIC (first 4 bytes of the AES-CMAC)
  *
  * @see lr1110_crypto_verify_aes_cmac
  */
@@ -139,7 +138,7 @@ void lr1110_crypto_compute_aes_cmac( const void* context, lr1110_crypto_status_t
                                      const uint8_t* data, const uint16_t length, lr1110_crypto_mic_t mic );
 
 /*!
- * @brief Compute an AES CMAC and make a comparison with a value given as parameter.
+ * @brief Compute an AES-CMAC and make a comparison with a value given as parameter.
  *
  * @param [in] context Chip implementation context
  * @param [out] status The status returned by the execution of this cryptographic function

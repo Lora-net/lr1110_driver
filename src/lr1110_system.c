@@ -75,12 +75,16 @@
 #define LR1110_SYSTEM_READ_PIN_CMD_LENGTH ( 2 )
 #define LR1110_SYSTEM_READ_PIN_CUSTOM_EUI_CMD_LENGTH ( LR1110_SYSTEM_READ_PIN_CMD_LENGTH + 17 )
 #define LR1110_SYSTEM_GET_RANDOM_CMD_LENGTH ( 2 )
+#define LR1110_SYSTEM_ENABLE_SPI_CRC_CMD_LENGTH ( 3 )
 
 /*
  * -----------------------------------------------------------------------------
  * --- PRIVATE TYPES -----------------------------------------------------------
  */
 
+/*!
+ * @brief Operating codes for system-related operations
+ */
 enum
 {
     LR1110_SYSTEM_GET_STATUS_OC           = 0x0100,
@@ -108,6 +112,7 @@ enum
     LR1110_SYSTEM_READ_UID_OC             = 0x0125,
     LR1110_SYSTEM_READ_JOIN_EUI_OC        = 0x0126,
     LR1110_SYSTEM_READ_PIN_OC             = 0x0127,
+    LR1110_SYSTEM_ENABLE_SPI_CRC_OC       = 0x0128,
 };
 
 /*
@@ -602,6 +607,18 @@ lr1110_status_t lr1110_system_get_random_number( const void* context, uint32_t* 
 
     return ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_SYSTEM_GET_RANDOM_CMD_LENGTH,
                                                 ( uint8_t* ) random_number, sizeof( uint32_t ) );
+}
+
+lr1110_status_t lr1110_system_enable_spi_crc( const void* context, bool enable_crc )
+{
+    uint8_t cbuffer[LR1110_SYSTEM_ENABLE_SPI_CRC_CMD_LENGTH];
+
+    cbuffer[0] = ( uint8_t )( LR1110_SYSTEM_ENABLE_SPI_CRC_OC >> 8 );
+    cbuffer[1] = ( uint8_t )( LR1110_SYSTEM_ENABLE_SPI_CRC_OC >> 0 );
+
+    cbuffer[2] = ( enable_crc == true ) ? 0x01 : 0x00;
+
+    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_SYSTEM_ENABLE_SPI_CRC_CMD_LENGTH, 0, 0 );
 }
 
 /*

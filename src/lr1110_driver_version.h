@@ -29,16 +29,41 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __LR1110_DRIVER_VERSION_H__
-#define __LR1110_DRIVER_VERSION_H__
+#ifndef LR1110_DRIVER_VERSION_H
+#define LR1110_DRIVER_VERSION_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define LR1110_DRIVER_VERSION_MAJOR 3
+/*
+ * -----------------------------------------------------------------------------
+ * --- DEPENDENCIES ------------------------------------------------------------
+ */
+
+/*
+ * -----------------------------------------------------------------------------
+ * --- PUBLIC MACROS -----------------------------------------------------------
+ */
+
+/*
+ * -----------------------------------------------------------------------------
+ * --- PUBLIC CONSTANTS --------------------------------------------------------
+ */
+
+#define LR1110_DRIVER_VERSION_MAJOR 4
 #define LR1110_DRIVER_VERSION_MINOR 0
 #define LR1110_DRIVER_VERSION_PATCH 0
+
+/*
+ * -----------------------------------------------------------------------------
+ * --- PUBLIC TYPES ------------------------------------------------------------
+ */
+
+/*
+ * -----------------------------------------------------------------------------
+ * --- PUBLIC FUNCTIONS PROTOTYPES ---------------------------------------------
+ */
 
 /*!
  * @brief Compare version information with current ones
@@ -57,4 +82,6 @@ const char* lr1110_driver_version_get_version_string( void );
 }
 #endif
 
-#endif
+#endif  // LR1110_DRIVER_VERSION_H
+
+/* --- EOF ------------------------------------------------------------------ */

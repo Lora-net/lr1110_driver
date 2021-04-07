@@ -202,17 +202,13 @@ typedef enum
 /*!
  * @brief The WiFi MAC address origin
  *
- * See lr1110_wifi_parse_channel_info for details about the MAC address origin estimation of the LR1110.
- *
- * @see lr1110_wifi_parse_channel_info
+ * @see lr1110_wifi_parse_channel_info for details about the MAC address origin estimation of the LR1110
  */
 typedef enum
 {
-    LR1110_WIFI_ORIGIN_BEACON_FIX_AP = 1,  //!< The MAC has been extracted from a packet coming from a fix Access Point
-    LR1110_WIFI_ORIGIN_BEACON_MOBILE_AP =
-        2,  //!< The MAC has been extracted from a packet coming from a mobile Access Point
-    LR1110_WIFI_ORIGIN_UNKNWON =
-        3,  //!< It is not possible to obtain origin information of the packet where the MAC has been extracted
+    LR1110_WIFI_ORIGIN_BEACON_FIX_AP    = 1,  //!< MAC address extracted from a packet coming from a fix Access Point
+    LR1110_WIFI_ORIGIN_BEACON_MOBILE_AP = 2,  //!< MAC address extracted from a packet coming from a mobile Access Point
+    LR1110_WIFI_ORIGIN_UNKNOWN = 3,  //!< Impossible to determine the origin of the packet the MAC is extracted from
 } lr1110_wifi_mac_origin_t;
 
 /*!
@@ -226,16 +222,16 @@ typedef enum
  */
 typedef enum
 {
-    LR1110_WIFI_TYPE_SCAN_B     = 0x01,  //!< WiFi B
-    LR1110_WIFI_TYPE_SCAN_G     = 0x02,  //!< WiFi G
-    LR1110_WIFI_TYPE_SCAN_N     = 0x03,  //!< WiFi N
-    LR1110_WIFI_TYPE_SCAN_B_G_N = 0x04,  //!< Scan WiFi B and WiFi G/N
+    LR1110_WIFI_TYPE_SCAN_B     = 0x01,  //!< Wi-Fi B
+    LR1110_WIFI_TYPE_SCAN_G     = 0x02,  //!< Wi-Fi G
+    LR1110_WIFI_TYPE_SCAN_N     = 0x03,  //!< Wi-Fi N
+    LR1110_WIFI_TYPE_SCAN_B_G_N = 0x04,  //!< Wi-Fi B and Wi-Fi G/N
 } lr1110_wifi_signal_type_scan_t;
 
 /*!
  * @brief Wi-Fi signal type for passive scan results
  *
- * Note that the WiFi N detected is WiFi N Mixed mode, and not GreenField.
+ * Note that the Wi-Fi N detected is Wi-Fi N Mixed mode, and not GreenField.
  */
 typedef enum
 {
@@ -245,25 +241,38 @@ typedef enum
 } lr1110_wifi_signal_type_result_t;
 
 /*!
- * @brief WiFi capture mode
+ * @brief Wi-Fi capture mode
  *
  * The result type available depends on the Wi-Fi capture mode selected when calling the Wi-Fi scan API as follows:
  *
  * <table>
- * <tr> <th> Scan Mode <th> Result reading corresponding to
- * <tr> <td> LR1110_WIFI_SCAN_MODE_BEACON <td rowspan="2"> lr1110_wifi_read_basic_complete_results,
- * lr1110_wifi_read_basic_mac_type_channel_results <tr> <td> LR1110_WIFI_SCAN_MODE_BEACON_AND_PKT <tr> <td>
- * LR1110_WIFI_SCAN_MODE_FULL_BEACON <td> lr1110_wifi_read_extended_full_results
+ * <tr> <th> Scan Mode <th> Type/Sub-type selected <th> Corresponding read result function
+ * <tr> <td> LR1110_WIFI_SCAN_MODE_BEACON <td> Management/Beacon and Management/Probe Response <td rowspan="2"> @ref
+ * lr1110_wifi_read_basic_complete_results, @ref lr1110_wifi_read_basic_mac_type_channel_results <tr> <td>
+ * LR1110_WIFI_SCAN_MODE_BEACON_AND_PKT <td> Some from Management, Control and Data Types <tr> <td>
+ * LR1110_WIFI_SCAN_MODE_FULL_BEACON <td> Management/Beacon and Management/Probe Response <td> @ref
+ * lr1110_wifi_read_extended_full_results
  * </table>
+ *
+ * When the LR1110 receives a Wi-Fi frame, it starts demodulating it. Depending on the scan mode selected, only some
+ * Wi-Fi frame type/sub-types are to be kept. The demodulation step is stopped as soon as the LR1110 detects the current
+ * Wi-Fi frame is not of the required type/sub-types. This saves scan time and consumption.
+ *
+ * A Wi-Fi frame is never completely demodulated. The LR1110_WIFI_SCAN_MODE_FULL_BEACON uses a special configuration
+ * allowing to demodulate more fields (until Frame Check Sequence field), at a price of higher scan duration and higher
+ * consumption.
  */
 typedef enum
 {
-    LR1110_WIFI_SCAN_MODE_BEACON = 1,  //!< Only scan for Beacons and Probe Response Access Points' MAC addresses until
-                                       //!< Period Beacon field (Basic result)
-    LR1110_WIFI_SCAN_MODE_BEACON_AND_PKT = 2,  //!< Scan for beacons Access Points' MAC addresses until Period Beacon
-                                               //!< field, and for Packets until third Mac Address field (Basic result)
-    LR1110_WIFI_SCAN_MODE_FULL_BEACON = 4,     //!< Only scan for beacons and probes Access Points' MAC addresses until
-                                               //!< Frame Check Sequence (FCS) field (Extended result)
+    LR1110_WIFI_SCAN_MODE_BEACON =
+        1,  //!< Exposes Beacons and Probe Responses Access Points frames until Period Beacon field (Basic result)
+    LR1110_WIFI_SCAN_MODE_BEACON_AND_PKT =
+        2,  //!< Exposes some Management Access Points frames until Period Beacon field, and some other packets frame
+            //!< until third Mac Address field (Basic result)
+    LR1110_WIFI_SCAN_MODE_FULL_BEACON =
+        4,  //!< Exposes Beacons and Probes Responses Access Points frames until Frame Check Sequence (FCS) field
+            //!< (Extended result). In this mode, only signal type LR1110_WIFI_TYPE_SCAN_B is executed and other signal
+            //!< types are silently discarded.
 } lr1110_wifi_mode_t;
 
 /*!
@@ -331,6 +340,7 @@ typedef struct
     uint16_t seq_control;                                 //!< Sequence Control value
     uint8_t  ssid_bytes[LR1110_WIFI_RESULT_SSID_LENGTH];  //!< Service Set
                                                           //!< IDentifier
+    lr1110_wifi_channel_t       current_channel;          //!< Current channel indicated in the Wi-Fi frame
     uint16_t                    country_code;             //!< Country Code
     uint8_t                     io_regulation;            //!< Input Output Regulation
     lr1110_wifi_fcs_info_byte_t fcs_check_byte;           //<! Frame Check Sequence info
