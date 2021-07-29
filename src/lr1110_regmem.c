@@ -3,11 +3,12 @@
  *
  * @brief     Register/memory driver implementation for LR1110
  *
- * Revised BSD License
- * Copyright Semtech Corporation 2020. All rights reserved.
+ * The Clear BSD License
+ * Copyright Semtech Corporation 2021. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * modification, are permitted (subject to the limitations in the disclaimer
+ * below) provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above copyright
@@ -17,16 +18,18 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY
+ * THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+ * NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
@@ -48,8 +51,6 @@
  */
 
 #define LR1110_REGMEM_CLEAR_RXBUFFER_CMD_LENGTH 2
-#define LR1110_REGMEM_WRITE_AUXREG32_CMD_LENGTH ( 2 + 4 )
-#define LR1110_REGMEM_READ_AUXREG32_CMD_LENGTH ( 2 + 4 + 1 )
 #define LR1110_REGMEM_WRITE_REGMEM32_CMD_LENGTH ( 2 + 4 )
 #define LR1110_REGMEM_READ_REGMEM32_CMD_LENGTH ( 2 + 4 + 1 )
 #define LR1110_REGMEM_WRITE_MEM8_CMD_LENGTH ( 2 + 4 )
@@ -70,10 +71,6 @@
  */
 enum
 {
-    LR1110_REGMEM_NO_OP                  = 0x0000,
-    LR1110_REGMEM_WRITE_AUXREG32_MASK_OC = 0x0102,
-    LR1110_REGMEM_WRITE_AUXREG32_OC      = 0x0103,
-    LR1110_REGMEM_READ_AUXREG32_OC       = 0x0104,
     LR1110_REGMEM_WRITE_REGMEM32_OC      = 0x0105,
     LR1110_REGMEM_READ_REGMEM32_OC       = 0x0106,
     LR1110_REGMEM_WRITE_MEM8_OC          = 0x0107,
@@ -97,7 +94,7 @@ enum
 /*!
  * @brief Helper function that fill both cbuffer with opcode and memory address
  *
- * It is typically used in read/write auxreg32 and regmem32 functions.
+ * It is typically used in read/write regmem32 functions.
  *
  * @warning It is up to the caller to ensure cbuffer is big enough to contain opcode and address!
  */
@@ -116,7 +113,7 @@ static void lr1110_regmem_fill_cbuffer_opcode_address_length( uint8_t* cbuffer, 
 /*!
  * @brief Helper function that fill both cbuffer with data
  *
- * It is typically used in write auxreg32 and write regmem32 functions.
+ * It is typically used in write write regmem32 functions.
  *
  * @warning It is up to the caller to ensure cdata is big enough to contain all data!
  */
@@ -125,8 +122,8 @@ static void lr1110_regmem_fill_cdata( uint8_t* cdata, const uint32_t* data, uint
 /*!
  * @brief Helper function that fill both cbuffer and cdata buffers with opcode, memory address and data
  *
- * It is typically used to factorize write auxreg32 and write regmem32 operations. Behind the scene it calls the other
- * helpers lr1110_regmem_fill_cbuffer_opcode_address and lr1110_regmem_fill_cdata.
+ * It is typically used to factorize and write regmem32 operations. Behind the scene it calls the other helpers
+ * lr1110_regmem_fill_cbuffer_opcode_address and lr1110_regmem_fill_cdata.
  *
  * @warning It is up to the caller to ensure cbuffer and cdata are big enough to contain their respective information!
  */
@@ -149,38 +146,6 @@ static void lr1110_regmem_fill_out_buffer_from_raw_buffer( uint32_t* out_buffer,
  * -----------------------------------------------------------------------------
  * --- PUBLIC FUNCTIONS DEFINITION ---------------------------------------------
  */
-
-lr1110_status_t lr1110_regmem_write_auxreg32( const void* context, const uint32_t address, const uint32_t* buffer,
-                                              const uint8_t length )
-{
-    uint8_t cbuffer[LR1110_REGMEM_WRITE_AUXREG32_CMD_LENGTH];
-    uint8_t cdata[LR1110_REGMEM_BUFFER_SIZE_MAX];
-
-    lr1110_regmem_fill_cbuffer_cdata_opcode_address_data( cbuffer, cdata, LR1110_REGMEM_WRITE_AUXREG32_OC, address,
-                                                          buffer, length );
-
-    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_REGMEM_WRITE_AUXREG32_CMD_LENGTH, cdata,
-                                                 length * sizeof( uint32_t ) );
-}
-
-lr1110_status_t lr1110_regmem_read_auxreg32( const void* context, const uint32_t address, uint32_t* buffer,
-                                             const uint8_t length )
-{
-    lr1110_status_t status = LR1110_STATUS_ERROR;
-    uint8_t         cbuffer[LR1110_REGMEM_READ_AUXREG32_CMD_LENGTH];
-
-    lr1110_regmem_fill_cbuffer_opcode_address_length( cbuffer, LR1110_REGMEM_READ_AUXREG32_OC, address, length );
-
-    status = ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_REGMEM_READ_AUXREG32_CMD_LENGTH,
-                                                  ( uint8_t* ) buffer, length * sizeof( uint32_t ) );
-
-    if( status == LR1110_STATUS_OK )
-    {
-        lr1110_regmem_fill_out_buffer_from_raw_buffer( buffer, ( const uint8_t* ) buffer, length );
-    }
-
-    return status;
-}
 
 lr1110_status_t lr1110_regmem_write_regmem32( const void* context, const uint32_t address, const uint32_t* buffer,
                                               const uint8_t length )
@@ -237,10 +202,10 @@ lr1110_status_t lr1110_regmem_read_mem8( const void* context, const uint32_t add
 
 lr1110_status_t lr1110_regmem_write_buffer8( const void* context, const uint8_t* buffer, const uint8_t length )
 {
-    uint8_t cbuffer[LR1110_REGMEM_WRITE_BUFFER8_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_REGMEM_WRITE_BUFFER8_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_REGMEM_WRITE_BUFFER8_OC >> 0 );
+    const uint8_t cbuffer[LR1110_REGMEM_WRITE_BUFFER8_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_REGMEM_WRITE_BUFFER8_OC >> 8 ),
+        ( uint8_t )( LR1110_REGMEM_WRITE_BUFFER8_OC >> 0 ),
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_REGMEM_WRITE_BUFFER8_CMD_LENGTH, buffer,
                                                  length );
@@ -249,13 +214,12 @@ lr1110_status_t lr1110_regmem_write_buffer8( const void* context, const uint8_t*
 lr1110_status_t lr1110_regmem_read_buffer8( const void* context, uint8_t* buffer, const uint8_t offset,
                                             const uint8_t length )
 {
-    uint8_t cbuffer[LR1110_REGMEM_READ_BUFFER8_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_REGMEM_READ_BUFFER8_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_REGMEM_READ_BUFFER8_OC >> 0 );
-
-    cbuffer[2] = offset;
-    cbuffer[3] = length;
+    const uint8_t cbuffer[LR1110_REGMEM_READ_BUFFER8_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_REGMEM_READ_BUFFER8_OC >> 8 ),
+        ( uint8_t )( LR1110_REGMEM_READ_BUFFER8_OC >> 0 ),
+        offset,
+        length,
+    };
 
     return ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_REGMEM_READ_BUFFER8_CMD_LENGTH, buffer,
                                                 length );
@@ -263,10 +227,10 @@ lr1110_status_t lr1110_regmem_read_buffer8( const void* context, uint8_t* buffer
 
 lr1110_status_t lr1110_regmem_clear_rxbuffer( const void* context )
 {
-    uint8_t cbuffer[LR1110_REGMEM_CLEAR_RXBUFFER_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_REGMEM_CLEAR_RXBUFFER_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_REGMEM_CLEAR_RXBUFFER_OC >> 0 );
+    const uint8_t cbuffer[LR1110_REGMEM_CLEAR_RXBUFFER_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_REGMEM_CLEAR_RXBUFFER_OC >> 8 ),
+        ( uint8_t )( LR1110_REGMEM_CLEAR_RXBUFFER_OC >> 0 ),
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_REGMEM_CLEAR_RXBUFFER_CMD_LENGTH, 0, 0 );
 }

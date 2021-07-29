@@ -3,11 +3,12 @@
  *
  * @brief     Bootloader driver implementation for LR1110
  *
- * Revised BSD License
- * Copyright Semtech Corporation 2020. All rights reserved.
+ * The Clear BSD License
+ * Copyright Semtech Corporation 2021. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * modification, are permitted (subject to the limitations in the disclaimer
+ * below) provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above copyright
@@ -17,16 +18,18 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY
+ * THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+ * NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
@@ -50,7 +53,7 @@
 #define LR1110_FLASH_DATA_MAX_LENGTH_UINT32 ( 64 )
 #define LR1110_FLASH_DATA_MAX_LENGTH_UINT8 ( LR1110_FLASH_DATA_MAX_LENGTH_UINT32 * 4 )
 
-#define LR1110_BL_CMD_NO_PARAM_LENGTH 2
+#define LR1110_BL_CMD_NO_PARAM_LENGTH ( 2 )
 #define LR1110_BL_GET_STATUS_CMD_LENGTH ( 2 + 4 )
 #define LR1110_BL_VERSION_CMD_LENGTH LR1110_BL_CMD_NO_PARAM_LENGTH
 #define LR1110_BL_ERASE_FLASH_CMD_LENGTH LR1110_BL_CMD_NO_PARAM_LENGTH
@@ -91,54 +94,13 @@ enum
  */
 
 /*!
- * @brief Return the minimum of the 2 operands given as parameter
+ * @brief Returns the minimum of the operand given as parameter and the maximum allowed block size
  *
- * @param [in] a First operand
- * @param [in] b Second operand
+ * @param [in] operand Size to compare
  *
- * @returns Minimum of a and b
+ * @returns Minimum between operand and @ref LR1110_FLASH_DATA_MAX_LENGTH_UINT32
  */
-uint32_t min( uint32_t a, uint32_t b )
-{
-    uint32_t min = a;
-
-    if( a > b )
-    {
-        min = b;
-    }
-
-    return min;
-}
-
-/*!
- * @brief Helper function to fill cbuffer with opcode and offset
- *
- * Typically used in write flash functions.
- *
- * @warning It is up to the caller to ensure the size of cbuffer is big enough to contain all information!
- */
-static void lr1110_bootloader_fill_cbuffer_opcode_offset_flash( uint8_t* cbuffer, uint16_t opcode, uint32_t offset );
-
-/*!
- * @brief Helper function to fill cdata with data
- *
- * Typically used in write flash functions.
- *
- * @warning It is up to the caller to ensure the size of cdata is big enough to contain all data!
- */
-static void lr1110_bootloader_fill_cdata_flash( uint8_t* cdata, const uint32_t* data, uint8_t data_length );
-
-/*!
- * @brief Helper function to fill cbuffer and cdata with information to write flash
- *
- * Typically used in write flash functions. Internally calls lr1110_bootloader_fill_cbuffer_opcode_offset_flash and
- * lr1110_bootloader_fill_cdata_flash.
- *
- * @warning It is up to the caller to ensure the sizes of cbuffer and cdata are big enough to contain their respective
- * information!
- */
-static void lr1110_bootloader_fill_cbuffer_cdata_flash( uint8_t* cbuffer, uint8_t* cdata, uint16_t opcode,
-                                                        uint32_t offset, const uint32_t* data, uint8_t data_length );
+static uint8_t lr1110_bootloader_get_min_from_operand_and_max_block_size( uint32_t operand );
 
 /*
  * -----------------------------------------------------------------------------
@@ -149,43 +111,48 @@ lr1110_status_t lr1110_bootloader_get_status( const void* context, lr1110_bootlo
                                               lr1110_bootloader_stat2_t*    stat2,
                                               lr1110_bootloader_irq_mask_t* irq_status )
 {
-    uint8_t         cbuffer[LR1110_BL_GET_STATUS_CMD_LENGTH] = { 0x00 };
-    lr1110_status_t status                                   = LR1110_STATUS_ERROR;
+    uint8_t data[LR1110_BL_GET_STATUS_CMD_LENGTH];
 
-    cbuffer[0] = ( uint8_t )( LR1110_BL_GET_STATUS_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_BL_GET_STATUS_OC >> 0 );
-
-    status = ( lr1110_status_t ) lr1110_hal_write_read( context, cbuffer, cbuffer, LR1110_BL_GET_STATUS_CMD_LENGTH );
+    const lr1110_status_t status =
+        ( lr1110_status_t ) lr1110_hal_direct_read( context, data, LR1110_BL_GET_STATUS_CMD_LENGTH );
 
     if( status == LR1110_STATUS_OK )
     {
-        stat1->is_interrupt_active = ( ( cbuffer[0] & 0x01 ) != 0 ) ? true : false;
-        stat1->command_status      = ( lr1110_bootloader_command_status_t )( cbuffer[0] >> 1 );
+        stat1->is_interrupt_active = ( ( data[0] & 0x01 ) != 0 ) ? true : false;
+        stat1->command_status      = ( lr1110_bootloader_command_status_t )( data[0] >> 1 );
 
-        stat2->is_running_from_flash = ( ( cbuffer[1] & 0x01 ) != 0 ) ? true : false;
-        stat2->chip_mode             = ( lr1110_bootloader_chip_modes_t )( ( cbuffer[1] & 0x0F ) >> 1 );
-        stat2->reset_status          = ( lr1110_bootloader_reset_status_t )( ( cbuffer[1] & 0xF0 ) >> 4 );
+        stat2->is_running_from_flash = ( ( data[1] & 0x01 ) != 0 ) ? true : false;
+        stat2->chip_mode             = ( lr1110_bootloader_chip_modes_t )( ( data[1] & 0x0F ) >> 1 );
+        stat2->reset_status          = ( lr1110_bootloader_reset_status_t )( ( data[1] & 0xF0 ) >> 4 );
 
-        *irq_status = ( ( lr1110_bootloader_irq_mask_t ) cbuffer[2] << 24 ) +
-                      ( ( lr1110_bootloader_irq_mask_t ) cbuffer[3] << 16 ) +
-                      ( ( lr1110_bootloader_irq_mask_t ) cbuffer[4] << 8 ) +
-                      ( ( lr1110_bootloader_irq_mask_t ) cbuffer[5] << 0 );
+        *irq_status =
+            ( ( lr1110_bootloader_irq_mask_t ) data[2] << 24 ) + ( ( lr1110_bootloader_irq_mask_t ) data[3] << 16 ) +
+            ( ( lr1110_bootloader_irq_mask_t ) data[4] << 8 ) + ( ( lr1110_bootloader_irq_mask_t ) data[5] << 0 );
     }
 
     return status;
 }
 
+lr1110_status_t lr1110_bootloader_clear_reset_status_info( const void* context )
+{
+    const uint8_t cbuffer[LR1110_BL_CMD_NO_PARAM_LENGTH] = {
+        ( uint8_t )( LR1110_BL_GET_STATUS_OC >> 8 ),
+        ( uint8_t )( LR1110_BL_GET_STATUS_OC >> 0 ),
+    };
+
+    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_BL_CMD_NO_PARAM_LENGTH, 0, 0 );
+}
+
 lr1110_status_t lr1110_bootloader_get_version( const void* context, lr1110_bootloader_version_t* version )
 {
-    uint8_t         cbuffer[LR1110_BL_VERSION_CMD_LENGTH];
-    uint8_t         rbuffer[LR1110_BL_VERSION_LENGTH] = { 0x00 };
-    lr1110_status_t status                            = LR1110_STATUS_ERROR;
+    const uint8_t cbuffer[LR1110_BL_VERSION_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_BL_GET_VERSION_OC >> 8 ),
+        ( uint8_t )( LR1110_BL_GET_VERSION_OC >> 0 ),
+    };
+    uint8_t rbuffer[LR1110_BL_VERSION_LENGTH] = { 0x00 };
 
-    cbuffer[0] = ( uint8_t )( LR1110_BL_GET_VERSION_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_BL_GET_VERSION_OC >> 0 );
-
-    status = ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_BL_VERSION_CMD_LENGTH, rbuffer,
-                                                  LR1110_BL_VERSION_LENGTH );
+    const lr1110_status_t status = ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_BL_VERSION_CMD_LENGTH,
+                                                                        rbuffer, LR1110_BL_VERSION_LENGTH );
 
     if( status == LR1110_STATUS_OK )
     {
@@ -199,10 +166,10 @@ lr1110_status_t lr1110_bootloader_get_version( const void* context, lr1110_bootl
 
 lr1110_status_t lr1110_bootloader_erase_flash( const void* context )
 {
-    uint8_t cbuffer[LR1110_BL_ERASE_FLASH_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_BL_ERASE_FLASH_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_BL_ERASE_FLASH_OC >> 0 );
+    const uint8_t cbuffer[LR1110_BL_ERASE_FLASH_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_BL_ERASE_FLASH_OC >> 8 ),
+        ( uint8_t )( LR1110_BL_ERASE_FLASH_OC >> 0 ),
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_BL_ERASE_FLASH_CMD_LENGTH, 0, 0 );
 }
@@ -210,11 +177,25 @@ lr1110_status_t lr1110_bootloader_erase_flash( const void* context )
 lr1110_status_t lr1110_bootloader_write_flash_encrypted( const void* context, const uint32_t offset,
                                                          const uint32_t* data, uint8_t length )
 {
-    uint8_t cbuffer[LR1110_BL_WRITE_FLASH_ENCRYPTED_CMD_LENGTH];
-    uint8_t cdata[256];
+    const uint8_t cbuffer[LR1110_BL_WRITE_FLASH_ENCRYPTED_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_BL_WRITE_FLASH_ENCRYPTED_OC >> 8 ),
+        ( uint8_t )( LR1110_BL_WRITE_FLASH_ENCRYPTED_OC >> 0 ),
+        ( uint8_t )( offset >> 24 ),
+        ( uint8_t )( offset >> 16 ),
+        ( uint8_t )( offset >> 8 ),
+        ( uint8_t )( offset >> 0 ),
+    };
 
-    lr1110_bootloader_fill_cbuffer_cdata_flash( cbuffer, cdata, LR1110_BL_WRITE_FLASH_ENCRYPTED_OC, offset, data,
-                                                length );
+    uint8_t cdata[256] = { 0 };
+    for( uint8_t index = 0; index < length; index++ )
+    {
+        uint8_t* cdata_local = &cdata[index * sizeof( uint32_t )];
+
+        cdata_local[0] = ( uint8_t )( data[index] >> 24 );
+        cdata_local[1] = ( uint8_t )( data[index] >> 16 );
+        cdata_local[2] = ( uint8_t )( data[index] >> 8 );
+        cdata_local[3] = ( uint8_t )( data[index] >> 0 );
+    }
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_BL_WRITE_FLASH_ENCRYPTED_CMD_LENGTH, cdata,
                                                  length * sizeof( uint32_t ) );
@@ -223,43 +204,49 @@ lr1110_status_t lr1110_bootloader_write_flash_encrypted( const void* context, co
 lr1110_status_t lr1110_bootloader_write_flash_encrypted_full( const void* context, const uint32_t offset,
                                                               const uint32_t* buffer, const uint32_t length )
 {
-    lr1110_status_t status           = LR1110_STATUS_OK;
-    uint32_t        remaining_length = length;
-    uint32_t        local_offset     = offset;
-    uint32_t        loop             = 0;
+    uint32_t remaining_length = length;
+    uint32_t local_offset     = offset;
+    uint32_t loop             = 0;
 
-    while( ( remaining_length != 0 ) && ( status == LR1110_STATUS_OK ) )
+    while( remaining_length != 0 )
     {
-        status = ( lr1110_status_t ) lr1110_bootloader_write_flash_encrypted( context, local_offset, buffer + loop * 64,
-                                                                              min( remaining_length, 64 ) );
+        const lr1110_status_t status = lr1110_bootloader_write_flash_encrypted(
+            context, local_offset, buffer + loop * LR1110_FLASH_DATA_MAX_LENGTH_UINT32,
+            lr1110_bootloader_get_min_from_operand_and_max_block_size( remaining_length ) );
+
+        if( status != LR1110_STATUS_OK )
+        {
+            return status;
+        }
 
         local_offset += LR1110_FLASH_DATA_MAX_LENGTH_UINT8;
-        remaining_length = ( remaining_length < 64 ) ? 0 : ( remaining_length - 64 );
+        remaining_length = ( remaining_length < LR1110_FLASH_DATA_MAX_LENGTH_UINT32 )
+                               ? 0
+                               : ( remaining_length - LR1110_FLASH_DATA_MAX_LENGTH_UINT32 );
 
         loop++;
     }
 
-    return status;
+    return LR1110_STATUS_OK;
 }
 
 lr1110_status_t lr1110_bootloader_reboot( const void* context, const bool stay_in_bootloader )
 {
-    uint8_t cbuffer[LR1110_BL_REBOOT_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_BL_REBOOT_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_BL_REBOOT_OC >> 0 );
-
-    cbuffer[2] = ( stay_in_bootloader == true ) ? 0x03 : 0x00;
+    const uint8_t cbuffer[LR1110_BL_REBOOT_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_BL_REBOOT_OC >> 8 ),
+        ( uint8_t )( LR1110_BL_REBOOT_OC >> 0 ),
+        ( stay_in_bootloader == true ) ? 0x03 : 0x00,
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_BL_REBOOT_CMD_LENGTH, 0, 0 );
 }
 
 lr1110_status_t lr1110_bootloader_read_pin( const void* context, lr1110_bootloader_pin_t pin )
 {
-    uint8_t cbuffer[LR1110_BL_GET_PIN_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_BL_GET_PIN_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_BL_GET_PIN_OC >> 0 );
+    const uint8_t cbuffer[LR1110_BL_GET_PIN_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_BL_GET_PIN_OC >> 8 ),
+        ( uint8_t )( LR1110_BL_GET_PIN_OC >> 0 ),
+    };
 
     return ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_BL_GET_PIN_CMD_LENGTH, pin,
                                                 LR1110_BL_PIN_LENGTH );
@@ -267,10 +254,10 @@ lr1110_status_t lr1110_bootloader_read_pin( const void* context, lr1110_bootload
 
 lr1110_status_t lr1110_bootloader_read_chip_eui( const void* context, lr1110_bootloader_chip_eui_t chip_eui )
 {
-    uint8_t cbuffer[LR1110_BL_READ_CHIP_EUI_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_BL_READ_CHIP_EUI_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_BL_READ_CHIP_EUI_OC >> 0 );
+    const uint8_t cbuffer[LR1110_BL_READ_CHIP_EUI_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_BL_READ_CHIP_EUI_OC >> 8 ),
+        ( uint8_t )( LR1110_BL_READ_CHIP_EUI_OC >> 0 ),
+    };
 
     return ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_BL_READ_CHIP_EUI_CMD_LENGTH, chip_eui,
                                                 LR1110_BL_CHIP_EUI_LENGTH );
@@ -278,10 +265,10 @@ lr1110_status_t lr1110_bootloader_read_chip_eui( const void* context, lr1110_boo
 
 lr1110_status_t lr1110_bootloader_read_join_eui( const void* context, lr1110_bootloader_join_eui_t join_eui )
 {
-    uint8_t cbuffer[LR1110_BL_READ_JOIN_EUI_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_BL_READ_JOIN_EUI_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_BL_READ_JOIN_EUI_OC >> 0 );
+    const uint8_t cbuffer[LR1110_BL_READ_JOIN_EUI_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_BL_READ_JOIN_EUI_OC >> 8 ),
+        ( uint8_t )( LR1110_BL_READ_JOIN_EUI_OC >> 0 ),
+    };
 
     return ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_BL_READ_JOIN_EUI_CMD_LENGTH, join_eui,
                                                 LR1110_BL_JOIN_EUI_LENGTH );
@@ -292,35 +279,16 @@ lr1110_status_t lr1110_bootloader_read_join_eui( const void* context, lr1110_boo
  * --- PRIVATE FUNCTIONS DEFINITION --------------------------------------------
  */
 
-void lr1110_bootloader_fill_cbuffer_opcode_offset_flash( uint8_t* cbuffer, uint16_t opcode, uint32_t offset )
+uint8_t lr1110_bootloader_get_min_from_operand_and_max_block_size( uint32_t operand )
 {
-    cbuffer[0] = ( uint8_t )( opcode >> 8 );
-    cbuffer[1] = ( uint8_t )( opcode >> 0 );
-
-    cbuffer[2] = ( uint8_t )( offset >> 24 );
-    cbuffer[3] = ( uint8_t )( offset >> 16 );
-    cbuffer[4] = ( uint8_t )( offset >> 8 );
-    cbuffer[5] = ( uint8_t )( offset >> 0 );
-}
-
-void lr1110_bootloader_fill_cdata_flash( uint8_t* cdata, const uint32_t* data, uint8_t data_length )
-{
-    for( uint8_t index = 0; index < data_length; index++ )
+    if( operand > LR1110_FLASH_DATA_MAX_LENGTH_UINT32 )
     {
-        uint8_t* cdata_local = &cdata[index * sizeof( uint32_t )];
-
-        cdata_local[0] = ( uint8_t )( data[index] >> 24 );
-        cdata_local[1] = ( uint8_t )( data[index] >> 16 );
-        cdata_local[2] = ( uint8_t )( data[index] >> 8 );
-        cdata_local[3] = ( uint8_t )( data[index] >> 0 );
+        return LR1110_FLASH_DATA_MAX_LENGTH_UINT32;
     }
-}
-
-void lr1110_bootloader_fill_cbuffer_cdata_flash( uint8_t* cbuffer, uint8_t* cdata, uint16_t opcode, uint32_t offset,
-                                                 const uint32_t* data, uint8_t data_length )
-{
-    lr1110_bootloader_fill_cbuffer_opcode_offset_flash( cbuffer, opcode, offset );
-    lr1110_bootloader_fill_cdata_flash( cdata, data, data_length );
+    else
+    {
+        return ( uint8_t ) operand;
+    }
 }
 
 /* --- EOF ------------------------------------------------------------------ */

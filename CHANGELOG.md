@@ -4,6 +4,44 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v5.0.1] 2021-07-19
+
+### Added
+
+* [bootloader] `lr1110_bootloader_clear_reset_status_info()` function
+* [crypto] Functions now return a status
+* [GNSS] `lr1110_gnss_get_result_destination()` function
+* [GNSS] `lr1110_gnss_almanac_update()` function - replaces `lr1110_gnss_almanac_full_update()` and `lr1110_gnss_one_satellite_almanac_update()` functions
+* [HAL] `lr1110_hal_direct_read()` function - replaces `lr1110_hal_write_read()` function and no longer requires bidirectional SPI
+* [HAL] `LR1110_NOP` constant
+* [system] `lr1110_system_clear_reset_status_info()` function
+* [system] `lr1110_system_drive_dio_in_sleep_mode()` function
+* [Wi-Fi] `LR1110_WIFI_SCAN_MODE_UNTIL_SSID` entry in `lr1110_wifi_mode_t`
+* [Wi-Fi] `lr1110_wifi_is_well_formed_utf8_byte_sequence()` function
+
+### Changed
+
+* [LICENSE] Revised BSD License changed to the Clear BSD License
+* [GNSS] `LR1110_GNSS_ERROR_UPDATE_TIME_DIFFERENCE_OVER_1_MONTH` is renamed `LR1110_GNSS_ERROR_ALMANAC_UPDATE_NOT_ALLOWED` in `lr1110_gnss_error_code_t`
+* [GNSS] `lr1110_gnss_parse_context_status_buffer()` returns a `lr1110_status_t` value
+* [system] `lr1110_system_get_status()` function implementation uses `lr1110_hal_direct_read()` function and no longer requires bidirectional SPI
+* [system] `lr1110_bootloader_get_status()` function implementation uses `lr1110_hal_direct_read()` function and no longer requires bidirectional SPI
+* [system] `lr1110_system_get_irq_status()` function - has a faster implementation based on the `lr1110_system_get_status()` function
+
+### Fixed
+
+* [GNSS] Global almanac CRC endianness `lr1110_gnss_parse_context_status_buffer()`
+* [GNSS] `lr1110_gnss_parse_context_status_buffer()` takes into account the message header
+* [GNSS] Typo in `LR1110_GNSS_ALMANAC_REAC_RBUFFER_LENGTH` - now `LR1110_GNSS_ALMANAC_READ_RBUFFER_LENGTH`
+
+### Removed
+
+* [GNSS] `lr1110_gnss_get_almanac_crc()` - Almanac CRC can be read thanks to `lr1110_gnss_get_context_status()`
+* [GNSS] `lr1110_gnss_almanac_full_update()` and `lr1110_gnss_one_satellite_almanac_update()` functions - merged in `lr1110_gnss_almanac_update()` function
+* [HAL] `lr1110_hal_write_read()` function - replaced by `lr1110_hal_direct_read()` function
+* [regmem] `lr1110_regmem_write_auxreg32()`and `lr1110_regmem_read_auxreg32()` functions
+* [Wi-Fi] `lr1110_wifi_cfg_hardware_debarker()` function
+
 ## [v4.0.0] 2021-04-06
 
 ### Added

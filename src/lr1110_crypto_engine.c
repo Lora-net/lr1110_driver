@@ -3,11 +3,12 @@
  *
  * @brief     Cryptographic engine driver implementation for LR1110
  *
- * Revised BSD License
- * Copyright Semtech Corporation 2020. All rights reserved.
+ * The Clear BSD License
+ * Copyright Semtech Corporation 2021. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * modification, are permitted (subject to the limitations in the disclaimer
+ * below) provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above copyright
@@ -17,16 +18,18 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY
+ * THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+ * NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
@@ -115,7 +118,7 @@ static void lr1110_crypto_fill_cbuffer_opcode_key_data( uint8_t* cbuffer, uint16
  * --- PUBLIC FUNCTIONS DEFINITION ---------------------------------------------
  */
 
-void lr1110_crypto_select( const void* context, const lr1110_crypto_element_t element )
+lr1110_status_t lr1110_crypto_select( const void* context, const lr1110_crypto_element_t element )
 {
     uint8_t cbuffer[LR1110_CRYPTO_SELECT_CMD_LENGTH] = { 0x00 };
 
@@ -124,11 +127,11 @@ void lr1110_crypto_select( const void* context, const lr1110_crypto_element_t el
 
     cbuffer[2] = element;
 
-    lr1110_hal_write( context, cbuffer, LR1110_CRYPTO_SELECT_CMD_LENGTH, 0, 0 );
+    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_CRYPTO_SELECT_CMD_LENGTH, 0, 0 );
 }
 
-void lr1110_crypto_set_key( const void* context, lr1110_crypto_status_t* status, const uint8_t key_id,
-                            const lr1110_crypto_key_t key )
+lr1110_status_t lr1110_crypto_set_key( const void* context, lr1110_crypto_status_t* status, const uint8_t key_id,
+                                       const lr1110_crypto_key_t key )
 {
     uint8_t cbuffer[LR1110_CRYPTO_SET_KEY_CMD_LENGTH] = { 0x00 };
     uint8_t rbuffer[LR1110_CRYPTO_STATUS_LENGTH]      = { 0x00 };
@@ -143,13 +146,19 @@ void lr1110_crypto_set_key( const void* context, lr1110_crypto_status_t* status,
         cbuffer[3 + index] = key[index];
     }
 
-    lr1110_hal_read( context, cbuffer, LR1110_CRYPTO_SET_KEY_CMD_LENGTH, rbuffer, LR1110_CRYPTO_STATUS_LENGTH );
+    const lr1110_hal_status_t hal_status =
+        lr1110_hal_read( context, cbuffer, LR1110_CRYPTO_SET_KEY_CMD_LENGTH, rbuffer, LR1110_CRYPTO_STATUS_LENGTH );
 
-    *status = ( lr1110_crypto_status_t ) rbuffer[0];
+    if( hal_status == LR1110_HAL_STATUS_OK )
+    {
+        *status = ( lr1110_crypto_status_t ) rbuffer[0];
+    }
+
+    return ( lr1110_status_t ) hal_status;
 }
 
-void lr1110_crypto_derive_key( const void* context, lr1110_crypto_status_t* status, const uint8_t src_key_id,
-                               const uint8_t dest_key_id, const lr1110_crypto_nonce_t nonce )
+lr1110_status_t lr1110_crypto_derive_key( const void* context, lr1110_crypto_status_t* status, const uint8_t src_key_id,
+                                          const uint8_t dest_key_id, const lr1110_crypto_nonce_t nonce )
 {
     uint8_t cbuffer[LR1110_CRYPTO_DERIVE_KEY_CMD_LENGTH] = { 0x00 };
     uint8_t rbuffer[LR1110_CRYPTO_STATUS_LENGTH]         = { 0x00 };
@@ -165,15 +174,22 @@ void lr1110_crypto_derive_key( const void* context, lr1110_crypto_status_t* stat
         cbuffer[4 + index] = nonce[index];
     }
 
-    lr1110_hal_read( context, cbuffer, LR1110_CRYPTO_DERIVE_KEY_CMD_LENGTH, rbuffer, LR1110_CRYPTO_STATUS_LENGTH );
+    const lr1110_hal_status_t hal_status =
+        lr1110_hal_read( context, cbuffer, LR1110_CRYPTO_DERIVE_KEY_CMD_LENGTH, rbuffer, LR1110_CRYPTO_STATUS_LENGTH );
 
-    *status = ( lr1110_crypto_status_t ) rbuffer[0];
+    if( hal_status == LR1110_HAL_STATUS_OK )
+    {
+        *status = ( lr1110_crypto_status_t ) rbuffer[0];
+    }
+
+    return ( lr1110_status_t ) hal_status;
 }
 
-void lr1110_crypto_process_join_accept( const void* context, lr1110_crypto_status_t* status, const uint8_t dec_key_id,
-                                        const uint8_t ver_key_id, const lr1110_crypto_lorawan_version_t lorawan_version,
-                                        const uint8_t* header, const uint8_t* data_in, const uint8_t length,
-                                        uint8_t* data_out )
+lr1110_status_t lr1110_crypto_process_join_accept( const void* context, lr1110_crypto_status_t* status,
+                                                   const uint8_t dec_key_id, const uint8_t ver_key_id,
+                                                   const lr1110_crypto_lorawan_version_t lorawan_version,
+                                                   const uint8_t* header, const uint8_t* data_in, const uint8_t length,
+                                                   uint8_t* data_out )
 {
     uint8_t cbuffer[LR1110_CRYPTO_PROCESS_JOIN_ACCEPT_CMD_LENGTH] = { 0x00 };
     uint8_t rbuffer[LR1110_CRYPTO_STATUS_LENGTH + 32]             = { 0x00 };
@@ -196,39 +212,56 @@ void lr1110_crypto_process_join_accept( const void* context, lr1110_crypto_statu
         cbuffer[5 + header_length + index] = data_in[index];
     }
 
-    lr1110_hal_read( context, cbuffer, 2 + 3 + header_length + length, rbuffer, 1 + length );
+    const lr1110_hal_status_t hal_status =
+        lr1110_hal_read( context, cbuffer, 2 + 3 + header_length + length, rbuffer, 1 + length );
 
-    *status = ( lr1110_crypto_status_t ) rbuffer[0];
-
-    for( uint8_t index = 0; index < length; index++ )
+    if( hal_status == LR1110_HAL_STATUS_OK )
     {
-        data_out[index] = rbuffer[1 + index];
+        *status = ( lr1110_crypto_status_t ) rbuffer[0];
+
+        if( *status == LR1110_CRYPTO_STATUS_SUCCESS )
+        {
+            for( uint8_t index = 0; index < length; index++ )
+            {
+                data_out[index] = rbuffer[1 + index];
+            }
+        }
     }
+
+    return ( lr1110_status_t ) hal_status;
 }
 
-void lr1110_crypto_compute_aes_cmac( const void* context, lr1110_crypto_status_t* status, const uint8_t key_id,
-                                     const uint8_t* data, const uint16_t length, lr1110_crypto_mic_t mic )
+lr1110_status_t lr1110_crypto_compute_aes_cmac( const void* context, lr1110_crypto_status_t* status,
+                                                const uint8_t key_id, const uint8_t* data, const uint16_t length,
+                                                lr1110_crypto_mic_t mic )
 {
     uint8_t cbuffer[LR1110_CRYPTO_COMPUTE_AES_CMAC_CMD_LENGTH]              = { 0x00 };
     uint8_t rbuffer[LR1110_CRYPTO_STATUS_LENGTH + LR1110_CRYPTO_MIC_LENGTH] = { 0x00 };
 
     lr1110_crypto_fill_cbuffer_opcode_key_data( cbuffer, LR1110_CRYPTO_COMPUTE_AES_CMAC_OC, key_id, data, length );
 
-    lr1110_hal_read( context, cbuffer, 3 + length, rbuffer, LR1110_CRYPTO_STATUS_LENGTH + LR1110_CRYPTO_MIC_LENGTH );
+    const lr1110_hal_status_t hal_status = lr1110_hal_read( context, cbuffer, 3 + length, rbuffer,
+                                                            LR1110_CRYPTO_STATUS_LENGTH + LR1110_CRYPTO_MIC_LENGTH );
 
-    *status = ( lr1110_crypto_status_t ) rbuffer[0];
-
-    if( *status == LR1110_CRYPTO_STATUS_SUCCESS )
+    if( hal_status == LR1110_HAL_STATUS_OK )
     {
-        for( uint8_t index = 0; index < LR1110_CRYPTO_MIC_LENGTH; index++ )
+        *status = ( lr1110_crypto_status_t ) rbuffer[0];
+
+        if( *status == LR1110_CRYPTO_STATUS_SUCCESS )
         {
-            mic[index] = rbuffer[1 + index];
+            for( uint8_t index = 0; index < LR1110_CRYPTO_MIC_LENGTH; index++ )
+            {
+                mic[index] = rbuffer[1 + index];
+            }
         }
     }
+
+    return ( lr1110_status_t ) hal_status;
 }
 
-void lr1110_crypto_verify_aes_cmac( const void* context, lr1110_crypto_status_t* status, const uint8_t key_id,
-                                    const uint8_t* data, const uint16_t length, const lr1110_crypto_mic_t mic )
+lr1110_status_t lr1110_crypto_verify_aes_cmac( const void* context, lr1110_crypto_status_t* status,
+                                               const uint8_t key_id, const uint8_t* data, const uint16_t length,
+                                               const lr1110_crypto_mic_t mic )
 {
     uint8_t cbuffer[LR1110_CRYPTO_VERIFY_AES_CMAC_CMD_LENGTH] = { 0x00 };
     uint8_t rbuffer[LR1110_CRYPTO_STATUS_LENGTH]              = { 0x00 };
@@ -248,66 +281,99 @@ void lr1110_crypto_verify_aes_cmac( const void* context, lr1110_crypto_status_t*
         cbuffer[3 + LR1110_CRYPTO_MIC_LENGTH + index] = data[index];
     }
 
-    lr1110_hal_read( context, cbuffer, 3 + LR1110_CRYPTO_MIC_LENGTH + length, rbuffer, LR1110_CRYPTO_STATUS_LENGTH );
+    const lr1110_hal_status_t hal_status = lr1110_hal_read( context, cbuffer, 3 + LR1110_CRYPTO_MIC_LENGTH + length,
+                                                            rbuffer, LR1110_CRYPTO_STATUS_LENGTH );
 
-    *status = ( lr1110_crypto_status_t ) rbuffer[0];
+    if( hal_status == LR1110_HAL_STATUS_OK )
+    {
+        *status = ( lr1110_crypto_status_t ) rbuffer[0];
+    }
+
+    return ( lr1110_status_t ) hal_status;
 }
 
-void lr1110_crypto_aes_encrypt_01( const void* context, lr1110_crypto_status_t* status, const uint8_t key_id,
-                                   const uint8_t* data, const uint16_t length, uint8_t* result )
+lr1110_status_t lr1110_crypto_aes_encrypt_01( const void* context, lr1110_crypto_status_t* status, const uint8_t key_id,
+                                              const uint8_t* data, const uint16_t length, uint8_t* result )
 {
     uint8_t cbuffer[LR1110_CRYPTO_AES_ENCRYPT_CMD_LENGTH]                        = { 0x00 };
     uint8_t rbuffer[LR1110_CRYPTO_STATUS_LENGTH + LR1110_CRYPTO_DATA_MAX_LENGTH] = { 0x00 };
 
     lr1110_crypto_fill_cbuffer_opcode_key_data( cbuffer, LR1110_CRYPTO_ENCRYPT_AES_01_OC, key_id, data, length );
 
-    lr1110_hal_read( context, cbuffer, 3 + length, rbuffer, LR1110_CRYPTO_STATUS_LENGTH + length );
+    const lr1110_hal_status_t hal_status =
+        lr1110_hal_read( context, cbuffer, 3 + length, rbuffer, LR1110_CRYPTO_STATUS_LENGTH + length );
 
-    *status = ( lr1110_crypto_status_t ) rbuffer[0];
-
-    for( uint16_t index = 0; index < length; index++ )
+    if( hal_status == LR1110_HAL_STATUS_OK )
     {
-        result[index] = rbuffer[1 + index];
+        *status = ( lr1110_crypto_status_t ) rbuffer[0];
+
+        if( *status == LR1110_CRYPTO_STATUS_SUCCESS )
+        {
+            for( uint16_t index = 0; index < length; index++ )
+            {
+                result[index] = rbuffer[1 + index];
+            }
+        }
     }
+
+    return ( lr1110_status_t ) hal_status;
 }
 
-void lr1110_crypto_aes_encrypt( const void* context, lr1110_crypto_status_t* status, const uint8_t key_id,
-                                const uint8_t* data, const uint16_t length, uint8_t* result )
+lr1110_status_t lr1110_crypto_aes_encrypt( const void* context, lr1110_crypto_status_t* status, const uint8_t key_id,
+                                           const uint8_t* data, const uint16_t length, uint8_t* result )
 {
     uint8_t cbuffer[LR1110_CRYPTO_AES_ENCRYPT_CMD_LENGTH]                        = { 0x00 };
     uint8_t rbuffer[LR1110_CRYPTO_STATUS_LENGTH + LR1110_CRYPTO_DATA_MAX_LENGTH] = { 0x00 };
 
     lr1110_crypto_fill_cbuffer_opcode_key_data( cbuffer, LR1110_CRYPTO_ENCRYPT_AES_OC, key_id, data, length );
 
-    lr1110_hal_read( context, cbuffer, 3 + length, rbuffer, LR1110_CRYPTO_STATUS_LENGTH + length );
+    const lr1110_hal_status_t hal_status =
+        lr1110_hal_read( context, cbuffer, 3 + length, rbuffer, LR1110_CRYPTO_STATUS_LENGTH + length );
 
-    *status = ( lr1110_crypto_status_t ) rbuffer[0];
-
-    for( uint16_t index = 0; index < length; index++ )
+    if( hal_status == LR1110_HAL_STATUS_OK )
     {
-        result[index] = rbuffer[1 + index];
+        *status = ( lr1110_crypto_status_t ) rbuffer[0];
+
+        if( *status == LR1110_CRYPTO_STATUS_SUCCESS )
+        {
+            for( uint16_t index = 0; index < length; index++ )
+            {
+                result[index] = rbuffer[1 + index];
+            }
+        }
     }
+
+    return ( lr1110_status_t ) hal_status;
 }
 
-void lr1110_crypto_aes_decrypt( const void* context, lr1110_crypto_status_t* status, const uint8_t key_id,
-                                const uint8_t* data, const uint16_t length, uint8_t* result )
+lr1110_status_t lr1110_crypto_aes_decrypt( const void* context, lr1110_crypto_status_t* status, const uint8_t key_id,
+                                           const uint8_t* data, const uint16_t length, uint8_t* result )
 {
     uint8_t cbuffer[LR1110_CRYPTO_AES_DECRYPT_CMD_LENGTH]                        = { 0x00 };
     uint8_t rbuffer[LR1110_CRYPTO_STATUS_LENGTH + LR1110_CRYPTO_DATA_MAX_LENGTH] = { 0x00 };
 
     lr1110_crypto_fill_cbuffer_opcode_key_data( cbuffer, LR1110_CRYPTO_DECRYPT_AES_OC, key_id, data, length );
 
-    lr1110_hal_read( context, cbuffer, 3 + length, rbuffer, LR1110_CRYPTO_STATUS_LENGTH + length );
+    const lr1110_hal_status_t hal_status =
+        lr1110_hal_read( context, cbuffer, 3 + length, rbuffer, LR1110_CRYPTO_STATUS_LENGTH + length );
 
-    *status = ( lr1110_crypto_status_t ) rbuffer[0];
-
-    for( uint16_t index = 0; index < length; index++ )
+    if( hal_status == LR1110_HAL_STATUS_OK )
     {
-        result[index] = rbuffer[1 + index];
+        *status = ( lr1110_crypto_status_t ) rbuffer[0];
+
+        if( *status == LR1110_CRYPTO_STATUS_SUCCESS )
+        {
+            for( uint16_t index = 0; index < length; index++ )
+            {
+                result[index] = rbuffer[1 + index];
+            }
+        }
     }
+
+    return ( lr1110_status_t ) hal_status;
 }
 
-void lr1110_crypto_store_to_flash( const void* context, lr1110_crypto_status_t* status )
+lr1110_status_t lr1110_crypto_store_to_flash( const void* context, lr1110_crypto_status_t* status )
 {
     uint8_t cbuffer[LR1110_CRYPTO_STORE_TO_FLASH_CMD_LENGTH] = { 0x00 };
     uint8_t rbuffer[LR1110_CRYPTO_STATUS_LENGTH]             = { 0x00 };
@@ -315,12 +381,18 @@ void lr1110_crypto_store_to_flash( const void* context, lr1110_crypto_status_t* 
     cbuffer[0] = ( uint8_t )( LR1110_CRYPTO_STORE_TO_FLASH_OC >> 8 );
     cbuffer[1] = ( uint8_t )( LR1110_CRYPTO_STORE_TO_FLASH_OC >> 0 );
 
-    lr1110_hal_read( context, cbuffer, LR1110_CRYPTO_STORE_TO_FLASH_CMD_LENGTH, rbuffer, LR1110_CRYPTO_STATUS_LENGTH );
+    const lr1110_hal_status_t hal_status = lr1110_hal_read( context, cbuffer, LR1110_CRYPTO_STORE_TO_FLASH_CMD_LENGTH,
+                                                            rbuffer, LR1110_CRYPTO_STATUS_LENGTH );
 
-    *status = ( lr1110_crypto_status_t ) rbuffer[0];
+    if( hal_status == LR1110_HAL_STATUS_OK )
+    {
+        *status = ( lr1110_crypto_status_t ) rbuffer[0];
+    }
+
+    return ( lr1110_status_t ) hal_status;
 }
 
-void lr1110_crypto_restore_from_flash( const void* context, lr1110_crypto_status_t* status )
+lr1110_status_t lr1110_crypto_restore_from_flash( const void* context, lr1110_crypto_status_t* status )
 {
     uint8_t cbuffer[LR1110_CRYPTO_RESTORE_FROM_FLASH_CMD_LENGTH] = { 0x00 };
     uint8_t rbuffer[LR1110_CRYPTO_STATUS_LENGTH]                 = { 0x00 };
@@ -328,14 +400,19 @@ void lr1110_crypto_restore_from_flash( const void* context, lr1110_crypto_status
     cbuffer[0] = ( uint8_t )( LR1110_CRYPTO_RESTORE_FROM_FLASH_OC >> 8 );
     cbuffer[1] = ( uint8_t )( LR1110_CRYPTO_RESTORE_FROM_FLASH_OC >> 0 );
 
-    lr1110_hal_read( context, cbuffer, LR1110_CRYPTO_RESTORE_FROM_FLASH_CMD_LENGTH, rbuffer,
-                     LR1110_CRYPTO_STATUS_LENGTH );
+    const lr1110_hal_status_t hal_status = lr1110_hal_read(
+        context, cbuffer, LR1110_CRYPTO_RESTORE_FROM_FLASH_CMD_LENGTH, rbuffer, LR1110_CRYPTO_STATUS_LENGTH );
 
-    *status = ( lr1110_crypto_status_t ) rbuffer[0];
+    if( hal_status == LR1110_HAL_STATUS_OK )
+    {
+        *status = ( lr1110_crypto_status_t ) rbuffer[0];
+    }
+
+    return ( lr1110_status_t ) hal_status;
 }
 
-void lr1110_crypto_set_parameter( const void* context, lr1110_crypto_status_t* status, const uint8_t param_id,
-                                  const lr1110_crypto_param_t parameter )
+lr1110_status_t lr1110_crypto_set_parameter( const void* context, lr1110_crypto_status_t* status,
+                                             const uint8_t param_id, const lr1110_crypto_param_t parameter )
 {
     uint8_t cbuffer[LR1110_CRYPTO_SET_PARAMETER_CMD_LENGTH] = { 0x00 };
     uint8_t rbuffer[LR1110_CRYPTO_STATUS_LENGTH]            = { 0x00 };
@@ -350,13 +427,19 @@ void lr1110_crypto_set_parameter( const void* context, lr1110_crypto_status_t* s
         cbuffer[3 + index] = parameter[index];
     }
 
-    lr1110_hal_read( context, cbuffer, LR1110_CRYPTO_SET_PARAMETER_CMD_LENGTH, rbuffer, LR1110_CRYPTO_STATUS_LENGTH );
+    const lr1110_hal_status_t hal_status = lr1110_hal_read( context, cbuffer, LR1110_CRYPTO_SET_PARAMETER_CMD_LENGTH,
+                                                            rbuffer, LR1110_CRYPTO_STATUS_LENGTH );
 
-    *status = ( lr1110_crypto_status_t ) rbuffer[0];
+    if( hal_status == LR1110_HAL_STATUS_OK )
+    {
+        *status = ( lr1110_crypto_status_t ) rbuffer[0];
+    }
+
+    return ( lr1110_status_t ) hal_status;
 }
 
-void lr1110_crypto_get_parameter( const void* context, lr1110_crypto_status_t* status, const uint8_t param_id,
-                                  lr1110_crypto_param_t parameter )
+lr1110_status_t lr1110_crypto_get_parameter( const void* context, lr1110_crypto_status_t* status,
+                                             const uint8_t param_id, lr1110_crypto_param_t parameter )
 {
     uint8_t cbuffer[LR1110_CRYPTO_GET_PARAMETER_CMD_LENGTH]                       = { 0x00 };
     uint8_t rbuffer[LR1110_CRYPTO_STATUS_LENGTH + LR1110_CRYPTO_PARAMETER_LENGTH] = { 0x00 };
@@ -366,15 +449,24 @@ void lr1110_crypto_get_parameter( const void* context, lr1110_crypto_status_t* s
 
     cbuffer[2] = param_id;
 
-    lr1110_hal_read( context, cbuffer, LR1110_CRYPTO_GET_PARAMETER_CMD_LENGTH, rbuffer,
-                     LR1110_CRYPTO_STATUS_LENGTH + LR1110_CRYPTO_PARAMETER_LENGTH );
+    const lr1110_hal_status_t hal_status =
+        lr1110_hal_read( context, cbuffer, LR1110_CRYPTO_GET_PARAMETER_CMD_LENGTH, rbuffer,
+                         LR1110_CRYPTO_STATUS_LENGTH + LR1110_CRYPTO_PARAMETER_LENGTH );
 
-    *status = ( lr1110_crypto_status_t ) rbuffer[0];
-
-    for( uint8_t index = 0; index < LR1110_CRYPTO_PARAMETER_LENGTH; index++ )
+    if( hal_status == LR1110_HAL_STATUS_OK )
     {
-        parameter[index] = rbuffer[1 + index];
+        *status = ( lr1110_crypto_status_t ) rbuffer[0];
+
+        if( *status == LR1110_CRYPTO_STATUS_SUCCESS )
+        {
+            for( uint8_t index = 0; index < LR1110_CRYPTO_PARAMETER_LENGTH; index++ )
+            {
+                parameter[index] = rbuffer[1 + index];
+            }
+        }
     }
+
+    return ( lr1110_status_t ) hal_status;
 }
 
 /*

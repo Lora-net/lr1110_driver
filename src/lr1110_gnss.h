@@ -3,11 +3,12 @@
  *
  * @brief     GNSS scan driver definition for LR1110
  *
- * Revised BSD License
- * Copyright Semtech Corporation 2020. All rights reserved.
+ * The Clear BSD License
+ * Copyright Semtech Corporation 2021. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * modification, are permitted (subject to the limitations in the disclaimer
+ * below) provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above copyright
@@ -17,16 +18,18 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY
+ * THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+ * NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef LR1110_GNSS_H
@@ -107,38 +110,19 @@ lr1110_status_t lr1110_gnss_read_results( const void* context, uint8_t* result_b
 lr1110_status_t lr1110_gnss_get_timings( const void* context, lr1110_gnss_timings_t* timings );
 
 /*!
- * @brief Update almanac for one satellite
+ * @brief Update almanacs given as parameter
  *
- * This function is to be used to update a single satellite almanac. Note that all 128 satellite almanacs must be update
- * in a row. Therefore, this function must be called 128 times in a row without any other calls in between.
- *
- * On the contrary, lr1110_gnss_almanac_full_update can be used to update all almanacs in one call, but the application
- * must be able to provide a buffer that holds all almanac (>2kB).
+ * @remark Note that information header and almanacs for all 128 SV (i.e. 129 20-byte long blocks) must be updated in a
+ * row for the whole operation to be successful. Therefore, this function must be called as many times as needed without
+ * any other operations in between.
  *
  * @param [in] context Chip implementation context
- * @param [in] almanac_bytestream Almanac buffer to update one satellite almanac of the LR1110. It is up to the
- * application to ensure that bytestream is at least LR1110_GNSS_SINGLE_ALMANAC_WRITE_SIZE long.
+ * @param [in] blocks Buffer containing at least (nb_of_blocks * LR1110_GNSS_SINGLE_ALMANAC_WRITE_SIZE) bytes of almanac
+ * @param [in] nb_of_blocks Number of blocks to transfer
  *
  * @returns Operation status
  */
-lr1110_status_t lr1110_gnss_one_satellite_almanac_update(
-    const void* context, const lr1110_gnss_almanac_single_satellite_update_bytestream_t bytestream );
-
-/*!
- * @brief Update full almanac for all satellites
- *
- * This function does a job similar to lr1110_gnss_one_satellite_almanac_full_update, but it allows to reduced the
- * number of SPI accesses for application that can afford the huge amount of memory required to store the
- * almanac_bytestream.
- *
- * @param [in] context Chip implementation context
- * @param [in] almanac_bytestream Almanac buffer to update all almanac of the LR1110. It is up to the application to
- * ensure that the buffer almanac_bytestream is indeed of size LR1110_GNSS_FULL_ALMANAC_WRITE_BUFFER_SIZE
- *
- * @returns Operation status
- */
-lr1110_status_t lr1110_gnss_almanac_full_update(
-    const void* context, const lr1110_gnss_almanac_full_update_bytestream_t almanac_bytestream );
+lr1110_status_t lr1110_gnss_almanac_update( const void* context, const uint8_t* blocks, const uint8_t nb_of_blocks );
 
 /*!
  * @brief Read the almanac
@@ -162,16 +146,6 @@ lr1110_status_t lr1110_gnss_read_almanac( const void*                           
  */
 lr1110_status_t lr1110_gnss_get_almanac_age_for_satellite( const void* context, const lr1110_gnss_satellite_id_t sv_id,
                                                            uint16_t* almanac_age );
-
-/*!
- * @brief Get almanac CRC
- *
- * @param [in] context Chip implementation context
- * @param [out] almanac_crc Almanac CRC
- *
- * @returns Operation status
- */
-lr1110_status_t lr1110_gnss_get_almanac_crc( const void* context, uint32_t* almanac_crc );
 
 /*!
  * @brief Push data received from solver to LR1110
@@ -199,8 +173,7 @@ lr1110_status_t lr1110_gnss_set_constellations_to_use( const void*              
                                                        const lr1110_gnss_constellation_mask_t constellation_mask );
 
 /*!
- * @brief Read constellation used by the GNSS scanner from the almanac update
- * configuration
+ * @brief Read constellation used by the GNSS scanner from the almanac update configuration
  *
  * @param [in] context Chip implementation context
  * @param [out] constellations_used Bit mask of the constellations used. See @ref lr1110_gnss_constellation_t for the
@@ -332,6 +305,9 @@ lr1110_status_t lr1110_gnss_set_assistance_position(
 /*!
  * @brief Function to read the assistance position.
  *
+ * The assistance position read may be different from the one set beforehand with @ref
+ * lr1110_gnss_set_assistance_position due to a scaling computation.
+ *
  * @param [in] context Chip implementation context
  * @param [in] assistance_position, latitude 12 bits and longitude 12 bits
  *
@@ -381,7 +357,7 @@ lr1110_status_t lr1110_gnss_push_dmc_msg( const void* context, uint8_t* dmc_msg,
  *
  * @param [in] context Chip implementation context
  * @param [out] context_status_buffer Pointer to a buffer to be filled with context status information. Must be at least
- * 7 bytes long. It is up to the caller to ensure there is enough place in this buffer. The call is garenteed
+ * 7 bytes long. It is up to the caller to ensure there is enough place in this buffer.
  *
  * @returns Operation status
  *
@@ -422,10 +398,26 @@ lr1110_status_t lr1110_gnss_get_detected_satellites( const void* context, const 
  * @param [out] context_status Pointer to a structure of lr1110_gnss_context_status_t to be filled with information from
  * context_status_bytestream
  *
+ * @returns Operation status
+ *
  * @see lr1110_gnss_get_context_status
  */
-void lr1110_gnss_parse_context_status_buffer( const lr1110_gnss_context_status_bytestream_t constext_status_bytestream,
-                                              lr1110_gnss_context_status_t*                 context_status );
+lr1110_status_t lr1110_gnss_parse_context_status_buffer(
+    const lr1110_gnss_context_status_bytestream_t context_status_bytestream,
+    lr1110_gnss_context_status_t*                 context_status );
+
+/**
+ * @brief Extract the destination from the result returned by a GNSS scan
+ *
+ * @param [in]  result_buffer       Pointer to the buffer holding the result
+ * @param [in]  result_buffer_size  Size of the result in byte
+ * @param [out] destination         Destination of the result
+ *
+ * @returns  Operation status
+ */
+lr1110_status_t lr1110_gnss_get_result_destination( const uint8_t* result_buffer, const uint16_t result_buffer_size,
+                                                    lr1110_gnss_destination_t* destination );
+
 #ifdef __cplusplus
 }
 #endif

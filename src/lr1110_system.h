@@ -3,11 +3,12 @@
  *
  * @brief     System driver definition for LR1110
  *
- * Revised BSD License
- * Copyright Semtech Corporation 2020. All rights reserved.
+ * The Clear BSD License
+ * Copyright Semtech Corporation 2021. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * modification, are permitted (subject to the limitations in the disclaimer
+ * below) provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above copyright
@@ -17,16 +18,18 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY
+ * THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+ * NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef LR1110_SYSTEM_H
@@ -58,8 +61,6 @@ extern "C" {
  * -----------------------------------------------------------------------------
  * --- PUBLIC TYPES ------------------------------------------------------------
  */
-
-typedef uint32_t lr1110_system_irq_mask_t;
 
 /*
  * -----------------------------------------------------------------------------
@@ -94,10 +95,24 @@ lr1110_status_t lr1110_system_wakeup( const void* context );
  *
  * @returns Operation status
  *
- * @remark This function requires lr1110_hal_write_read to be implemented
+ * @remark To simplify system integration, this function does not actually execute the GetStatus command, which would
+ * require bidirectional SPI communication. It obtains the stat1, stat2, and irq_status values by performing an ordinary
+ * SPI read (which is required to send null/NOP bytes on the MOSI line). This is possible since the LR1110 returns these
+ * values automatically whenever a read that does not directly follow a response-carrying command is performed.
+ * Unlike with the GetStatus command, however, the reset status information is NOT cleared by this command. The function
+ * @ref lr1110_system_clear_reset_status_info may be used for this purpose when necessary.
  */
 lr1110_status_t lr1110_system_get_status( const void* context, lr1110_system_stat1_t* stat1,
                                           lr1110_system_stat2_t* stat2, lr1110_system_irq_mask_t* irq_status );
+
+/*!
+ * @brief Clear the reset status information stored in stat2
+ *
+ * @param [in] context Chip implementation context
+ *
+ * @returns Operation status
+ */
+lr1110_status_t lr1110_system_clear_reset_status_info( const void* context );
 
 /*!
  * @brief Return irq_status
@@ -106,10 +121,11 @@ lr1110_status_t lr1110_system_get_status( const void* context, lr1110_system_sta
  * @param [out] irq_status irq_status status variable
  *
  * @returns Operation status
- *
- * @remark Unlike lr1110_system_get_status, this function does not require lr1110_hal_write_read to be implemented
  */
-lr1110_status_t lr1110_system_get_irq_status( const void* context, lr1110_system_irq_mask_t* irq_status );
+static inline lr1110_status_t lr1110_system_get_irq_status( const void* context, lr1110_system_irq_mask_t* irq_status )
+{
+    return lr1110_system_get_status( context, 0, 0, irq_status );
+}
 
 /*!
  * @brief Return the version of the system (hardware and software)
@@ -127,8 +143,8 @@ lr1110_status_t lr1110_system_get_version( const void* context, lr1110_system_ve
  * Errors may be fixed following:
  * - calibration error can be fixed by attempting another RC calibration;
  * - XOsc related errors may be due to hardware problems, can be fixed by reset;
- * - PLL lock related errors can be due to not-locked PLL, or by attempting to use an out-of-band frequency, can be fix
- * by executing a PLL calibration, or by using other frequencies.
+ * - PLL lock related errors can be due to not-locked PLL, or by attempting to use an out-of-band frequency, can be
+ * fixed by executing a PLL calibration, or by using other frequencies.
  *
  * @param [in] context Chip implementation context
  * @param [out] errors Pointer to a value holding error flags
@@ -332,6 +348,9 @@ lr1110_status_t lr1110_system_get_vbat( const void* context, uint8_t* vbat );
  * (typ. -1.7mV/°C) using the following formula:
  * \f$ Temperature_{°C} = (\frac{Temp(10:0)}{2047} \times Vana - Vbe25) \times \frac{1000}{VbeSlope} + 25 \f$
  *
+ * @remark If a TCXO is used, make sure to configure it with @ref lr1110_system_set_tcxo_mode before calling this
+ * function
+ *
  * @param [in] context Chip implementation context
  * @param [out] temp A pointer to the Temp value
  *
@@ -509,6 +528,20 @@ lr1110_status_t lr1110_system_get_random_number( const void* context, uint32_t* 
  * @returns Operation status
  */
 lr1110_status_t lr1110_system_enable_spi_crc( const void* context, bool enable_crc );
+
+/*!
+ * @brief Configure the GPIO drive in sleep mode
+ *
+ * @remark GPIO stands for RF switch and IRQ line DIOs
+ *
+ * @note This command is available from firmware version 0x0306
+ *
+ * @param [in] context       Chip implementation context
+ * @param [in] enable_drive  GPIO drive configuration (true: enabled / false: disabled)
+ *
+ * @returns Operation status
+ */
+lr1110_status_t lr1110_system_drive_dio_in_sleep_mode( const void* context, bool enable_drive );
 
 #ifdef __cplusplus
 }

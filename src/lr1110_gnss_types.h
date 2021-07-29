@@ -3,11 +3,12 @@
  *
  * @brief     GNSS scan driver types for LR1110
  *
- * Revised BSD License
- * Copyright Semtech Corporation 2020. All rights reserved.
+ * The Clear BSD License
+ * Copyright Semtech Corporation 2021. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * modification, are permitted (subject to the limitations in the disclaimer
+ * below) provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above copyright
@@ -17,16 +18,18 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY
+ * THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+ * NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef LR1110_GNSS_TYPES_H
@@ -78,12 +81,6 @@ extern "C" {
  * @brief Size of the almanac of the GNSS context status buffer
  */
 #define LR1110_GNSS_CONTEXT_STATUS_LENGTH ( 9 )
-
-/*!
- * @brief Size of the whole almanac when writing
- */
-#define LR1110_GNSS_FULL_ALMANAC_WRITE_BUFFER_SIZE \
-    ( ( LR1110_GNSS_FULL_UPDATE_N_ALMANACS * LR1110_GNSS_SINGLE_ALMANAC_WRITE_SIZE ) + 20 )
 
 /*!
  * @brief Size of the whole almanac when reading
@@ -147,8 +144,7 @@ typedef enum
 } lr1110_gnss_search_mode_t;
 
 /*!
- * @brief GNSS response type indicates the destination: Host MCU, GNSS solver or
- * GNSS DMC
+ * @brief GNSS response type indicates the destination: Host MCU, GNSS solver or GNSS DMC
  */
 typedef enum
 {
@@ -177,6 +173,14 @@ typedef enum
 } lr1110_gnss_message_host_status_t;
 
 /*!
+ * @brief Message to DMC operation code
+ */
+typedef enum
+{
+    LR1110_GNSS_DMC_STATUS = 0x18,  //!< Status message in payload
+} lr1110_gnss_message_dmc_opcode_t;
+
+/*!
  * @brief GNSS single or double scan mode
  */
 typedef enum
@@ -190,11 +194,11 @@ typedef enum
  */
 typedef enum lr1110_gnss_error_code_e
 {
-    LR1110_GNSS_NO_ERROR                                  = 0,
-    LR1110_GNSS_ERROR_ALMANAC_TOO_OLD                     = 1,
-    LR1110_GNSS_ERROR_UPDATE_CRC_MISMATCH                 = 2,
-    LR1110_GNSS_ERROR_UPDATE_FLASH_MEMORY_INTEGRITY       = 3,
-    LR1110_GNSS_ERROR_UPDATE_TIME_DIFFERENCE_OVER_1_MONTH = 4,
+    LR1110_GNSS_NO_ERROR                            = 0,
+    LR1110_GNSS_ERROR_ALMANAC_TOO_OLD               = 1,
+    LR1110_GNSS_ERROR_UPDATE_CRC_MISMATCH           = 2,
+    LR1110_GNSS_ERROR_UPDATE_FLASH_MEMORY_INTEGRITY = 3,
+    LR1110_GNSS_ERROR_ALMANAC_UPDATE_NOT_ALLOWED = 4,  //!< Impossible to update more than one constellation at a time
 } lr1110_gnss_error_code_t;
 
 /*!
@@ -211,23 +215,12 @@ typedef enum lr1110_gnss_freq_search_space_e
 /*!
  * @brief Representation of absolute time for GNSS operations
  *
- * The GNSS absolute time is represented as a 32 bits word that is the number of
- * seconds elapsed since January 6th 1980, 00:00:00
+ * The GNSS absolute time is represented as a 32 bits word that is the number of seconds elapsed since January 6th 1980,
+ * 00:00:00
  *
- * The GNSS absolute time must take into account the Leap Seconds between UTC
- * time and GPS time.
+ * The GNSS absolute time must take into account the Leap Seconds between UTC time and GPS time.
  */
 typedef uint32_t lr1110_gnss_date_t;
-
-/*!
- * @brief Buffer that holds data for one satellite almanac update
- */
-typedef uint8_t lr1110_gnss_almanac_single_satellite_update_bytestream_t[LR1110_GNSS_SINGLE_ALMANAC_WRITE_SIZE];
-
-/*!
- * @brief Buffer that holds data for all almanacs full update - when writing
- */
-typedef uint8_t lr1110_gnss_almanac_full_update_bytestream_t[LR1110_GNSS_FULL_ALMANAC_WRITE_BUFFER_SIZE];
 
 /*!
  * @brief Buffer that holds data for all almanacs full update - when reading
@@ -244,10 +237,8 @@ typedef uint8_t lr1110_gnss_context_status_bytestream_t[LR1110_GNSS_CONTEXT_STAT
  */
 typedef struct lr1110_gnss_solver_assistance_position_s
 {
-    float latitude;   //!< Latitude 12 bits (latitude in degree * 2048/90) with
-                      //!< resolution 0.044°
-    float longitude;  //!< Longitude 12 bits (longitude in degree * 2048/180)
-                      //!< with resolution 0.088°
+    float latitude;   //!< Latitude 12 bits (latitude in degree * 2048/90) with resolution 0.044°
+    float longitude;  //!< Longitude 12 bits (longitude in degree * 2048/180) with resolution 0.088°
 } lr1110_gnss_solver_assistance_position_t;
 
 /*!

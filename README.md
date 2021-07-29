@@ -4,7 +4,7 @@ This package proposes an implementation in C of the driver for **LR1110** radio 
 
 ## Components
 
-The driver is splitted in several components:
+The driver is split in several components:
 
 - Bootloader
 - Register / memory access
@@ -54,8 +54,8 @@ Each component is based on different files:
 
 The HAL (Hardware Abstraction Layer) is a collection of functions that the user shall implement to write platform-dependant calls to the host. The list of functions is the following:
 
-- lr1110_hal_reset
-- lr1110_hal_wakeup
-- lr1110_hal_write
-- lr1110_hal_read
-- lr1110_hal_write_read
+- lr1110_hal_reset()
+- lr1110_hal_wakeup()
+- lr1110_hal_write()
+- lr1110_hal_read()
+- lr1110_hal_direct_read()

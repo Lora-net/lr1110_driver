@@ -3,11 +3,12 @@
  *
  * @brief     Radio driver implementation for LR1110
  *
- * Revised BSD License
- * Copyright Semtech Corporation 2020. All rights reserved.
+ * The Clear BSD License
+ * Copyright Semtech Corporation 2021. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * modification, are permitted (subject to the limitations in the disclaimer
+ * below) provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above copyright
@@ -17,16 +18,18 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY
+ * THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+ * NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
@@ -153,25 +156,24 @@ static inline uint32_t lr1110_radio_get_gfsk_crc_len_in_bytes( lr1110_radio_gfsk
 
 lr1110_status_t lr1110_radio_reset_stats( const void* context )
 {
-    uint8_t cbuffer[LR1110_RADIO_RESET_STATS_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_RESET_STATS_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_RESET_STATS_OC >> 0 );
+    const uint8_t cbuffer[LR1110_RADIO_RESET_STATS_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_RESET_STATS_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_RESET_STATS_OC >> 0 ),
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_RESET_STATS_CMD_LENGTH, 0, 0 );
 }
 
 lr1110_status_t lr1110_radio_get_gfsk_stats( const void* context, lr1110_radio_stats_gfsk_t* stats )
 {
-    uint8_t         cbuffer[LR1110_RADIO_GET_STATS_CMD_LENGTH];
-    uint8_t         rbuffer[sizeof( lr1110_radio_stats_gfsk_t )] = { 0x00 };
-    lr1110_status_t status                                       = LR1110_STATUS_ERROR;
+    const uint8_t cbuffer[LR1110_RADIO_GET_STATS_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_GET_STATS_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_GET_STATS_OC >> 0 ),
+    };
+    uint8_t rbuffer[sizeof( lr1110_radio_stats_gfsk_t )] = { 0x00 };
 
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_GET_STATS_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_GET_STATS_OC >> 0 );
-
-    status = ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_RADIO_GET_STATS_CMD_LENGTH, rbuffer,
-                                                  sizeof( lr1110_radio_stats_gfsk_t ) );
+    const lr1110_status_t status = ( lr1110_status_t ) lr1110_hal_read(
+        context, cbuffer, LR1110_RADIO_GET_STATS_CMD_LENGTH, rbuffer, sizeof( lr1110_radio_stats_gfsk_t ) );
 
     if( status == LR1110_STATUS_OK )
     {
@@ -185,15 +187,14 @@ lr1110_status_t lr1110_radio_get_gfsk_stats( const void* context, lr1110_radio_s
 
 lr1110_status_t lr1110_radio_get_lora_stats( const void* context, lr1110_radio_stats_lora_t* stats )
 {
-    uint8_t         cbuffer[LR1110_RADIO_GET_STATS_CMD_LENGTH];
-    uint8_t         rbuffer[sizeof( lr1110_radio_stats_lora_t )] = { 0x00 };
-    lr1110_status_t status                                       = LR1110_STATUS_ERROR;
+    const uint8_t cbuffer[LR1110_RADIO_GET_STATS_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_GET_STATS_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_GET_STATS_OC >> 0 ),
+    };
+    uint8_t rbuffer[sizeof( lr1110_radio_stats_lora_t )] = { 0x00 };
 
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_GET_STATS_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_GET_STATS_OC >> 0 );
-
-    status = ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_RADIO_GET_STATS_CMD_LENGTH, rbuffer,
-                                                  sizeof( lr1110_radio_stats_lora_t ) );
+    const lr1110_status_t status = ( lr1110_status_t ) lr1110_hal_read(
+        context, cbuffer, LR1110_RADIO_GET_STATS_CMD_LENGTH, rbuffer, sizeof( lr1110_radio_stats_lora_t ) );
 
     if( status == LR1110_STATUS_OK )
     {
@@ -208,13 +209,13 @@ lr1110_status_t lr1110_radio_get_lora_stats( const void* context, lr1110_radio_s
 
 lr1110_status_t lr1110_radio_get_pkt_type( const void* context, lr1110_radio_pkt_type_t* pkt_type )
 {
-    uint8_t cbuffer[LR1110_RADIO_GET_PKT_TYPE_CMD_LENGTH];
+    const uint8_t cbuffer[LR1110_RADIO_GET_PKT_TYPE_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_GET_PKT_TYPE_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_GET_PKT_TYPE_OC >> 0 ),
+    };
     uint8_t pkt_type_raw = 0;
 
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_GET_PKT_TYPE_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_GET_PKT_TYPE_OC >> 0 );
-
-    lr1110_status_t status =
+    const lr1110_status_t status =
         ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_RADIO_GET_PKT_TYPE_CMD_LENGTH, &pkt_type_raw, 1 );
 
     if( status == LR1110_STATUS_OK )
@@ -228,15 +229,14 @@ lr1110_status_t lr1110_radio_get_pkt_type( const void* context, lr1110_radio_pkt
 lr1110_status_t lr1110_radio_get_rx_buffer_status( const void*                      context,
                                                    lr1110_radio_rx_buffer_status_t* rx_buffer_status )
 {
-    uint8_t         cbuffer[LR1110_RADIO_GET_RXBUFFER_STATUS_CMD_LENGTH];
-    uint8_t         rbuffer[sizeof( *rx_buffer_status )] = { 0x00 };
-    lr1110_status_t status                               = LR1110_STATUS_ERROR;
+    const uint8_t cbuffer[LR1110_RADIO_GET_RXBUFFER_STATUS_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_GET_RXBUFFER_STATUS_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_GET_RXBUFFER_STATUS_OC >> 0 ),
+    };
+    uint8_t rbuffer[sizeof( *rx_buffer_status )] = { 0x00 };
 
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_GET_RXBUFFER_STATUS_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_GET_RXBUFFER_STATUS_OC >> 0 );
-
-    status = ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_RADIO_GET_RXBUFFER_STATUS_CMD_LENGTH,
-                                                  rbuffer, sizeof( *rx_buffer_status ) );
+    const lr1110_status_t status = ( lr1110_status_t ) lr1110_hal_read(
+        context, cbuffer, LR1110_RADIO_GET_RXBUFFER_STATUS_CMD_LENGTH, rbuffer, sizeof( *rx_buffer_status ) );
 
     if( status == LR1110_STATUS_OK )
     {
@@ -249,14 +249,13 @@ lr1110_status_t lr1110_radio_get_rx_buffer_status( const void*                  
 
 lr1110_status_t lr1110_radio_get_gfsk_pkt_status( const void* context, lr1110_radio_pkt_status_gfsk_t* pkt_status )
 {
-    uint8_t         cbuffer[LR1110_RADIO_GET_PKT_STATUS_CMD_LENGTH];
-    uint8_t         rbuffer[4] = { 0x00 };
-    lr1110_status_t status     = LR1110_STATUS_ERROR;
+    const uint8_t cbuffer[LR1110_RADIO_GET_PKT_STATUS_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_GET_PKT_STATUS_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_GET_PKT_STATUS_OC >> 0 ),
+    };
+    uint8_t rbuffer[4] = { 0x00 };
 
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_GET_PKT_STATUS_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_GET_PKT_STATUS_OC >> 0 );
-
-    status =
+    const lr1110_status_t status =
         ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_RADIO_GET_PKT_STATUS_CMD_LENGTH, rbuffer, 4 );
 
     if( status == LR1110_STATUS_OK )
@@ -277,14 +276,13 @@ lr1110_status_t lr1110_radio_get_gfsk_pkt_status( const void* context, lr1110_ra
 
 lr1110_status_t lr1110_radio_get_lora_pkt_status( const void* context, lr1110_radio_pkt_status_lora_t* pkt_status )
 {
-    uint8_t         cbuffer[LR1110_RADIO_GET_PKT_STATUS_CMD_LENGTH];
-    uint8_t         rbuffer[3] = { 0x00 };
-    lr1110_status_t status     = LR1110_STATUS_ERROR;
+    const uint8_t cbuffer[LR1110_RADIO_GET_PKT_STATUS_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_GET_PKT_STATUS_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_GET_PKT_STATUS_OC >> 0 ),
+    };
+    uint8_t rbuffer[3] = { 0x00 };
 
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_GET_PKT_STATUS_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_GET_PKT_STATUS_OC >> 0 );
-
-    status =
+    const lr1110_status_t status =
         ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_RADIO_GET_PKT_STATUS_CMD_LENGTH, rbuffer, 3 );
 
     if( status == LR1110_STATUS_OK )
@@ -299,15 +297,14 @@ lr1110_status_t lr1110_radio_get_lora_pkt_status( const void* context, lr1110_ra
 
 lr1110_status_t lr1110_radio_get_rssi_inst( const void* context, int8_t* rssi_in_dbm )
 {
-    uint8_t         cbuffer[LR1110_RADIO_GET_RSSI_INST_CMD_LENGTH];
-    uint8_t         rssi   = 0;
-    lr1110_status_t status = LR1110_STATUS_ERROR;
+    const uint8_t cbuffer[LR1110_RADIO_GET_RSSI_INST_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_GET_RSSI_INST_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_GET_RSSI_INST_OC >> 0 ),
+    };
+    uint8_t rssi = 0;
 
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_GET_RSSI_INST_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_GET_RSSI_INST_OC >> 0 );
-
-    status = ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_RADIO_GET_RSSI_INST_CMD_LENGTH, &rssi,
-                                                  sizeof( rssi ) );
+    const lr1110_status_t status = ( lr1110_status_t ) lr1110_hal_read(
+        context, cbuffer, LR1110_RADIO_GET_RSSI_INST_CMD_LENGTH, &rssi, sizeof( rssi ) );
 
     if( status == LR1110_STATUS_OK )
     {
@@ -319,15 +316,18 @@ lr1110_status_t lr1110_radio_get_rssi_inst( const void* context, int8_t* rssi_in
 
 lr1110_status_t lr1110_radio_set_gfsk_sync_word( const void* context, const uint8_t* gfsk_sync_word )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_GFSK_SYNC_WORD_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_SET_GFSK_SYNC_WORD_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_SET_GFSK_SYNC_WORD_OC >> 0 );
-
-    for( uint8_t index = 0; index < 8; index++ )
-    {
-        cbuffer[2 + index] = gfsk_sync_word[index];
-    }
+    const uint8_t cbuffer[LR1110_RADIO_SET_GFSK_SYNC_WORD_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_SET_GFSK_SYNC_WORD_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_SET_GFSK_SYNC_WORD_OC >> 0 ),
+        gfsk_sync_word[0],
+        gfsk_sync_word[1],
+        gfsk_sync_word[2],
+        gfsk_sync_word[3],
+        gfsk_sync_word[4],
+        gfsk_sync_word[5],
+        gfsk_sync_word[6],
+        gfsk_sync_word[7],
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_GFSK_SYNC_WORD_CMD_LENGTH, 0, 0 );
 }
@@ -344,12 +344,11 @@ LR1110_DISABLE_WARNINGS."
 #endif
 lr1110_status_t lr1110_radio_set_lora_sync_word( const void* context, const uint8_t sync_word )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_LORA_SYNC_WORD_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_SET_LORA_SYNC_WORD_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_SET_LORA_SYNC_WORD_OC >> 0 );
-
-    cbuffer[2] = sync_word;
+    const uint8_t cbuffer[LR1110_RADIO_SET_LORA_SYNC_WORD_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_SET_LORA_SYNC_WORD_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_SET_LORA_SYNC_WORD_OC >> 0 ),
+        sync_word,
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_LORA_SYNC_WORD_CMD_LENGTH, 0, 0 );
 }
@@ -357,12 +356,11 @@ lr1110_status_t lr1110_radio_set_lora_sync_word( const void* context, const uint
 lr1110_status_t lr1110_radio_set_lora_public_network( const void*                            context,
                                                       const lr1110_radio_lora_network_type_t network_type )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_LORA_PUBLIC_NETWORK_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_SET_LORA_PUBLIC_NETWORK_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_SET_LORA_PUBLIC_NETWORK_OC >> 0 );
-
-    cbuffer[2] = ( uint8_t ) network_type;
+    const uint8_t cbuffer[LR1110_RADIO_SET_LORA_PUBLIC_NETWORK_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_SET_LORA_PUBLIC_NETWORK_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_SET_LORA_PUBLIC_NETWORK_OC >> 0 ),
+        ( uint8_t ) network_type,
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_LORA_SYNC_WORD_CMD_LENGTH, 0, 0 );
 }
@@ -376,14 +374,13 @@ lr1110_status_t lr1110_radio_set_rx( const void* context, const uint32_t timeout
 
 lr1110_status_t lr1110_radio_set_rx_with_timeout_in_rtc_step( const void* context, const uint32_t timeout )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_RX_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_SET_RX_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_SET_RX_OC >> 0 );
-
-    cbuffer[2] = ( uint8_t )( timeout >> 16 );
-    cbuffer[3] = ( uint8_t )( timeout >> 8 );
-    cbuffer[4] = ( uint8_t )( timeout >> 0 );
+    const uint8_t cbuffer[LR1110_RADIO_SET_RX_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_SET_RX_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_SET_RX_OC >> 0 ),
+        ( uint8_t )( timeout >> 16 ),
+        ( uint8_t )( timeout >> 8 ),
+        ( uint8_t )( timeout >> 0 ),
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_RX_CMD_LENGTH, 0, 0 );
 }
@@ -397,29 +394,25 @@ lr1110_status_t lr1110_radio_set_tx( const void* context, const uint32_t timeout
 
 lr1110_status_t lr1110_radio_set_tx_with_timeout_in_rtc_step( const void* context, const uint32_t timeout_in_rtc_step )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_TX_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_SET_TX_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_SET_TX_OC >> 0 );
-
-    cbuffer[2] = ( uint8_t )( timeout_in_rtc_step >> 16 );
-    cbuffer[3] = ( uint8_t )( timeout_in_rtc_step >> 8 );
-    cbuffer[4] = ( uint8_t )( timeout_in_rtc_step >> 0 );
+    const uint8_t cbuffer[LR1110_RADIO_SET_TX_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_SET_TX_OC >> 8 ), ( uint8_t )( LR1110_RADIO_SET_TX_OC >> 0 ),
+        ( uint8_t )( timeout_in_rtc_step >> 16 ),   ( uint8_t )( timeout_in_rtc_step >> 8 ),
+        ( uint8_t )( timeout_in_rtc_step >> 0 ),
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_TX_CMD_LENGTH, 0, 0 );
 }
 
 lr1110_status_t lr1110_radio_set_rf_freq( const void* context, const uint32_t freq_in_hz )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_RF_FREQUENCY_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_SET_RF_FREQUENCY_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_SET_RF_FREQUENCY_OC >> 0 );
-
-    cbuffer[2] = ( uint8_t )( freq_in_hz >> 24 );
-    cbuffer[3] = ( uint8_t )( freq_in_hz >> 16 );
-    cbuffer[4] = ( uint8_t )( freq_in_hz >> 8 );
-    cbuffer[5] = ( uint8_t )( freq_in_hz >> 0 );
+    const uint8_t cbuffer[LR1110_RADIO_SET_RF_FREQUENCY_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_SET_RF_FREQUENCY_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_SET_RF_FREQUENCY_OC >> 0 ),
+        ( uint8_t )( freq_in_hz >> 24 ),
+        ( uint8_t )( freq_in_hz >> 16 ),
+        ( uint8_t )( freq_in_hz >> 8 ),
+        ( uint8_t )( freq_in_hz >> 0 ),
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_RF_FREQUENCY_CMD_LENGTH, 0, 0 );
 }
@@ -428,51 +421,45 @@ lr1110_status_t lr1110_radio_auto_tx_rx( const void* context, const uint32_t del
                                          const lr1110_radio_intermediary_mode_t intermediary_mode,
                                          const uint32_t                         timeout )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_AUTO_TX_RX_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_AUTOTXRX_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_AUTOTXRX_OC >> 0 );
-
-    cbuffer[2] = ( uint8_t )( delay >> 16 );
-    cbuffer[3] = ( uint8_t )( delay >> 8 );
-    cbuffer[4] = ( uint8_t )( delay );
-
-    cbuffer[5] = ( uint8_t ) intermediary_mode;
-
-    cbuffer[6] = ( uint8_t )( timeout >> 16 );
-    cbuffer[7] = ( uint8_t )( timeout >> 8 );
-    cbuffer[8] = ( uint8_t )( timeout );
+    const uint8_t cbuffer[LR1110_RADIO_SET_AUTO_TX_RX_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_AUTOTXRX_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_AUTOTXRX_OC >> 0 ),
+        ( uint8_t )( delay >> 16 ),
+        ( uint8_t )( delay >> 8 ),
+        ( uint8_t )( delay ),
+        ( uint8_t ) intermediary_mode,
+        ( uint8_t )( timeout >> 16 ),
+        ( uint8_t )( timeout >> 8 ),
+        ( uint8_t )( timeout ),
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_AUTO_TX_RX_CMD_LENGTH, 0, 0 );
 }
 
 lr1110_status_t lr1110_radio_set_cad_params( const void* context, const lr1110_radio_cad_params_t* cad_params )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_CAD_PARAMS_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_SET_CAD_PARAMS_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_SET_CAD_PARAMS_OC >> 0 );
-
-    cbuffer[2] = cad_params->cad_symb_nb;
-    cbuffer[3] = cad_params->cad_detect_peak;
-    cbuffer[4] = cad_params->cad_detect_min;
-    cbuffer[5] = cad_params->cad_exit_mode;
-
-    cbuffer[6] = ( uint8_t )( cad_params->cad_timeout >> 16 );
-    cbuffer[7] = ( uint8_t )( cad_params->cad_timeout >> 8 );
-    cbuffer[8] = ( uint8_t )( cad_params->cad_timeout );
+    const uint8_t cbuffer[LR1110_RADIO_SET_CAD_PARAMS_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_SET_CAD_PARAMS_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_SET_CAD_PARAMS_OC >> 0 ),
+        cad_params->cad_symb_nb,
+        cad_params->cad_detect_peak,
+        cad_params->cad_detect_min,
+        ( uint8_t ) cad_params->cad_exit_mode,
+        ( uint8_t )( cad_params->cad_timeout >> 16 ),
+        ( uint8_t )( cad_params->cad_timeout >> 8 ),
+        ( uint8_t )( cad_params->cad_timeout ),
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_CAD_PARAMS_CMD_LENGTH, 0, 0 );
 }
 
 lr1110_status_t lr1110_radio_set_pkt_type( const void* context, const lr1110_radio_pkt_type_t pkt_type )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_PKT_TYPE_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_SET_PKT_TYPE_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_SET_PKT_TYPE_OC >> 0 );
-
-    cbuffer[2] = ( uint8_t ) pkt_type;
+    const uint8_t cbuffer[LR1110_RADIO_SET_PKT_TYPE_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_SET_PKT_TYPE_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_SET_PKT_TYPE_OC >> 0 ),
+        ( uint8_t ) pkt_type,
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_PKT_TYPE_CMD_LENGTH, 0, 0 );
 }
@@ -480,23 +467,20 @@ lr1110_status_t lr1110_radio_set_pkt_type( const void* context, const lr1110_rad
 lr1110_status_t lr1110_radio_set_gfsk_mod_params( const void*                           context,
                                                   const lr1110_radio_mod_params_gfsk_t* mod_params )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_MODULATION_PARAMS_GFSK_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_SET_MODULATION_PARAM_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_SET_MODULATION_PARAM_OC >> 0 );
-
-    cbuffer[2] = ( uint8_t )( mod_params->br_in_bps >> 24 );
-    cbuffer[3] = ( uint8_t )( mod_params->br_in_bps >> 16 );
-    cbuffer[4] = ( uint8_t )( mod_params->br_in_bps >> 8 );
-    cbuffer[5] = ( uint8_t )( mod_params->br_in_bps >> 0 );
-
-    cbuffer[6] = ( uint8_t ) mod_params->pulse_shape;
-    cbuffer[7] = ( uint8_t ) mod_params->bw_dsb_param;
-
-    cbuffer[8]  = ( uint8_t )( mod_params->fdev_in_hz >> 24 );
-    cbuffer[9]  = ( uint8_t )( mod_params->fdev_in_hz >> 16 );
-    cbuffer[10] = ( uint8_t )( mod_params->fdev_in_hz >> 8 );
-    cbuffer[11] = ( uint8_t )( mod_params->fdev_in_hz >> 0 );
+    const uint8_t cbuffer[LR1110_RADIO_SET_MODULATION_PARAMS_GFSK_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_SET_MODULATION_PARAM_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_SET_MODULATION_PARAM_OC >> 0 ),
+        ( uint8_t )( mod_params->br_in_bps >> 24 ),
+        ( uint8_t )( mod_params->br_in_bps >> 16 ),
+        ( uint8_t )( mod_params->br_in_bps >> 8 ),
+        ( uint8_t )( mod_params->br_in_bps >> 0 ),
+        ( uint8_t ) mod_params->pulse_shape,
+        ( uint8_t ) mod_params->bw_dsb_param,
+        ( uint8_t )( mod_params->fdev_in_hz >> 24 ),
+        ( uint8_t )( mod_params->fdev_in_hz >> 16 ),
+        ( uint8_t )( mod_params->fdev_in_hz >> 8 ),
+        ( uint8_t )( mod_params->fdev_in_hz >> 0 ),
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_MODULATION_PARAMS_GFSK_CMD_LENGTH,
                                                  0, 0 );
@@ -505,15 +489,14 @@ lr1110_status_t lr1110_radio_set_gfsk_mod_params( const void*                   
 lr1110_status_t lr1110_radio_set_lora_mod_params( const void*                           context,
                                                   const lr1110_radio_mod_params_lora_t* mod_params )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_MODULATION_PARAMS_LORA_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_SET_MODULATION_PARAM_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_SET_MODULATION_PARAM_OC >> 0 );
-
-    cbuffer[2] = ( uint8_t ) mod_params->sf;
-    cbuffer[3] = ( uint8_t ) mod_params->bw;
-    cbuffer[4] = ( uint8_t ) mod_params->cr;
-    cbuffer[5] = ( uint8_t ) mod_params->ldro;
+    const uint8_t cbuffer[LR1110_RADIO_SET_MODULATION_PARAMS_LORA_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_SET_MODULATION_PARAM_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_SET_MODULATION_PARAM_OC >> 0 ),
+        ( uint8_t ) mod_params->sf,
+        ( uint8_t ) mod_params->bw,
+        ( uint8_t ) mod_params->cr,
+        ( uint8_t ) mod_params->ldro,
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_MODULATION_PARAMS_LORA_CMD_LENGTH,
                                                  0, 0 );
@@ -522,27 +505,19 @@ lr1110_status_t lr1110_radio_set_lora_mod_params( const void*                   
 lr1110_status_t lr1110_radio_set_gfsk_pkt_params( const void*                           context,
                                                   const lr1110_radio_pkt_params_gfsk_t* pkt_params )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_PKT_PARAM_GFSK_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_SET_PKT_PARAM_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_SET_PKT_PARAM_OC >> 0 );
-
-    cbuffer[2] = ( uint8_t )( pkt_params->preamble_len_in_bits >> 8 );
-    cbuffer[3] = ( uint8_t )( pkt_params->preamble_len_in_bits >> 0 );
-
-    cbuffer[4] = ( uint8_t )( pkt_params->preamble_detector );
-
-    cbuffer[5] = pkt_params->sync_word_len_in_bits;
-
-    cbuffer[6] = ( uint8_t )( pkt_params->address_filtering );
-
-    cbuffer[7] = ( uint8_t )( pkt_params->header_type );
-
-    cbuffer[8] = pkt_params->pld_len_in_bytes;
-
-    cbuffer[9] = ( uint8_t )( pkt_params->crc_type );
-
-    cbuffer[10] = ( uint8_t )( pkt_params->dc_free );
+    const uint8_t cbuffer[LR1110_RADIO_SET_PKT_PARAM_GFSK_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_SET_PKT_PARAM_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_SET_PKT_PARAM_OC >> 0 ),
+        ( uint8_t )( pkt_params->preamble_len_in_bits >> 8 ),
+        ( uint8_t )( pkt_params->preamble_len_in_bits >> 0 ),
+        ( uint8_t )( pkt_params->preamble_detector ),
+        pkt_params->sync_word_len_in_bits,
+        ( uint8_t )( pkt_params->address_filtering ),
+        ( uint8_t )( pkt_params->header_type ),
+        pkt_params->pld_len_in_bytes,
+        ( uint8_t )( pkt_params->crc_type ),
+        ( uint8_t )( pkt_params->dc_free ),
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_PKT_PARAM_GFSK_CMD_LENGTH, 0, 0 );
 }
@@ -550,21 +525,16 @@ lr1110_status_t lr1110_radio_set_gfsk_pkt_params( const void*                   
 lr1110_status_t lr1110_radio_set_lora_pkt_params( const void*                           context,
                                                   const lr1110_radio_pkt_params_lora_t* pkt_params )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_PKT_PARAM_LORA_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_SET_PKT_PARAM_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_SET_PKT_PARAM_OC >> 0 );
-
-    cbuffer[2] = ( uint8_t )( pkt_params->preamble_len_in_symb >> 8 );
-    cbuffer[3] = ( uint8_t )( pkt_params->preamble_len_in_symb >> 0 );
-
-    cbuffer[4] = ( uint8_t )( pkt_params->header_type );
-
-    cbuffer[5] = pkt_params->pld_len_in_bytes;
-
-    cbuffer[6] = ( uint8_t )( pkt_params->crc );
-
-    cbuffer[7] = ( uint8_t )( pkt_params->iq );
+    const uint8_t cbuffer[LR1110_RADIO_SET_PKT_PARAM_LORA_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_SET_PKT_PARAM_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_SET_PKT_PARAM_OC >> 0 ),
+        ( uint8_t )( pkt_params->preamble_len_in_symb >> 8 ),
+        ( uint8_t )( pkt_params->preamble_len_in_symb >> 0 ),
+        ( uint8_t )( pkt_params->header_type ),
+        pkt_params->pld_len_in_bytes,
+        ( uint8_t )( pkt_params->crc ),
+        ( uint8_t )( pkt_params->iq ),
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_PKT_PARAM_LORA_CMD_LENGTH, 0, 0 );
 }
@@ -572,13 +542,12 @@ lr1110_status_t lr1110_radio_set_lora_pkt_params( const void*                   
 lr1110_status_t lr1110_radio_set_tx_params( const void* context, const int8_t pwr_in_dbm,
                                             const lr1110_radio_ramp_time_t ramp_time )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_TX_PARAMS_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_SET_TX_PARAMS_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_SET_TX_PARAMS_OC >> 0 );
-
-    cbuffer[2] = ( uint8_t ) pwr_in_dbm;
-    cbuffer[3] = ( uint8_t ) ramp_time;
+    const uint8_t cbuffer[LR1110_RADIO_SET_TX_PARAMS_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_SET_TX_PARAMS_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_SET_TX_PARAMS_OC >> 0 ),
+        ( uint8_t ) pwr_in_dbm,
+        ( uint8_t ) ramp_time,
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_TX_PARAMS_CMD_LENGTH, 0, 0 );
 }
@@ -586,13 +555,12 @@ lr1110_status_t lr1110_radio_set_tx_params( const void* context, const int8_t pw
 lr1110_status_t lr1110_radio_set_pkt_address( const void* context, const uint8_t node_address,
                                               const uint8_t broadcast_address )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_PKT_ADDRESS_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_SET_PKT_ADRS_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_SET_PKT_ADRS_OC >> 0 );
-
-    cbuffer[2] = node_address;
-    cbuffer[3] = broadcast_address;
+    const uint8_t cbuffer[LR1110_RADIO_SET_PKT_ADDRESS_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_SET_PKT_ADRS_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_SET_PKT_ADRS_OC >> 0 ),
+        node_address,
+        broadcast_address,
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_PKT_ADDRESS_CMD_LENGTH, 0, 0 );
 }
@@ -600,12 +568,11 @@ lr1110_status_t lr1110_radio_set_pkt_address( const void* context, const uint8_t
 lr1110_status_t lr1110_radio_set_rx_tx_fallback_mode( const void*                         context,
                                                       const lr1110_radio_fallback_modes_t fallback_mode )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_RX_TX_FALLBACK_MODE_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_SET_RX_TX_FALLBACK_MODE_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_SET_RX_TX_FALLBACK_MODE_OC >> 0 );
-
-    cbuffer[2] = fallback_mode;
+    const uint8_t cbuffer[LR1110_RADIO_SET_RX_TX_FALLBACK_MODE_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_SET_RX_TX_FALLBACK_MODE_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_SET_RX_TX_FALLBACK_MODE_OC >> 0 ),
+        fallback_mode,
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_RX_TX_FALLBACK_MODE_CMD_LENGTH, 0,
                                                  0 );
@@ -627,20 +594,17 @@ lr1110_status_t lr1110_radio_set_rx_duty_cycle_with_timings_in_rtc_step( const v
                                                                          const uint32_t sleep_period_in_rtc_step,
                                                                          const lr1110_radio_rx_duty_cycle_mode_t mode )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_RX_DUTY_CYCLE_MODE_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_SET_RX_DUTY_CYCLE_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_SET_RX_DUTY_CYCLE_OC >> 0 );
-
-    cbuffer[2] = ( uint8_t )( rx_period_in_rtc_step >> 16 );
-    cbuffer[3] = ( uint8_t )( rx_period_in_rtc_step >> 8 );
-    cbuffer[4] = ( uint8_t )( rx_period_in_rtc_step >> 0 );
-
-    cbuffer[5] = ( uint8_t )( sleep_period_in_rtc_step >> 16 );
-    cbuffer[6] = ( uint8_t )( sleep_period_in_rtc_step >> 8 );
-    cbuffer[7] = ( uint8_t )( sleep_period_in_rtc_step >> 0 );
-
-    cbuffer[8] = mode;
+    const uint8_t cbuffer[LR1110_RADIO_SET_RX_DUTY_CYCLE_MODE_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_SET_RX_DUTY_CYCLE_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_SET_RX_DUTY_CYCLE_OC >> 0 ),
+        ( uint8_t )( rx_period_in_rtc_step >> 16 ),
+        ( uint8_t )( rx_period_in_rtc_step >> 8 ),
+        ( uint8_t )( rx_period_in_rtc_step >> 0 ),
+        ( uint8_t )( sleep_period_in_rtc_step >> 16 ),
+        ( uint8_t )( sleep_period_in_rtc_step >> 8 ),
+        ( uint8_t )( sleep_period_in_rtc_step >> 0 ),
+        ( uint8_t ) mode,
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_RX_DUTY_CYCLE_MODE_CMD_LENGTH, 0,
                                                  0 );
@@ -648,28 +612,25 @@ lr1110_status_t lr1110_radio_set_rx_duty_cycle_with_timings_in_rtc_step( const v
 
 lr1110_status_t lr1110_radio_set_pa_cfg( const void* context, const lr1110_radio_pa_cfg_t* pa_cfg )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_PA_CFG_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_SET_PA_CFG_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_SET_PA_CFG_OC >> 0 );
-
-    cbuffer[2] = ( uint8_t ) pa_cfg->pa_sel;
-    cbuffer[3] = ( uint8_t ) pa_cfg->pa_reg_supply;
-
-    cbuffer[4] = pa_cfg->pa_duty_cycle;
-    cbuffer[5] = pa_cfg->pa_hp_sel;
+    const uint8_t cbuffer[LR1110_RADIO_SET_PA_CFG_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_SET_PA_CFG_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_SET_PA_CFG_OC >> 0 ),
+        ( uint8_t ) pa_cfg->pa_sel,
+        ( uint8_t ) pa_cfg->pa_reg_supply,
+        pa_cfg->pa_duty_cycle,
+        pa_cfg->pa_hp_sel,
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_PA_CFG_CMD_LENGTH, 0, 0 );
 }
 
 lr1110_status_t lr1110_radio_stop_timeout_on_preamble( const void* context, const bool stop_timeout_on_preamble )
 {
-    uint8_t cbuffer[LR1110_RADIO_STOP_TIMEOUT_ON_PREAMBLE_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_STOP_TIMEOUT_ON_PREAMBLE_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_STOP_TIMEOUT_ON_PREAMBLE_OC >> 0 );
-
-    cbuffer[2] = ( uint8_t ) stop_timeout_on_preamble;
+    const uint8_t cbuffer[LR1110_RADIO_STOP_TIMEOUT_ON_PREAMBLE_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_STOP_TIMEOUT_ON_PREAMBLE_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_STOP_TIMEOUT_ON_PREAMBLE_OC >> 0 ),
+        ( uint8_t ) stop_timeout_on_preamble,
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_STOP_TIMEOUT_ON_PREAMBLE_CMD_LENGTH, 0,
                                                  0 );
@@ -677,30 +638,30 @@ lr1110_status_t lr1110_radio_stop_timeout_on_preamble( const void* context, cons
 
 lr1110_status_t lr1110_radio_set_cad( const void* context )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_CAD_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_SET_CAD_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_SET_CAD_OC >> 0 );
+    const uint8_t cbuffer[LR1110_RADIO_SET_CAD_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_SET_CAD_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_SET_CAD_OC >> 0 ),
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_CAD_CMD_LENGTH, 0, 0 );
 }
 
 lr1110_status_t lr1110_radio_set_tx_cw( const void* context )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_TX_CW_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_SET_TX_CW_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_SET_TX_CW_OC >> 0 );
+    const uint8_t cbuffer[LR1110_RADIO_SET_TX_CW_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_SET_TX_CW_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_SET_TX_CW_OC >> 0 ),
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_TX_CW_CMD_LENGTH, 0, 0 );
 }
 
 lr1110_status_t lr1110_radio_set_tx_infinite_preamble( const void* context )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_TX_INFINITE_PREAMBLE_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_SET_TX_INFINITE_PREAMBLE_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_SET_TX_INFINITE_PREAMBLE_OC >> 0 );
+    const uint8_t cbuffer[LR1110_RADIO_SET_TX_INFINITE_PREAMBLE_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_SET_TX_INFINITE_PREAMBLE_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_SET_TX_INFINITE_PREAMBLE_OC >> 0 ),
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_TX_INFINITE_PREAMBLE_CMD_LENGTH, 0,
                                                  0 );
@@ -708,12 +669,11 @@ lr1110_status_t lr1110_radio_set_tx_infinite_preamble( const void* context )
 
 lr1110_status_t lr1110_radio_set_lora_sync_timeout( const void* context, const uint8_t nb_symbol )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_LORA_SYNC_TIMEOUT_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_SET_LORA_SYNC_TIMEOUT_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_SET_LORA_SYNC_TIMEOUT_OC >> 0 );
-
-    cbuffer[2] = nb_symbol;
+    const uint8_t cbuffer[LR1110_RADIO_SET_LORA_SYNC_TIMEOUT_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_SET_LORA_SYNC_TIMEOUT_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_SET_LORA_SYNC_TIMEOUT_OC >> 0 ),
+        nb_symbol,
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_LORA_SYNC_TIMEOUT_CMD_LENGTH, 0,
                                                  0 );
@@ -721,45 +681,41 @@ lr1110_status_t lr1110_radio_set_lora_sync_timeout( const void* context, const u
 
 lr1110_status_t lr1110_radio_set_gfsk_crc_params( const void* context, const uint32_t seed, const uint32_t polynomial )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_GFSK_CRC_PARAMS_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_SET_GFSK_CRC_PARAMS_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_SET_GFSK_CRC_PARAMS_OC >> 0 );
-
-    cbuffer[2] = ( uint8_t )( seed >> 24 );
-    cbuffer[3] = ( uint8_t )( seed >> 16 );
-    cbuffer[4] = ( uint8_t )( seed >> 8 );
-    cbuffer[5] = ( uint8_t )( seed >> 0 );
-
-    cbuffer[6] = ( uint8_t )( polynomial >> 24 );
-    cbuffer[7] = ( uint8_t )( polynomial >> 16 );
-    cbuffer[8] = ( uint8_t )( polynomial >> 8 );
-    cbuffer[9] = ( uint8_t )( polynomial >> 0 );
+    const uint8_t cbuffer[LR1110_RADIO_SET_GFSK_CRC_PARAMS_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_SET_GFSK_CRC_PARAMS_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_SET_GFSK_CRC_PARAMS_OC >> 0 ),
+        ( uint8_t )( seed >> 24 ),
+        ( uint8_t )( seed >> 16 ),
+        ( uint8_t )( seed >> 8 ),
+        ( uint8_t )( seed >> 0 ),
+        ( uint8_t )( polynomial >> 24 ),
+        ( uint8_t )( polynomial >> 16 ),
+        ( uint8_t )( polynomial >> 8 ),
+        ( uint8_t )( polynomial >> 0 ),
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_GFSK_CRC_PARAMS_CMD_LENGTH, 0, 0 );
 }
 
 lr1110_status_t lr1110_radio_set_gfsk_whitening_seed( const void* context, const uint16_t seed )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_GFSK_WHITENING_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_SET_GFSK_WHITENING_PARAMS_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_SET_GFSK_WHITENING_PARAMS_OC >> 0 );
-
-    cbuffer[2] = ( uint8_t )( seed >> 8 );
-    cbuffer[3] = ( uint8_t )( seed >> 0 );
+    const uint8_t cbuffer[LR1110_RADIO_SET_GFSK_WHITENING_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_SET_GFSK_WHITENING_PARAMS_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_SET_GFSK_WHITENING_PARAMS_OC >> 0 ),
+        ( uint8_t )( seed >> 8 ),
+        ( uint8_t )( seed >> 0 ),
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_GFSK_WHITENING_CMD_LENGTH, 0, 0 );
 }
 
 lr1110_status_t lr1110_radio_cfg_rx_boosted( const void* context, const bool enable_boost_mode )
 {
-    uint8_t cbuffer[LR1110_RADIO_SET_RX_BOOSTED_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_RADIO_SET_RX_BOOSTED_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_RADIO_SET_RX_BOOSTED_OC >> 0 );
-
-    cbuffer[2] = ( enable_boost_mode == true ) ? 0x01 : 0x00;
+    const uint8_t cbuffer[LR1110_RADIO_SET_RX_BOOSTED_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_SET_RX_BOOSTED_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_SET_RX_BOOSTED_OC >> 0 ),
+        ( enable_boost_mode == true ) ? 0x01 : 0x00,
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_RADIO_SET_RX_BOOSTED_LENGTH, 0, 0 );
 }

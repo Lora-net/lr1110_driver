@@ -3,11 +3,12 @@
  *
  * @brief     Wi-Fi passive scan driver definition for LR1110
  *
- * Revised BSD License
- * Copyright Semtech Corporation 2020. All rights reserved.
+ * The Clear BSD License
+ * Copyright Semtech Corporation 2021. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * modification, are permitted (subject to the limitations in the disclaimer
+ * below) provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above copyright
@@ -17,16 +18,18 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY
+ * THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+ * NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef LR1110_WIFI_H
@@ -250,21 +253,6 @@ lr1110_status_t lr1110_wifi_search_country_code_time_limit( const void*         
                                                             const uint8_t                    nb_max_results,
                                                             const uint16_t                   timeout_per_channel_ms,
                                                             const uint16_t                   timeout_per_scan_ms );
-
-/*!
- * @brief Enable/Disable usage of hardware de-barker
- *
- * Hardware de-barker is used by the chip only in Wi-Fi type B passive scan. Using it dramatically reduces the passive
- * scan time. It must be enabled for country code search operations. It is enabled by default.
- *
- * @warning Disabling the Hardware De-Barker makes the LR1110_WIFI_SCAN_MODE_FULL_PKT unusable.
- *
- * @param [in] context Chip implementation context
- * @param [in] enable_hardware_debarker Set to true to enable usage of hardware de-barker, false to disable
- *
- * @returns Operation status
- */
-lr1110_status_t lr1110_wifi_cfg_hardware_debarker( const void* context, const bool enable_hardware_debarker );
 
 /*!
  * @brief Returns the number of results currently available in LR1110
@@ -574,6 +562,16 @@ uint8_t lr1110_wifi_get_nb_results_max_per_chunk( void );
  */
 lr1110_wifi_signal_type_result_t lr1110_wifi_extract_signal_type_from_data_rate_info(
     const lr1110_wifi_datarate_info_byte_t data_rate_info );
+
+/*!
+ * @brief Helper function to check if a buffer is a well-formed UTF-8 byte sequence
+ *
+ * @param [in] buffer The buffer holding the bytes to be analyzed
+ * @param [in] length The number of bytes in the buffer
+ *
+ * @returns The result of the check
+ */
+bool lr1110_wifi_is_well_formed_utf8_byte_sequence( const uint8_t* buffer, const uint8_t length );
 
 #ifdef __cplusplus
 }

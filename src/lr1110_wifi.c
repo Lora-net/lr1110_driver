@@ -3,11 +3,12 @@
  *
  * @brief     Wi-Fi passive scan driver implementation for LR1110
  *
- * Revised BSD License
- * Copyright Semtech Corporation 2020. All rights reserved.
+ * The Clear BSD License
+ * Copyright Semtech Corporation 2021. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * modification, are permitted (subject to the limitations in the disclaimer
+ * below) provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above copyright
@@ -17,16 +18,18 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY
+ * THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+ * NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
@@ -45,6 +48,16 @@
 #ifndef MIN
 #define MIN( a, b ) ( ( a > b ) ? b : a )
 #endif  // MIN
+
+/*!
+ * @brief Check if a value is in between min and max - included
+ */
+#define IS_BETWEEN( value, min, max ) ( ( min <= value ) && ( value <= max ) )
+
+/*!
+ * @brief Check if a value is in between 0x80 and 0xBF - included
+ */
+#define IS_BETWEEN_0x80_AND_0xBF( value ) IS_BETWEEN( value, 0x80, 0xBF )
 
 /*
  * -----------------------------------------------------------------------------
@@ -74,7 +87,6 @@
 #define LR1110_WIFI_SEARCH_COUNTRY_CODE_CMD_LENGTH ( 2 + 7 )
 #define LR1110_WIFI_SCAN_TIME_LIMIT_CMD_LENGTH ( 2 + 9 )
 #define LR1110_WIFI_COUNTRY_CODE_TIME_LIMIT_CMD_LENGTH ( 2 + 7 )
-#define LR1110_WIFI_CONFIGURE_HARDWARE_DEBARKER_CMD_LENGTH ( 2 + 1 )
 #define LR1110_WIFI_GET_RESULT_SIZE_CMD_LENGTH ( 2 )
 #define LR1110_WIFI_READ_RESULT_CMD_LENGTH ( 2 + 3 )
 #define LR1110_WIFI_RESET_CUMUL_TIMING_CMD_LENGTH ( 2 )
@@ -92,13 +104,12 @@
 /*!
  * @brief Operating codes for Wi-Fi-related operations
  */
-typedef enum
+enum
 {
     LR1110_WIFI_SCAN_OC                         = 0x0300,
     LR1110_WIFI_SCAN_TIME_LIMIT                 = 0x0301,
     LR1110_WIFI_SEARCH_COUNTRY_CODE_OC          = 0x0302,
     LR1110_WIFI_COUNTRY_CODE_TIME_LIMIT_OC      = 0x0303,
-    LR1110_WIFI_CONFIGURE_HARDWARE_DEBARKER_OC  = 0x0304,
     LR1110_WIFI_GET_RESULT_SIZE_OC              = 0x0305,
     LR1110_WIFI_READ_RESULT_OC                  = 0x0306,
     LR1110_WIFI_RESET_CUMUL_TIMING_OC           = 0x0307,
@@ -107,8 +118,11 @@ typedef enum
     LR1110_WIFI_READ_COUNTRY_CODE_OC            = 0x030A,
     LR1110_WIFI_CONFIGURE_TIMESTAMP_AP_PHONE_OC = 0x030B,
     LR1110_WIFI_GET_VERSION_OC                  = 0x0320,
-} WifiOpcodes_t;
+};
 
+/*!
+ * @brief Wi-Fi scan results interface
+ */
 typedef union
 {
     lr1110_wifi_basic_complete_result_t*         basic_complete;
@@ -230,17 +244,18 @@ lr1110_status_t lr1110_wifi_scan( const void* context, const lr1110_wifi_signal_
 {
     const uint8_t cbuffer[LR1110_WIFI_SCAN_CMD_LENGTH] = {
         ( uint8_t )( LR1110_WIFI_SCAN_OC >> 8 ),
-        ( uint8_t ) LR1110_WIFI_SCAN_OC,
+        ( uint8_t )( LR1110_WIFI_SCAN_OC >> 0 ),
         ( uint8_t ) signal_type,
         ( uint8_t )( channels >> 8 ),
-        ( uint8_t ) channels,
+        ( uint8_t )( channels >> 0 ),
         ( uint8_t ) scan_mode,
-        ( uint8_t ) max_results,
-        ( uint8_t ) nb_scan_per_channel,
+        max_results,
+        nb_scan_per_channel,
         ( uint8_t )( timeout_in_ms >> 8 ),
-        ( uint8_t ) timeout_in_ms,
-        ( uint8_t ) abort_on_timeout,
+        ( uint8_t )( timeout_in_ms >> 0 ),
+        ( uint8_t )( ( abort_on_timeout == true ) ? 1 : 0 ),
     };
+
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_WIFI_SCAN_CMD_LENGTH, 0, 0 );
 }
 
@@ -250,15 +265,16 @@ lr1110_status_t lr1110_wifi_search_country_code( const void* context, const lr11
 {
     const uint8_t cbuffer[LR1110_WIFI_SEARCH_COUNTRY_CODE_CMD_LENGTH] = {
         ( uint8_t )( LR1110_WIFI_SEARCH_COUNTRY_CODE_OC >> 8 ),
-        ( uint8_t ) LR1110_WIFI_SEARCH_COUNTRY_CODE_OC,
+        ( uint8_t )( LR1110_WIFI_SEARCH_COUNTRY_CODE_OC >> 0 ),
         ( uint8_t )( channels_mask >> 8 ),
-        ( uint8_t ) channels_mask,
+        ( uint8_t )( channels_mask >> 0 ),
         nb_max_results,
         nb_scan_per_channel,
         ( uint8_t )( timeout_in_ms >> 8 ),
-        ( uint8_t ) timeout_in_ms,
-        ( uint8_t )( abort_on_timeout ? 1 : 0 )
+        ( uint8_t )( timeout_in_ms >> 0 ),
+        ( uint8_t )( ( abort_on_timeout == true ) ? 1 : 0 ),
     };
+
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_WIFI_SEARCH_COUNTRY_CODE_CMD_LENGTH, 0, 0 );
 }
 
@@ -269,17 +285,18 @@ lr1110_status_t lr1110_wifi_scan_time_limit( const void* radio, const lr1110_wif
 {
     const uint8_t cbuffer[LR1110_WIFI_SCAN_TIME_LIMIT_CMD_LENGTH] = {
         ( uint8_t )( LR1110_WIFI_SCAN_TIME_LIMIT >> 8 ),
-        ( uint8_t ) LR1110_WIFI_SCAN_TIME_LIMIT,
+        ( uint8_t )( LR1110_WIFI_SCAN_TIME_LIMIT >> 0 ),
         ( uint8_t ) signal_type,
         ( uint8_t )( channels >> 8 ),
-        ( uint8_t ) channels,
+        ( uint8_t )( channels >> 0 ),
         ( uint8_t ) scan_mode,
-        ( uint8_t ) max_results,
+        max_results,
         ( uint8_t )( timeout_per_channel_ms >> 8 ),
-        ( uint8_t ) timeout_per_channel_ms,
+        ( uint8_t )( timeout_per_channel_ms >> 0 ),
         ( uint8_t )( timeout_per_scan_ms >> 8 ),
-        ( uint8_t ) timeout_per_scan_ms,
+        ( uint8_t )( timeout_per_scan_ms >> 0 ),
     };
+
     return ( lr1110_status_t ) lr1110_hal_write( radio, cbuffer, LR1110_WIFI_SCAN_TIME_LIMIT_CMD_LENGTH, 0, 0 );
 }
 
@@ -291,34 +308,24 @@ lr1110_status_t lr1110_wifi_search_country_code_time_limit( const void*         
 {
     const uint8_t cbuffer[LR1110_WIFI_COUNTRY_CODE_TIME_LIMIT_CMD_LENGTH] = {
         ( uint8_t )( LR1110_WIFI_COUNTRY_CODE_TIME_LIMIT_OC >> 8 ),
-        ( uint8_t ) LR1110_WIFI_COUNTRY_CODE_TIME_LIMIT_OC,
+        ( uint8_t )( LR1110_WIFI_COUNTRY_CODE_TIME_LIMIT_OC >> 0 ),
         ( uint8_t )( channels >> 8 ),
-        ( uint8_t ) channels,
+        ( uint8_t )( channels >> 0 ),
         ( uint8_t ) max_results,
         ( uint8_t )( timeout_per_channel_ms >> 8 ),
-        ( uint8_t ) timeout_per_channel_ms,
+        ( uint8_t )( timeout_per_channel_ms >> 0 ),
         ( uint8_t )( timeout_per_scan_ms >> 8 ),
-        ( uint8_t ) timeout_per_scan_ms,
+        ( uint8_t )( timeout_per_scan_ms >> 0 ),
     };
-    return ( lr1110_status_t ) lr1110_hal_write( radio, cbuffer, LR1110_WIFI_COUNTRY_CODE_TIME_LIMIT_CMD_LENGTH, 0, 0 );
-}
 
-lr1110_status_t lr1110_wifi_cfg_hardware_debarker( const void* context, const bool enable_hardware_debarker )
-{
-    const uint8_t cbuffer[LR1110_WIFI_CONFIGURE_HARDWARE_DEBARKER_CMD_LENGTH] = {
-        ( uint8_t )( LR1110_WIFI_CONFIGURE_HARDWARE_DEBARKER_OC >> 8 ),
-        ( uint8_t )( LR1110_WIFI_CONFIGURE_HARDWARE_DEBARKER_OC & 0x00FF ),
-        ( uint8_t )( enable_hardware_debarker ? 1 : 0 )
-    };
-    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_WIFI_CONFIGURE_HARDWARE_DEBARKER_CMD_LENGTH,
-                                                 0, 0 );
+    return ( lr1110_status_t ) lr1110_hal_write( radio, cbuffer, LR1110_WIFI_COUNTRY_CODE_TIME_LIMIT_CMD_LENGTH, 0, 0 );
 }
 
 lr1110_status_t lr1110_wifi_get_nb_results( const void* context, uint8_t* nb_results )
 {
     const uint8_t cbuffer[LR1110_WIFI_GET_RESULT_SIZE_CMD_LENGTH] = {
         ( uint8_t )( LR1110_WIFI_GET_RESULT_SIZE_OC >> 8 ),
-        ( uint8_t )( LR1110_WIFI_GET_RESULT_SIZE_OC & 0x00FF ),
+        ( uint8_t )( LR1110_WIFI_GET_RESULT_SIZE_OC >> 0 ),
     };
 
     return ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_WIFI_GET_RESULT_SIZE_CMD_LENGTH, nb_results,
@@ -374,8 +381,10 @@ lr1110_status_t lr1110_wifi_read_extended_full_results( const void* radio, const
 lr1110_status_t lr1110_wifi_reset_cumulative_timing( const void* context )
 {
     const uint8_t cbuffer[LR1110_WIFI_RESET_CUMUL_TIMING_CMD_LENGTH] = {
-        ( uint8_t )( LR1110_WIFI_RESET_CUMUL_TIMING_OC >> 8 ), ( uint8_t )( LR1110_WIFI_RESET_CUMUL_TIMING_OC & 0x00FF )
+        ( uint8_t )( LR1110_WIFI_RESET_CUMUL_TIMING_OC >> 8 ),
+        ( uint8_t )( LR1110_WIFI_RESET_CUMUL_TIMING_OC >> 0 ),
     };
+
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_WIFI_RESET_CUMUL_TIMING_CMD_LENGTH, 0, 0 );
 }
 
@@ -383,7 +392,7 @@ lr1110_status_t lr1110_wifi_read_cumulative_timing( const void* context, lr1110_
 {
     const uint8_t cbuffer[LR1110_WIFI_READ_CUMUL_TIMING_CMD_LENGTH] = {
         ( uint8_t )( LR1110_WIFI_READ_CUMUL_TIMING_OC >> 8 ),
-        ( uint8_t )( LR1110_WIFI_READ_CUMUL_TIMING_OC & 0x00FF ),
+        ( uint8_t )( LR1110_WIFI_READ_CUMUL_TIMING_OC >> 0 ),
     };
     uint8_t buffer_out[LR1110_WIFI_ALL_CUMULATIVE_TIMING_SIZE] = { 0 };
 
@@ -408,7 +417,7 @@ lr1110_status_t lr1110_wifi_get_nb_country_code_results( const void* context, ui
 {
     const uint8_t cbuffer[LR1110_WIFI_GET_SIZE_COUNTRY_RESULT_CMD_LENGTH] = {
         ( uint8_t )( LR1110_WIFI_GET_SIZE_COUNTRY_RESULT_OC >> 8 ),
-        ( uint8_t )( LR1110_WIFI_GET_SIZE_COUNTRY_RESULT_OC & 0x00FF ),
+        ( uint8_t )( LR1110_WIFI_GET_SIZE_COUNTRY_RESULT_OC >> 0 ),
     };
     uint8_t rbuffer[LR1110_WIFI_COUNTRY_RESULT_LENGTH_SIZE] = { 0 };
 
@@ -427,8 +436,10 @@ lr1110_status_t lr1110_wifi_read_country_code_results( const void* context, cons
                                                        lr1110_wifi_country_code_t* country_code_results )
 {
     const uint8_t cbuffer[LR1110_WIFI_READ_COUNTRY_CODE_CMD_LENGTH] = {
-        ( uint8_t )( LR1110_WIFI_READ_COUNTRY_CODE_OC >> 8 ), ( uint8_t )( LR1110_WIFI_READ_COUNTRY_CODE_OC & 0x00FF ),
-        start_result_index, nb_country_results
+        ( uint8_t )( LR1110_WIFI_READ_COUNTRY_CODE_OC >> 8 ),
+        ( uint8_t )( LR1110_WIFI_READ_COUNTRY_CODE_OC >> 0 ),
+        start_result_index,
+        nb_country_results,
     };
     uint8_t        rbuffer[LR1110_WIFI_MAX_COUNTRY_CODE_RESULT_SIZE] = { 0 };
     const uint16_t country_code_result_size_to_read =
@@ -461,15 +472,14 @@ lr1110_status_t lr1110_wifi_read_country_code_results( const void* context, cons
 
 lr1110_status_t lr1110_wifi_cfg_timestamp_ap_phone( const void* context, uint32_t timestamp_in_s )
 {
-    uint8_t cbuffer[LR1110_WIFI_CFG_TIMESTAMP_AP_PHONE_CMD_LENGTH];
-
-    cbuffer[0] = ( uint8_t )( LR1110_WIFI_CONFIGURE_TIMESTAMP_AP_PHONE_OC >> 8 );
-    cbuffer[1] = ( uint8_t )( LR1110_WIFI_CONFIGURE_TIMESTAMP_AP_PHONE_OC >> 0 );
-
-    cbuffer[2] = ( uint8_t )( timestamp_in_s >> 24 );
-    cbuffer[3] = ( uint8_t )( timestamp_in_s >> 16 );
-    cbuffer[4] = ( uint8_t )( timestamp_in_s >> 8 );
-    cbuffer[5] = ( uint8_t )( timestamp_in_s >> 0 );
+    const uint8_t cbuffer[LR1110_WIFI_CFG_TIMESTAMP_AP_PHONE_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_WIFI_CONFIGURE_TIMESTAMP_AP_PHONE_OC >> 8 ),
+        ( uint8_t )( LR1110_WIFI_CONFIGURE_TIMESTAMP_AP_PHONE_OC >> 0 ),
+        ( uint8_t )( timestamp_in_s >> 24 ),
+        ( uint8_t )( timestamp_in_s >> 16 ),
+        ( uint8_t )( timestamp_in_s >> 8 ),
+        ( uint8_t )( timestamp_in_s >> 0 ),
+    };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_WIFI_CFG_TIMESTAMP_AP_PHONE_CMD_LENGTH, 0,
                                                  0 );
@@ -479,7 +489,7 @@ lr1110_status_t lr1110_wifi_read_version( const void* context, lr1110_wifi_versi
 {
     const uint8_t cbuffer[LR1110_WIFI_GET_VERSION_CMD_LENGTH] = {
         ( uint8_t )( LR1110_WIFI_GET_VERSION_OC >> 8 ),
-        ( uint8_t )( LR1110_WIFI_GET_VERSION_OC & 0x00FF ),
+        ( uint8_t )( LR1110_WIFI_GET_VERSION_OC >> 0 ),
     };
     uint8_t                   rbuffer[LR1110_WIFI_VERSION_SIZE] = { 0 };
     const lr1110_hal_status_t hal_status =
@@ -763,6 +773,85 @@ void interpret_extended_full_result_from_buffer( const uint8_t nb_results, const
         local_wifi_result->fcs_check_byte.is_fcs_ok      = ( ( buffer[local_index_start + 76] & 0x02 ) == 0x02 );
         local_wifi_result->phi_offset                    = uint16_from_array( buffer, local_index_start + 77 );
     }
+}
+
+bool lr1110_wifi_is_well_formed_utf8_byte_sequence( const uint8_t* buffer, const uint8_t length )
+{
+    uint8_t index = 0;
+
+    while( index < length )
+    {
+        if( IS_BETWEEN( buffer[index], 0x00, 0x7F ) )
+        {
+            index += 1;
+            continue;
+        }
+
+        if( length - index >= 2 )
+        {
+            if( IS_BETWEEN( buffer[index], 0xC2, 0xDF ) && IS_BETWEEN_0x80_AND_0xBF( buffer[index + 1] ) )
+            {
+                index += 2;
+                continue;
+            }
+
+            if( length - index >= 3 )
+            {
+                if( ( buffer[index] == 0xE0 ) && IS_BETWEEN( buffer[index + 1], 0xA0, 0xBF ) &&
+                    IS_BETWEEN_0x80_AND_0xBF( buffer[index + 2] ) )
+                {
+                    index += 3;
+                    continue;
+                }
+                else if( IS_BETWEEN( buffer[index], 0xE1, 0xEC ) && IS_BETWEEN_0x80_AND_0xBF( buffer[index + 1] ) &&
+                         IS_BETWEEN_0x80_AND_0xBF( buffer[index + 2] ) )
+                {
+                    index += 3;
+                    continue;
+                }
+                else if( ( buffer[index] == 0xED ) && IS_BETWEEN( buffer[index + 1], 0x80, 0x9F ) &&
+                         IS_BETWEEN_0x80_AND_0xBF( buffer[index + 2] ) )
+                {
+                    index += 3;
+                    continue;
+                }
+                else if( IS_BETWEEN( buffer[index], 0xEE, 0xEF ) && IS_BETWEEN_0x80_AND_0xBF( buffer[index + 1] ) &&
+                         IS_BETWEEN_0x80_AND_0xBF( buffer[index + 2] ) )
+                {
+                    index += 3;
+                    continue;
+                }
+
+                if( length - index >= 4 )
+                {
+                    if( ( buffer[index] == 0xF0 ) && IS_BETWEEN( buffer[index + 1], 0x90, 0xBF ) &&
+                        IS_BETWEEN_0x80_AND_0xBF( buffer[index + 2] ) && IS_BETWEEN_0x80_AND_0xBF( buffer[index + 3] ) )
+                    {
+                        index += 4;
+                        continue;
+                    }
+                    else if( IS_BETWEEN( buffer[index], 0xF1, 0xF3 ) && IS_BETWEEN_0x80_AND_0xBF( buffer[index + 1] ) &&
+                             IS_BETWEEN_0x80_AND_0xBF( buffer[index + 2] ) &&
+                             IS_BETWEEN_0x80_AND_0xBF( buffer[index + 3] ) )
+                    {
+                        index += 4;
+                        continue;
+                    }
+                    else if( ( buffer[index] == 0xF4 ) && IS_BETWEEN( buffer[index + 1], 0x80, 0x8F ) &&
+                             IS_BETWEEN_0x80_AND_0xBF( buffer[index + 2] ) &&
+                             IS_BETWEEN_0x80_AND_0xBF( buffer[index + 3] ) )
+                    {
+                        index += 4;
+                        continue;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    return true;
 }
 
 /* --- EOF ------------------------------------------------------------------ */
