@@ -236,15 +236,13 @@ lr1110_status_t lr1110_gnss_read_supported_constellations( const void*          
  * @brief Function to set the GNSS scan mode configuration
  *
  * @param [in] context Chip implementation context
- * @param [in] scan_mode  configure single or double capture (0 or 1)
- * @param [out] inter_capture_delay_second The delay between consecutive captures returned by the API
+ * @param [in] scan_mode  GNSS scan mode
  *
  * @returns Operation status
  *
  * @ref lr1110_gnss_scan_mode_t
  */
-lr1110_status_t lr1110_gnss_set_scan_mode( const void* context, const lr1110_gnss_scan_mode_t scan_mode,
-                                           uint8_t* inter_capture_delay_second );
+lr1110_status_t lr1110_gnss_set_scan_mode( const void* context, const lr1110_gnss_scan_mode_t scan_mode );
 
 /*!
  * @brief Gnss scan with no assisted parameters needed
@@ -279,15 +277,6 @@ lr1110_status_t lr1110_gnss_scan_autonomous( const void* context, const lr1110_g
 lr1110_status_t lr1110_gnss_scan_assisted( const void* context, const lr1110_gnss_date_t date,
                                            const lr1110_gnss_search_mode_t effort_mode,
                                            const uint8_t gnss_input_parameters, const uint8_t nb_sat );
-
-/*!
- * @brief Launch the second GNSS scan
- *
- * @param [in] context Chip implementation context
- *
- * @returns Operation status
- */
-lr1110_status_t lr1110_gnss_scan_continuous( const void* context );
 
 /*!
  * @brief Function to set the assistance position.
@@ -377,18 +366,21 @@ lr1110_status_t lr1110_gnss_get_context_status( const void*                     
 lr1110_status_t lr1110_gnss_get_nb_detected_satellites( const void* context, uint8_t* nb_detected_satellites );
 
 /*!
- * @brief Get the satellites detected on last scan with their IDs and C/N (aka CNR)
+ * @brief Get the satellites detected on last scan with their IDs, C/N (aka CNR) and doppler
+ *
+ * @note Doppler is returned with 6ppm accuracy.
  *
  * @param [in] context Chip implementation context
  * @param [in] nb_detected_satellites Number of detected satellites on last scan (obtained by calling
  * lr1110_gnss_get_nb_detected_satellites)
- * @param [out] detected_satellite_id_snr Pointer to an array of structures of size big enough to contain
+ * @param [out] detected_satellite_id_snr_doppler Pointer to an array of structures of size big enough to contain
  * nb_detected_satellites elements
  *
  * @returns Operation status
  */
-lr1110_status_t lr1110_gnss_get_detected_satellites( const void* context, const uint8_t nb_detected_satellites,
-                                                     lr1110_gnss_detected_satellite_t* detected_satellite_id_snr );
+lr1110_status_t lr1110_gnss_get_detected_satellites(
+    const void* context, const uint8_t nb_detected_satellites,
+    lr1110_gnss_detected_satellite_t* detected_satellite_id_snr_doppler );
 
 /**
  * @brief Parse a raw buffer of context status
@@ -417,6 +409,31 @@ lr1110_status_t lr1110_gnss_parse_context_status_buffer(
  */
 lr1110_status_t lr1110_gnss_get_result_destination( const uint8_t* result_buffer, const uint16_t result_buffer_size,
                                                     lr1110_gnss_destination_t* destination );
+
+/**
+ * @brief Helper function that computes the age of an almanac.
+ *
+ * This function does not call the LR1110.
+ * The almanac age is computed based on the following elements:
+ *     - almanac age as obtained from lr1110_gnss_get_almanac_age_for_satellite
+ *     - the number of days elapsed between Epoch (January 6th 1980) and the GPS rollover reference of the current
+ * almanac
+ *     - the GPS date of today expressed in number of days elapsed since Epoch
+ *
+ * @remark It is important to use for nb_days_between_epoch_and_corresponding_gps_time_rollover the GPS time rollover
+ * corresponding to the reference of the almanac_date. This is especially true when current date is just after a GPS
+ * time rollover.
+ *
+ * @param [in] almanac_date Almanac date as obtained from lr1110_gnss_get_almanac_age_for_satellite
+ * @param [in] nb_days_between_epoch_and_corresponding_gps_time_rollover Number of days elapsed between GPS Epoch and
+ * the GPS rollover corresponding to the almanac_date
+ * @param [in] nb_days_since_epoch Number of days elapsed between January 6th 1980 and now
+ *
+ * @returns Age of the almanac expressed in number of days between its start valid instant and now
+ */
+uint16_t lr1110_gnss_compute_almanac_age( uint16_t almanac_date,
+                                          uint16_t nb_days_between_epoch_and_corresponding_gps_time_rollover,
+                                          uint16_t nb_days_since_epoch );
 
 #ifdef __cplusplus
 }

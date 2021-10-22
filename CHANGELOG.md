@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v6.0.0] 2021-09-24
+
+### Added
+
+* [GNSS] `LR1110_GNSS_SCAN_MODE_3_SINGLE_SCAN_AND_5_FAST_SCANS` entry `lr1110_gnss_scan_mode_t`
+
+
+### Changed
+
+* [GNSS] `lr1110_gnss_set_scan_mode()` function does not take out parameter anymore and is now based on lr1110_hal_write()
+* [GNSS] `lr1110_gnss_get_detected_satellites()` function returns also the doppler per satellite
+
+
+### Removed
+
+* [GNSS] `lr1110_gnss_scan_continuous()` function and `LR1110_GNSS_DOUBLE_SCAN_MODE` entry in lr1110_gnss_scan_mode_t
+
 ## [v5.0.1] 2021-07-19
 
 ### Added
@@ -12,6 +29,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 * [crypto] Functions now return a status
 * [GNSS] `lr1110_gnss_get_result_destination()` function
 * [GNSS] `lr1110_gnss_almanac_update()` function - replaces `lr1110_gnss_almanac_full_update()` and `lr1110_gnss_one_satellite_almanac_update()` functions
+* [GNSS] `lr1110_gnss_compute_almanac_age` function
 * [HAL] `lr1110_hal_direct_read()` function - replaces `lr1110_hal_write_read()` function and no longer requires bidirectional SPI
 * [HAL] `LR1110_NOP` constant
 * [system] `lr1110_system_clear_reset_status_info()` function

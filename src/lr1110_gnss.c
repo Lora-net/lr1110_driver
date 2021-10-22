@@ -60,7 +60,6 @@
 #define LR1110_GNSS_SET_SCAN_MODE_CMD_LENGTH ( 2 + 1 )
 #define LR1110_GNSS_SCAN_AUTONOMOUS_CMD_LENGTH ( 2 + 7 )
 #define LR1110_GNSS_SCAN_ASSISTED_CMD_LENGTH ( 2 + 7 )
-#define LR1110_GNSS_SCAN_CONTINUOUS_CMD_LENGTH ( 2 )
 #define LR1110_GNSS_SCAN_GET_RES_SIZE_CMD_LENGTH ( 2 )
 #define LR1110_GNSS_SCAN_READ_RES_CMD_LENGTH ( 2 )
 #define LR1110_GNSS_ALMANAC_UPDATE_CMD_LENGTH ( 2 )
@@ -83,7 +82,7 @@
 #define LR1110_GNSS_READ_ALMANAC_TEMPBUFFER_SIZE_BYTE ( 47 )
 #define LR1110_GNSS_SCAN_GET_TIMINGS_RBUFFER_LENGTH ( 8 )
 #define LR1110_GNSS_MAX_DETECTED_SV ( 32 )
-#define LR1110_GNSS_DETECTED_SV_SINGLE_LENGTH ( 2 )
+#define LR1110_GNSS_DETECTED_SV_SINGLE_LENGTH ( 4 )
 #define LR1110_GNSS_MAX_DETECTED_SV_BUFFER_LENGTH \
     ( LR1110_GNSS_MAX_DETECTED_SV * LR1110_GNSS_DETECTED_SV_SINGLE_LENGTH )
 #define LR1110_GNSS_READ_FIRMWARE_VERSION_RBUFFER_LENGTH ( 2 )
@@ -113,7 +112,6 @@ enum
     LR1110_GNSS_SET_SCAN_MODE_OC                = 0x0408,  //!< Define single or double capture
     LR1110_GNSS_SCAN_AUTONOMOUS_OC              = 0x0409,  //!< Launch an autonomous scan
     LR1110_GNSS_SCAN_ASSISTED_OC                = 0x040A,  //!< Launch an assisted scan
-    LR1110_GNSS_SCAN_CONTINUOUS_OC              = 0x040B,  //!< Launch the second scan
     LR1110_GNSS_SCAN_GET_RES_SIZE_OC            = 0x040C,  //!< Get the size of the output payload
     LR1110_GNSS_SCAN_READ_RES_OC                = 0x040D,  //!< Read the byte stream
     LR1110_GNSS_ALMANAC_UPDATE_OC               = 0x040E,  //!< Update the almanac
@@ -430,8 +428,7 @@ lr1110_status_t lr1110_gnss_read_supported_constellations( const void*          
                                                 supported_constellations, sizeof( *supported_constellations ) );
 }
 
-lr1110_status_t lr1110_gnss_set_scan_mode( const void* context, const lr1110_gnss_scan_mode_t scan_mode,
-                                           uint8_t* inter_capture_delay_second )
+lr1110_status_t lr1110_gnss_set_scan_mode( const void* context, const lr1110_gnss_scan_mode_t scan_mode )
 {
     const uint8_t cbuffer[LR1110_GNSS_SET_SCAN_MODE_CMD_LENGTH] = {
         ( uint8_t )( LR1110_GNSS_SET_SCAN_MODE_OC >> 8 ),
@@ -439,8 +436,7 @@ lr1110_status_t lr1110_gnss_set_scan_mode( const void* context, const lr1110_gns
         ( uint8_t ) scan_mode,
     };
 
-    return ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_GNSS_SET_SCAN_MODE_CMD_LENGTH,
-                                                inter_capture_delay_second, sizeof( *inter_capture_delay_second ) );
+    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_GNSS_SET_SCAN_MODE_CMD_LENGTH, 0, 0 );
 }
 
 lr1110_status_t lr1110_gnss_scan_autonomous( const void* context, const lr1110_gnss_date_t date,
@@ -479,16 +475,6 @@ lr1110_status_t lr1110_gnss_scan_assisted( const void* context, const lr1110_gns
     };
 
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_GNSS_SCAN_ASSISTED_CMD_LENGTH, 0, 0 );
-}
-
-lr1110_status_t lr1110_gnss_scan_continuous( const void* context )
-{
-    const uint8_t cbuffer[LR1110_GNSS_SCAN_CONTINUOUS_CMD_LENGTH] = {
-        ( uint8_t )( LR1110_GNSS_SCAN_CONTINUOUS_OC >> 8 ),
-        ( uint8_t )( LR1110_GNSS_SCAN_CONTINUOUS_OC >> 0 ),
-    };
-
-    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_GNSS_SCAN_CONTINUOUS_CMD_LENGTH, 0, 0 );
 }
 
 lr1110_status_t lr1110_gnss_set_assistance_position(
@@ -594,8 +580,9 @@ lr1110_status_t lr1110_gnss_get_nb_detected_satellites( const void* context, uin
                                                 nb_detected_satellites, 1 );
 }
 
-lr1110_status_t lr1110_gnss_get_detected_satellites( const void* context, const uint8_t nb_detected_satellites,
-                                                     lr1110_gnss_detected_satellite_t* detected_satellite_id_snr )
+lr1110_status_t lr1110_gnss_get_detected_satellites(
+    const void* context, const uint8_t nb_detected_satellites,
+    lr1110_gnss_detected_satellite_t* detected_satellite_id_snr_doppler )
 {
     const uint8_t max_satellites_to_fetch =
         ( LR1110_GNSS_MAX_DETECTED_SV > nb_detected_satellites ) ? nb_detected_satellites : LR1110_GNSS_MAX_DETECTED_SV;
@@ -613,11 +600,14 @@ lr1110_status_t lr1110_gnss_get_detected_satellites( const void* context, const 
     {
         for( uint8_t index_satellite = 0; index_satellite < max_satellites_to_fetch; index_satellite++ )
         {
-            const uint16_t                    local_result_buffer_index = index_satellite * 2;
-            lr1110_gnss_detected_satellite_t* local_satellite_result    = &detected_satellite_id_snr[index_satellite];
+            const uint16_t local_result_buffer_index = index_satellite * LR1110_GNSS_DETECTED_SV_SINGLE_LENGTH;
+            lr1110_gnss_detected_satellite_t* local_satellite_result =
+                &detected_satellite_id_snr_doppler[index_satellite];
 
             local_satellite_result->satellite_id = result_buffer[local_result_buffer_index];
             local_satellite_result->cnr = result_buffer[local_result_buffer_index + 1] + LR1110_GNSS_SNR_TO_CNR_OFFSET;
+            local_satellite_result->doppler = ( int16_t )( ( result_buffer[local_result_buffer_index + 2] << 8 ) +
+                                                           ( result_buffer[local_result_buffer_index + 3] << 0 ) );
         }
     }
     return ( lr1110_status_t ) hal_status;
@@ -690,6 +680,13 @@ lr1110_status_t lr1110_gnss_get_result_destination( const uint8_t* result_buffer
     }
 
     return status;
+}
+
+uint16_t lr1110_gnss_compute_almanac_age( uint16_t almanac_date,
+                                          uint16_t nb_days_between_epoch_and_last_gps_time_rollover,
+                                          uint16_t nb_days_since_epoch )
+{
+    return nb_days_since_epoch - ( almanac_date + nb_days_between_epoch_and_last_gps_time_rollover );
 }
 
 /*

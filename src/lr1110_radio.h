@@ -714,6 +714,21 @@ uint32_t lr1110_radio_get_gfsk_time_on_air_in_ms( const lr1110_radio_pkt_params_
  */
 uint32_t lr1110_radio_convert_time_in_ms_to_rtc_step( uint32_t time_in_ms );
 
+/**
+ * @brief Get the information from the last received LoRa packet header (if @ref LR1110_RADIO_LORA_PKT_EXPLICIT) or the
+ * locally configured settings (if @ref LR1110_RADIO_LORA_PKT_IMPLICIT)
+ *
+ * @remark This function can be called only if @ref LR1110_RADIO_PKT_TYPE_LORA is selected with @ref
+ * lr1110_radio_set_pkt_type
+ *
+ * @param [in] context Chip implementation context
+ * @param [out] is_crc_present  CRC configuration
+ * @param [out] cr              LoRa coding rate
+ *
+ * @returns Operation status
+ */
+lr1110_status_t lr1110_radio_get_lora_rx_info( const void* context, bool* is_crc_present, lr1110_radio_lora_cr_t* cr );
+
 #ifdef __cplusplus
 }
 #endif

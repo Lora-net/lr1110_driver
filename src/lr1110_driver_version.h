@@ -54,9 +54,9 @@ extern "C" {
  * --- PUBLIC CONSTANTS --------------------------------------------------------
  */
 
-#define LR1110_DRIVER_VERSION_MAJOR 5
+#define LR1110_DRIVER_VERSION_MAJOR 6
 #define LR1110_DRIVER_VERSION_MINOR 0
-#define LR1110_DRIVER_VERSION_PATCH 1
+#define LR1110_DRIVER_VERSION_PATCH 0
 
 /*
  * -----------------------------------------------------------------------------

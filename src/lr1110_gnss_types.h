@@ -109,13 +109,26 @@ extern "C" {
 typedef uint8_t lr1110_gnss_satellite_id_t;
 
 /*!
- * @brief bit mask indicating which information is added in the output payload
+ * @brief Bit mask indicating which information is added in the output payload - to be used with @ref
+ * LR1110_GNSS_SCAN_MODE_0_SINGLE_SCAN_LEGACY
  */
-enum lr1110_gnss_input_parameters_e
+enum lr1110_gnss_result_fields_legacy_e
 {
-    LR1110_GNSS_IRQ_PSEUDO_RANGE_MASK = ( 1 << 0 ),
-    LR1110_GNSS_DOPPLER_MASK          = ( 1 << 1 ),
-    LR1110_GNSS_BIT_CHANGE_MASK       = ( 1 << 2 ),
+    LR1110_GNSS_RESULTS_LEGACY_PSEUDO_RANGE_MASK = ( 1 << 0 ),  //!< Add pseudo-range information if set
+    LR1110_GNSS_RESULTS_LEGACY_DOPPLER_MASK      = ( 1 << 1 ),  //!< Add all Doppler information if set - up to 5 if not
+    LR1110_GNSS_RESULTS_LEGACY_BIT_CHANGE_MASK   = ( 1 << 2 ),  //!< Add bit change if set
+};
+
+/*!
+ * @brief bit mask indicating which information is added in the output payload - to be used with @ref
+ * LR1110_GNSS_SCAN_MODE_3_SINGLE_SCAN_AND_5_FAST_SCANS
+ */
+enum lr1110_gnss_result_fields_e
+{
+    LR1110_GNSS_RESULTS_DOPPLER_ENABLE_MASK = ( 1 << 0 ),  //!< Add Doppler information if set
+    LR1110_GNSS_RESULTS_DOPPLER_MASK = ( 1 << 1 ),     //!< Add up to 14 Doppler if set - up to 7 if not. Valid if @ref
+                                                       //!< LR1110_GNSS_RESULTS_DOPPLER_ENABLE_MASK is set
+    LR1110_GNSS_RESULTS_BIT_CHANGE_MASK = ( 1 << 2 ),  //!< Add bit change if set
 };
 
 /*!
@@ -158,18 +171,21 @@ typedef enum
  */
 typedef enum
 {
-    LR1110_GNSS_HOST_OK                                         = 0x00,
-    LR1110_GNSS_HOST_UNEXPECTED_CMD                             = 0x01,
-    LR1110_GNSS_HOST_UNIMPLEMENTED_CMD                          = 0x02,
-    LR1110_GNSS_HOST_INVALID_PARAMETERS                         = 0x03,
-    LR1110_GNSS_HOST_MESSAGE_SANITY_CHECK_ERROR                 = 0x04,
-    LR1110_GNSS_HOST_IQ_CAPTURE_FAILS                           = 0x05,
-    LR1110_GNSS_HOST_NO_TIME                                    = 0x06,
-    LR1110_GNSS_HOST_NO_SATELLITE_DETECTED                      = 0x07,
-    LR1110_GNSS_HOST_ALMANAC_IN_FLASH_TOO_OLD                   = 0x08,
-    LR1110_GNSS_HOST_ALMANAC_UPDATE_FAILS_CRC_ERROR             = 0x09,
-    LR1110_GNSS_HOST_ALMANAC_UPDATE_FAILS_FLASH_INTEGRITY_ERROR = 0x0A,
-    LR1110_GNSS_HOST_ALMANAC_UPDATE_FAILS_ALMANAC_DATE_TOO_OLD  = 0x0B,
+    LR1110_GNSS_HOST_OK                                            = 0x00,
+    LR1110_GNSS_HOST_UNEXPECTED_CMD                                = 0x01,
+    LR1110_GNSS_HOST_UNIMPLEMENTED_CMD                             = 0x02,
+    LR1110_GNSS_HOST_INVALID_PARAMETERS                            = 0x03,
+    LR1110_GNSS_HOST_MESSAGE_SANITY_CHECK_ERROR                    = 0x04,
+    LR1110_GNSS_HOST_IQ_CAPTURE_FAILS                              = 0x05,
+    LR1110_GNSS_HOST_NO_TIME                                       = 0x06,
+    LR1110_GNSS_HOST_NO_SATELLITE_DETECTED                         = 0x07,
+    LR1110_GNSS_HOST_ALMANAC_IN_FLASH_TOO_OLD                      = 0x08,
+    LR1110_GNSS_HOST_ALMANAC_UPDATE_FAILS_CRC_ERROR                = 0x09,
+    LR1110_GNSS_HOST_ALMANAC_UPDATE_FAILS_FLASH_INTEGRITY_ERROR    = 0x0A,
+    LR1110_GNSS_HOST_ALMANAC_UPDATE_NOT_ALLOWED                    = 0x0B,
+    LR1110_GNSS_HOST_ALMANAC_CRC_ERROR                             = 0x0C,
+    LR1110_GNSS_HOST_ALMANAC_VERSION_NOT_SUPPORTED                 = 0x0D,
+    LR1110_GNSS_HOST_NOT_ENOUGH_SV_DETECTED_TO_BUILD_A_NAV_MESSAGE = 0x10,
 } lr1110_gnss_message_host_status_t;
 
 /*!
@@ -185,8 +201,8 @@ typedef enum
  */
 typedef enum
 {
-    LR1110_GNSS_SINGLE_SCAN_MODE = 0x00,
-    LR1110_GNSS_DOUBLE_SCAN_MODE = 0x01,
+    LR1110_GNSS_SCAN_MODE_0_SINGLE_SCAN_LEGACY           = 0x00,  //!< Generated NAV message format = NAV1
+    LR1110_GNSS_SCAN_MODE_3_SINGLE_SCAN_AND_5_FAST_SCANS = 0x03,  //!< Generated NAV message format = NAV2
 } lr1110_gnss_scan_mode_t;
 
 /*!
@@ -242,12 +258,13 @@ typedef struct lr1110_gnss_solver_assistance_position_s
 } lr1110_gnss_solver_assistance_position_t;
 
 /*!
- * @brief Detected satellite structure
+ * @brief Detected SV structure
  */
 typedef struct lr1110_gnss_detected_satellite_s
 {
     lr1110_gnss_satellite_id_t satellite_id;
-    int8_t                     cnr;  //!< Carrier-to-noise ration (C/N) in dB
+    int8_t                     cnr;      //!< Carrier-to-noise ration (C/N) in dB
+    int16_t                    doppler;  //!< SV doppler in Hz
 } lr1110_gnss_detected_satellite_t;
 
 /*!

@@ -82,6 +82,7 @@
 #define LR1110_RADIO_SET_GFSK_WHITENING_CMD_LENGTH ( 2 + 2 )
 #define LR1110_RADIO_SET_RX_BOOSTED_LENGTH ( 2 + 1 )
 #define LR1110_RADIO_SET_LORA_SYNC_WORD_CMD_LENGTH ( 2 + 1 )
+#define LR1110_RADIO_GET_LORA_RX_INFO_CMD_LENGTH ( 2 )
 
 /**
  * @brief Internal RTC frequency
@@ -128,6 +129,7 @@ enum
     LR1110_RADIO_SET_GFSK_WHITENING_PARAMS_OC = 0x0225,
     LR1110_RADIO_SET_RX_BOOSTED_OC            = 0x0227,
     LR1110_RADIO_SET_LORA_SYNC_WORD_OC        = 0x022B,
+    LR1110_RADIO_GET_LORA_RX_INFO_OC          = 0x0230,
 };
 
 /*
@@ -975,6 +977,26 @@ uint32_t lr1110_radio_get_gfsk_time_on_air_in_ms( const lr1110_radio_pkt_params_
 uint32_t lr1110_radio_convert_time_in_ms_to_rtc_step( uint32_t time_in_ms )
 {
     return ( uint32_t )( time_in_ms * LR1110_RTC_FREQ_IN_HZ / 1000 );
+}
+
+lr1110_status_t lr1110_radio_get_lora_rx_info( const void* context, bool* is_crc_present, lr1110_radio_lora_cr_t* cr )
+{
+    const uint8_t cbuffer[LR1110_RADIO_GET_LORA_RX_INFO_CMD_LENGTH] = {
+        ( uint8_t )( LR1110_RADIO_GET_LORA_RX_INFO_OC >> 8 ),
+        ( uint8_t )( LR1110_RADIO_GET_LORA_RX_INFO_OC >> 0 ),
+    };
+    uint8_t rbuffer;
+
+    const lr1110_status_t status =
+        ( lr1110_status_t ) lr1110_hal_read( context, cbuffer, LR1110_RADIO_GET_LORA_RX_INFO_CMD_LENGTH, &rbuffer, 1 );
+
+    if( status == LR1110_STATUS_OK )
+    {
+        *is_crc_present = ( ( ( rbuffer & ( 0x01 << 4 ) ) != 0 ) ) ? true : false;
+        *cr             = ( lr1110_radio_lora_cr_t )( rbuffer & 0x07 );
+    }
+
+    return status;
 }
 
 /*
