@@ -1,7 +1,7 @@
 /*!
- * @file      lr1110_driver_version.h
+ * @file      lr1110_lr_fhss_types.h
  *
- * @brief     Placeholder to keep the version of LR1110 driver.
+ * @brief     LR_FHSS types definition for LR1110
  *
  * The Clear BSD License
  * Copyright Semtech Corporation 2021. All rights reserved.
@@ -32,59 +32,34 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LR1110_DRIVER_VERSION_H
-#define LR1110_DRIVER_VERSION_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef LR1110_LR_FHSS_TYPES_H
+#define LR1110_LR_FHSS_TYPES_H
 
 /*
  * -----------------------------------------------------------------------------
  * --- DEPENDENCIES ------------------------------------------------------------
  */
 
-/*
- * -----------------------------------------------------------------------------
- * --- PUBLIC MACROS -----------------------------------------------------------
- */
-
-/*
- * -----------------------------------------------------------------------------
- * --- PUBLIC CONSTANTS --------------------------------------------------------
- */
-
-#define LR1110_DRIVER_VERSION_MAJOR 7
-#define LR1110_DRIVER_VERSION_MINOR 0
-#define LR1110_DRIVER_VERSION_PATCH 0
+#include "lr_fhss_v1_base_types.h"
 
 /*
  * -----------------------------------------------------------------------------
  * --- PUBLIC TYPES ------------------------------------------------------------
  */
 
-/*
- * -----------------------------------------------------------------------------
- * --- PUBLIC FUNCTIONS PROTOTYPES ---------------------------------------------
- */
-
 /*!
- * @brief Compare version information with current ones
- *
- * This macro expands to true boolean value if the version information provided in argument is compatible or
- * retro-compatible with the version of this code base
+ * @brief LR FHSS parameter structure
  */
-#define LR1110_DRIVER_VERSION_CHECK( x, y, z ) \
-    ( x == LR1110_DRIVER_VERSION_MAJOR &&      \
-      ( y < LR1110_DRIVER_VERSION_MINOR ||     \
-        ( y == LR1110_DRIVER_VERSION_MINOR && z <= LR1110_DRIVER_VERSION_PATCH ) ) )
+typedef struct
+{
+    lr_fhss_v1_params_t lr_fhss_params;  //!< Base LR FHSS parameters
+    int8_t              device_offset;  //<! Per device offset to avoid collisions over the air. Possible values:
+                                        //<! - if lr_fhss_params.grid == LR_FHSS_V1_GRID_25391_HZ:
+                                        //<!     [-26, 25]
+                                        //<! - if lr_fhss_params.grid == LR_FHSS_V1_GRID_3906_HZ:
+                                        //<!     [-4, 3]
+} lr1110_lr_fhss_params_t;
 
-const char* lr1110_driver_version_get_version_string( void );
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif  // LR1110_DRIVER_VERSION_H
+#endif  // LR1110_LR_FHSS_TYPES_H
 
 /* --- EOF ------------------------------------------------------------------ */

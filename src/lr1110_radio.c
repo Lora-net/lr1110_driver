@@ -56,7 +56,7 @@
 #define LR1110_RADIO_GET_RXBUFFER_STATUS_CMD_LENGTH ( 2 )
 #define LR1110_RADIO_GET_PKT_STATUS_CMD_LENGTH ( 2 )
 #define LR1110_RADIO_GET_RSSI_INST_CMD_LENGTH ( 2 )
-#define LR1110_RADIO_SET_GFSK_SYNC_WORD_CMD_LENGTH ( 2 + 8 )
+#define LR1110_RADIO_SET_GFSK_SYNC_WORD_CMD_LENGTH ( 2 + LR1110_RADIO_GFSK_SYNC_WORD_LENGTH )
 #define LR1110_RADIO_SET_LORA_PUBLIC_NETWORK_CMD_LENGTH ( 2 + 8 )
 #define LR1110_RADIO_SET_RX_CMD_LENGTH ( 2 + 3 )
 #define LR1110_RADIO_SET_TX_CMD_LENGTH ( 2 + 3 )
@@ -316,7 +316,8 @@ lr1110_status_t lr1110_radio_get_rssi_inst( const void* context, int8_t* rssi_in
     return status;
 }
 
-lr1110_status_t lr1110_radio_set_gfsk_sync_word( const void* context, const uint8_t* gfsk_sync_word )
+lr1110_status_t lr1110_radio_set_gfsk_sync_word( const void*   context,
+                                                 const uint8_t gfsk_sync_word[LR1110_RADIO_GFSK_SYNC_WORD_LENGTH] )
 {
     const uint8_t cbuffer[LR1110_RADIO_SET_GFSK_SYNC_WORD_CMD_LENGTH] = {
         ( uint8_t )( LR1110_RADIO_SET_GFSK_SYNC_WORD_OC >> 8 ),

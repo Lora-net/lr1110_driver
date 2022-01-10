@@ -57,6 +57,19 @@ extern "C" {
  * --- PUBLIC CONSTANTS --------------------------------------------------------
  */
 
+/*!
+ * @brief Length in byte of the GFSK sync word
+ */
+#define LR1110_RADIO_GFSK_SYNC_WORD_LENGTH 8
+
+/*!
+ * @brief Default GFSK sync word value
+ */
+#define LR11110_RADIO_GFSK_SYNC_WORD_DEFAULT           \
+    {                                                  \
+        0x97, 0x23, 0x52, 0x25, 0x56, 0x53, 0x65, 0x64 \
+    }
+
 /*
  * -----------------------------------------------------------------------------
  * --- PUBLIC TYPES ------------------------------------------------------------
@@ -171,14 +184,16 @@ lr1110_status_t lr1110_radio_get_rssi_inst( const void* context, int8_t* rssi_in
 /*!
  * @brief Set the GFSK modem sync word
  *
- * This command is used to set the GFSK nodem sync word. By default, the value is 0x9723522556536564
+ * This command is used to set the GFSK nodem sync word. This command expects a 8-byte long array to be passed as sync
+ * word parameter. By default, the value is 0x9723522556536564.
  *
  * @param [in] context Chip implementation context
  * @param [in] gfsk_sync_word The sync word to be configured
  *
  * @returns Operation status
  */
-lr1110_status_t lr1110_radio_set_gfsk_sync_word( const void* context, const uint8_t* gfsk_sync_word );
+lr1110_status_t lr1110_radio_set_gfsk_sync_word( const void*   context,
+                                                 const uint8_t gfsk_sync_word[LR1110_RADIO_GFSK_SYNC_WORD_LENGTH] );
 
 /*!
  * @brief Set the LoRa modem sync word

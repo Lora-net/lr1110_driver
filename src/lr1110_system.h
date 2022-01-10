@@ -57,6 +57,13 @@ extern "C" {
  * --- PUBLIC CONSTANTS --------------------------------------------------------
  */
 
+/*!
+ * @brief Frequency step in MHz used to compute the image calibration parameter
+ *
+ * @see lr1110_system_calibrate_image_in_mhz
+ */
+#define LR1110_SYSTEM_IMAGE_CALIBRATION_STEP_IN_MHZ 4
+
 /*
  * -----------------------------------------------------------------------------
  * --- PUBLIC TYPES ------------------------------------------------------------
@@ -89,9 +96,9 @@ lr1110_status_t lr1110_system_wakeup( const void* context );
  * @brief Return stat1, stat2, and irq_status
  *
  * @param [in] context Chip implementation context
- * @param [out] stat1 stat1 status variable
- * @param [out] stat2 stat2 status variable
- * @param [out] irq_status irq_status status variable
+ * @param [out] stat1      Pointer to a variable for holding stat1. Can be NULL.
+ * @param [out] stat2      Pointer to a variable for holding stat2. Can be NULL.
+ * @param [out] irq_status Pointer to a variable for holding irq_status. Can be NULL.
  *
  * @returns Operation status
  *
@@ -201,7 +208,7 @@ lr1110_status_t lr1110_system_calibrate( const void* context, const uint8_t cali
 lr1110_status_t lr1110_system_set_reg_mode( const void* context, const lr1110_system_reg_mode_t reg_mode );
 
 /*!
- * @brief Launch an image calibration at frequencies given in parameters
+ * @brief Launch an image calibration valid for all frequencies inside an interval, in steps
  *
  * This function can be called in any mode of the chip.
  *
@@ -212,14 +219,34 @@ lr1110_status_t lr1110_system_set_reg_mode( const void* context, const lr1110_sy
  * one calibration is performed.
  *
  * @param [in] context Chip implementation context
- * @param [in] freq1 First frequency used to perform image calibration
- * @param [in] freq2 Second frequency used to perform image calibration
+ * @param [in] freq1 Image calibration interval lower bound, in steps
+ * @param [in] freq2 Image calibration interval upper bound, in steps
+ *
+ * @remark freq1 must be less than or equal to freq2
  *
  * @returns Operation status
  *
  * @see lr1110_system_get_errors
  */
 lr1110_status_t lr1110_system_calibrate_image( const void* context, const uint8_t freq1, const uint8_t freq2 );
+
+/*!
+ * @brief Launch an image calibration valid for all frequencies inside an interval, in MHz
+ *
+ * @remark This function relies on @ref lr1110_system_calibrate_image
+ *
+ * @param [in] context Chip implementation context
+ * @param [in] freq1_in_mhz Image calibration interval lower bound, in MHz
+ * @param [in] freq2_in_mhz Image calibration interval upper bound, in MHz
+ *
+ * @remark freq1 must be less than or equal to freq2
+ *
+ * @returns Operation status
+ *
+ * @see lr1110_system_calibrate_image
+ */
+lr1110_status_t lr1110_system_calibrate_image_in_mhz( const void* context, const uint16_t freq1_in_mhz,
+                                                      const uint16_t freq2_in_mhz );
 
 /*!
  * @brief Set the RF switch configurations for each RF setup
@@ -474,7 +501,10 @@ lr1110_status_t lr1110_system_read_uid( const void* context, lr1110_system_uid_t
 lr1110_status_t lr1110_system_read_join_eui( const void* context, lr1110_system_join_eui_t join_eui );
 
 /*!
- * @brief Read and return the PIN of the LR1110
+ * @brief Compute and return the PIN of the LR1110 based on factory default EUIs
+ *
+ * @remark Calling this command also triggers a derivation of network and application keys (available as @ref
+ * LR1110_CRYPTO_KEYS_IDX_NWK_KEY and @ref LR1110_CRYPTO_KEYS_IDX_APP_KEY) based on factory default EUIs
  *
  * @param [in] context Chip implementation context
  * @param [out] pin The buffer to be filled with PIN of the LR1110. It is up to the application to ensure pin is long
@@ -487,7 +517,10 @@ lr1110_status_t lr1110_system_read_join_eui( const void* context, lr1110_system_
 lr1110_status_t lr1110_system_read_pin( const void* context, lr1110_system_pin_t pin );
 
 /*!
- * @brief Read and return the PIN of the LR1110 based on EUIs provided as parameters
+ * @brief Compute and return the PIN of the LR1110 based on EUIs provided as parameters
+ *
+ * @remark Calling this command also triggers a derivation of network and application keys (available as @ref
+ * LR1110_CRYPTO_KEYS_IDX_NWK_KEY and @ref LR1110_CRYPTO_KEYS_IDX_APP_KEY) based on EUIs provided as parameters
  *
  * @param [in] context Chip implementation context
  * @param [in] device_eui Custom Device EUI

@@ -308,26 +308,6 @@ lr1110_status_t lr1110_gnss_read_assistance_position( const void*               
                                                       lr1110_gnss_solver_assistance_position_t* assistance_position );
 
 /*!
- * @brief Function to set the crystal error.
- *
- * @param [in] context Chip implementation context
- * @param [in] xtal_error_in_ppm value in +/-40ppm
- *
- * @returns Operation status
- */
-lr1110_status_t lr1110_gnss_set_xtal_error( const void* context, const float xtal_error_in_ppm );
-
-/*!
- * @brief Function to read the crystal error.
- *
- * @param [in] context Chip implementation context
- * @param [out] xtal_error_in_ppm value returned between +/-30ppm
- *
- * @returns Operation status
- */
-lr1110_status_t lr1110_gnss_read_xtal_error( const void* context, float* xtal_error_in_ppm );
-
-/*!
  * @brief Host receives an update from the network or assembles itself the update message and send it to the LR1110.
  *
  * @param [in] context Chip implementation context

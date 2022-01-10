@@ -1,7 +1,7 @@
 /*!
- * @file      lr1110_driver_version.h
+ * @file      lr1110_lr_fhss.h
  *
- * @brief     Placeholder to keep the version of LR1110 driver.
+ * @brief     LR_FHSS driver definition for LR1110
  *
  * The Clear BSD License
  * Copyright Semtech Corporation 2021. All rights reserved.
@@ -32,8 +32,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LR1110_DRIVER_VERSION_H
-#define LR1110_DRIVER_VERSION_H
+#ifndef LR1110_LR_FHSS_H
+#define LR1110_LR_FHSS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,6 +43,9 @@ extern "C" {
  * -----------------------------------------------------------------------------
  * --- DEPENDENCIES ------------------------------------------------------------
  */
+
+#include "lr1110_lr_fhss_types.h"
+#include "lr1110_types.h"
 
 /*
  * -----------------------------------------------------------------------------
@@ -54,9 +57,10 @@ extern "C" {
  * --- PUBLIC CONSTANTS --------------------------------------------------------
  */
 
-#define LR1110_DRIVER_VERSION_MAJOR 7
-#define LR1110_DRIVER_VERSION_MINOR 0
-#define LR1110_DRIVER_VERSION_PATCH 0
+/**
+ * @brief Length, in bytes, of a LR-FHSS sync word
+ */
+#define LR_FHSS_SYNC_WORD_BYTES ( 4 )
 
 /*
  * -----------------------------------------------------------------------------
@@ -69,22 +73,56 @@ extern "C" {
  */
 
 /*!
- * @brief Compare version information with current ones
+ * @brief Initialize the LR_FHSS
  *
- * This macro expands to true boolean value if the version information provided in argument is compatible or
- * retro-compatible with the version of this code base
+ * @param [in] context Chip implementation context
+ *
+ * @returns Operation status
  */
-#define LR1110_DRIVER_VERSION_CHECK( x, y, z ) \
-    ( x == LR1110_DRIVER_VERSION_MAJOR &&      \
-      ( y < LR1110_DRIVER_VERSION_MINOR ||     \
-        ( y == LR1110_DRIVER_VERSION_MINOR && z <= LR1110_DRIVER_VERSION_PATCH ) ) )
+lr1110_status_t lr1110_lr_fhss_init( const void* context );
 
-const char* lr1110_driver_version_get_version_string( void );
+/*!
+ * @brief Configure a payload to be sent with LR_FHSS
+ *
+ * When calling this method, lr1110_lr_fhss_set_sync_word is implicitely called to configure the sync word.
+ * Note that the syncword must be 4 bytes long.
+ *
+ * @param [in] context Chip implementation context
+ * @param [in] lr_fhss_params Parameter configuration structure of the LRFHSS
+ * @param [in] hop_sequence_id Seed used to derive the hopping sequence pattern. Only the nine LSBs are taken into
+ * account
+ * @param [in] payload The payload to send. It is the responsibility of the caller to ensure that this references an
+ * array containing at least payload_length elements
+ * @param [in] payload_length The length of the payload
+ *
+ * @returns Operation status
+ */
+lr1110_status_t lr1110_lr_fhss_build_frame( const void* context, const lr1110_lr_fhss_params_t* lr_fhss_params,
+                                            uint16_t hop_sequence_id, const uint8_t* payload, uint8_t payload_length );
+
+/*!
+ * @brief Get the time on air in ms for LR-FHSS transmission
+ *
+ * @param [in]  params         LR1110 LR-FHSS parameter structure
+ * @param [in]  payload_length Length of application-layer payload
+ *
+ * @returns Time-on-air value in ms for LR-FHSS transmission
+ */
+uint32_t lr1110_lr_fhss_get_time_on_air_in_ms( const lr1110_lr_fhss_params_t* params, uint16_t payload_length );
+
+/**
+ * @brief Return the number of hop sequences available using the given parameters
+ *
+ * @param [in] lr_fhss_params Parameter configuration structure of the LRFHSS
+ *
+ * @return Returns the number of valid hop sequences (512 or 384)
+ */
+unsigned int lr1110_lr_fhss_get_hop_sequence_count( const lr1110_lr_fhss_params_t* lr_fhss_params );
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // LR1110_DRIVER_VERSION_H
+#endif  // LR1110_LR_FHSS_H
 
 /* --- EOF ------------------------------------------------------------------ */

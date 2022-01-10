@@ -110,6 +110,10 @@ lr1110_hal_status_t lr1110_hal_write( const void* context, const uint8_t* comman
  * @param [in] data_length      Buffer size to be received
  *
  * @returns Operation status
+ *
+ * @remark Some hardware SPI implementations write arbitary values on the MOSI line while reading. If this is done on
+ * the LR1110, non-zero values may be interpreted as commands. This driver does not exploit this functionality, and
+ * expects that zeros be sent on the MOSI line when this command is reading the command response data.
  */
 lr1110_hal_status_t lr1110_hal_read( const void* context, const uint8_t* command, const uint16_t command_length,
                                      uint8_t* data, const uint16_t data_length );

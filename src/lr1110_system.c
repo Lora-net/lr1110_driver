@@ -275,6 +275,19 @@ lr1110_status_t lr1110_system_calibrate_image( const void* context, const uint8_
     return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_SYSTEM_CALIBRATE_IMAGE_CMD_LENGTH, 0, 0 );
 }
 
+lr1110_status_t lr1110_system_calibrate_image_in_mhz( const void* context, const uint16_t freq1_in_mhz,
+                                                      const uint16_t freq2_in_mhz )
+{
+    // Perform a floor() to get a value for freq1 corresponding to a frequency lower than or equal to freq1_in_mhz
+    const uint8_t freq1 = freq1_in_mhz / LR1110_SYSTEM_IMAGE_CALIBRATION_STEP_IN_MHZ;
+
+    // Perform a ceil() to get a value for freq2 corresponding to a frequency higher than or equal to freq2_in_mhz
+    const uint8_t freq2 = ( freq2_in_mhz + LR1110_SYSTEM_IMAGE_CALIBRATION_STEP_IN_MHZ - 1 ) /
+                          LR1110_SYSTEM_IMAGE_CALIBRATION_STEP_IN_MHZ;
+
+    return lr1110_system_calibrate_image( context, freq1, freq2 );
+}
+
 lr1110_status_t lr1110_system_set_dio_as_rf_switch( const void*                         context,
                                                     const lr1110_system_rfswitch_cfg_t* rf_switch_cfg )
 {

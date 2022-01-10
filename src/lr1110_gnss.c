@@ -66,8 +66,6 @@
 #define LR1110_GNSS_ALMANAC_READ_CMD_LENGTH ( 2 )
 #define LR1110_GNSS_SET_ASSISTANCE_POSITION_CMD_LENGTH ( 2 + 4 )
 #define LR1110_GNSS_READ_ASSISTANCE_POSITION_CMD_LENGTH ( 2 )
-#define LR1110_GNSS_SET_XTAL_ERROR_CMD_LENGTH ( 2 + 2 )
-#define LR1110_GNSS_READ_XTAL_ERROR_CMD_LENGTH ( 2 )
 #define LR1110_GNSS_PUSH_SOLVER_MSG_CMD_LENGTH ( 2 )
 #define LR1110_GNSS_PUSH_DM_MSG_CMD_LENGTH ( 2 )
 #define LR1110_GNSS_GET_CONTEXT_STATUS_CMD_LENGTH ( 2 )
@@ -118,8 +116,6 @@ enum
     LR1110_GNSS_ALMANAC_READ_OC                 = 0x040F,  //!< Read all almanacs
     LR1110_GNSS_SET_ASSISTANCE_POSITION_OC      = 0x0410,  //!< Set the assistance position
     LR1110_GNSS_READ_ASSISTANCE_POSITION_OC     = 0x0411,  //!< Read the assistance position
-    LR1110_GNSS_SET_XTAL_ERROR_OC               = 0x0412,  //!< Set the xtal accuracy
-    LR1110_GNSS_READ_XTAL_ERROR_OC              = 0x0413,  //!< Read the xtal accuracy
     LR1110_GNSS_PUSH_SOLVER_MSG_OC              = 0x0414,  //!< Push messages coming from the solver
     LR1110_GNSS_PUSH_DM_MSG_OC                  = 0x0415,  //!< Push messages coming from the device management
     LR1110_GNSS_GET_CONTEXT_STATUS_OC           = 0x0416,  //!< Read the context
@@ -508,41 +504,12 @@ lr1110_status_t lr1110_gnss_read_assistance_position( const void*               
     const lr1110_hal_status_t hal_status = lr1110_hal_read(
         context, cbuffer, LR1110_GNSS_READ_ASSISTANCE_POSITION_CMD_LENGTH, position_buffer, sizeof( position_buffer ) );
 
-    position_tmp                  = ( ( ( uint16_t ) position_buffer[0] << 8 ) + position_buffer[1] );
+    position_tmp                  = ( int16_t )( ( ( uint16_t ) position_buffer[0] << 8 ) + position_buffer[1] );
     assistance_position->latitude = ( ( float ) ( position_tmp ) *LR1110_GNSS_SCALING_LATITUDE ) / 2048;
 
-    position_tmp                   = ( ( ( uint16_t ) position_buffer[2] << 8 ) + position_buffer[3] );
+    position_tmp                   = ( int16_t )( ( ( uint16_t ) position_buffer[2] << 8 ) + position_buffer[3] );
     assistance_position->longitude = ( ( float ) ( position_tmp ) *LR1110_GNSS_SCALING_LONGITUDE ) / 2048;
 
-    return ( lr1110_status_t ) hal_status;
-}
-
-lr1110_status_t lr1110_gnss_set_xtal_error( const void* context, const float xtal_error_in_ppm )
-{
-    const uint8_t cbuffer[LR1110_GNSS_SET_XTAL_ERROR_CMD_LENGTH] = {
-        ( uint8_t )( LR1110_GNSS_SET_XTAL_ERROR_OC >> 8 ),
-        ( uint8_t )( LR1110_GNSS_SET_XTAL_ERROR_OC >> 0 ),
-        ( uint8_t )( ( int16_t )( ( xtal_error_in_ppm * 32768 ) / 40 ) >> 8 ),
-        ( uint8_t )( ( int16_t )( ( xtal_error_in_ppm * 32768 ) / 40 ) >> 0 ),
-    };
-
-    return ( lr1110_status_t ) lr1110_hal_write( context, cbuffer, LR1110_GNSS_SET_XTAL_ERROR_CMD_LENGTH, 0, 0 );
-}
-
-lr1110_status_t lr1110_gnss_read_xtal_error( const void* context, float* xtal_error_in_ppm )
-{
-    uint8_t       xtal_error_buffer[2] = { 0x00 };
-    int16_t       xtal_error_temp;
-    const uint8_t cbuffer[LR1110_GNSS_READ_XTAL_ERROR_CMD_LENGTH] = {
-        ( uint8_t )( LR1110_GNSS_READ_XTAL_ERROR_OC >> 8 ),
-        ( uint8_t )( LR1110_GNSS_READ_XTAL_ERROR_OC >> 0 ),
-    };
-
-    const lr1110_hal_status_t hal_status = lr1110_hal_read( context, cbuffer, LR1110_GNSS_READ_XTAL_ERROR_CMD_LENGTH,
-                                                            xtal_error_buffer, sizeof( xtal_error_buffer ) );
-
-    xtal_error_temp    = ( ( ( uint16_t ) xtal_error_buffer[0] << 8 ) + xtal_error_buffer[1] );
-    *xtal_error_in_ppm = ( ( float ) ( xtal_error_temp ) *40 ) / 32768;
     return ( lr1110_status_t ) hal_status;
 }
 
