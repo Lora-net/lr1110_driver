@@ -1,5 +1,9 @@
 # LR1110_driver project
 
+This project has moved to [LR11xx driver](https://github.com/Lora-net/SWDR001) project.
+
+The source code remains available but will not be maintained.
+
 This package proposes an implementation in C of the driver for **LR1110** radio component.
 
 ## Components
